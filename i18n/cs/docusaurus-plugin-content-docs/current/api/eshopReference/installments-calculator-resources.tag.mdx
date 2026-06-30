@@ -1,0 +1,36 @@
+---
+id: installments-calculator-resources
+title: "Zdroje splátkové kalkulačky"
+description: "Zdroje splátkové kalkulačky"
+custom_edit_url: null
+---
+
+
+
+Když chcete poskytnout zákazníkovi (který chce zaplatit za nákup úvěrem) možnost vybrat si z dostupných splátkových programů, když je ještě na vašem webových stránkách, je třeba zavést "splátkovou kalkulačku".
+
+Pro integraci splátkové kalkulačky do svých webových stránek zvolte jeden z následujících přístupů:
+- A) Implementace vlastní splátkové kalkulačky s vaší FE ve vašem designu, která využívá určené zdroje API ([popsáno níže](#implementing-own-installments-calculator)).
+- B) Integrace javascriptového widgetu společnosti Home Credit (popsaného v [zvláštní kapitole](../Reference/java-script-widget-integration)), který:
+  - poskytuje grafické uživatelské rozhraní a funkce front-endu
+  - zpracovává všechny potřebné výpočty
+  - poskytuje potřebné údaje back-endu e-shopu, aby je bylo možné snadno použít v rámci [požadavku na vytvoření *aplikace*](./create-using-post-3)
+
+> POZNÁMKA: Implementace splátkové kalkulačky je volitelná. Zákazníci mohou vždy používat splátkovou kalkulačku zabudovanou ve front-endu Home Creditu.
+
+## Implementace vlastní splátkové kalkulačky
+K implementaci vlastní splátkové kalkulačky (s vlastním návrhem grafického uživatelského rozhraní) budete potřebovat následující zdroje:
+- `/financing/v1/installmentProgramsOffers` - pro zjištění dostupných nabídek splátkových programů a jejich podrobností
+- `/financing/v1/installmentPrograms` - pro zjištění podrobností vybraného splátkového programu
+- `/financing/v1/installmentProgramsDownPayments` - zjištění možností akontace v rámci dostupných nabídek splátkových programů
+
+
+
+
+```mdx-code-block
+import DocCardList from '@theme/DocCardList';
+import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
+
+<DocCardList items={useCurrentSidebarCategory().items}/>
+```
+      

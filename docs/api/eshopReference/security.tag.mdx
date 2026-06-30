@@ -1,0 +1,56 @@
+---
+id: security
+title: "Security"
+description: "Security"
+custom_edit_url: null
+---
+
+
+
+To access our API, partner has to obtain *access token* first; this token is a string of arbitrary length (30+ chars) and it has to be included in HTTP header to every request to API. This section describes way to obtain valid access token and use it to access protected resources.
+
+- to obtain access token, use `/authentication/v1/partner` resource with appropriate parameters (see the [`/authentication/v1/partner` resource documentation](./login-partner))
+
+- access token should be present in every request using request header `Authorization`, with type `Bearer`. If partner's access token has value `secret_token`, it should be specified as follows:
+
+`Authorization: Bearer secret_token`
+
+So the real example using curl will look like:
+
+```
+curl -H "Authorization: Bearer secret_token" https://api.homecredit.cz/financing/v1/applications
+```
+
+- access token has limited time validity (for 2 hours). After it is expired, partner has to obtain new one using `/authentication/v1/partner` resource.
+
+- if partner fails to specify access token, he will receive `401 Unauthorized` error and following response body:
+
+```
+{
+   "error_description": "The access token is missing",
+   "error": "invalid_request"
+}
+```
+
+- if partner provides invalid access token, he will receive `401 Unauthorized` error and following response body:
+
+```
+{
+    "error_description":"The access token is invalid or has expired",
+    "error":"invalid_token"
+}
+```
+
+> IMPORTANT NOTE: Partner must keep his access token and login credentials safe. Login credentials nor access token should NEVER be put into client page. If partner plans to integrate API calls in customer flow without submitting the page to server, partner should implement REST endpoint bound to partner's shopping basket session, that will be used as a proxy to call HC API.
+
+> NEVER transfer access token nor login credentials over plain HTTP. Such requests will be refused.
+
+
+
+```mdx-code-block
+import DocCardList from '@theme/DocCardList';
+import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
+
+<DocCardList items={useCurrentSidebarCategory().items}/>
+```
+      

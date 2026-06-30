@@ -1,0 +1,30 @@
+{
+  "title": {
+    "message": "Vývojářská Dokumentace",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "HC Docs Logo",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Docs": {
+    "message": "Dokumentace",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.API Reference": {
+    "message": "API Reference",
+    "description": "Navbar item with label API Reference"
+  },
+  "item.label.Widgets": {
+    "message": "Widgety",
+    "description": "Navbar item with label Widgets"
+  },
+  "item.label.Contact": {
+    "message": "Kontakt",
+    "description": "Navbar item with label Kontakt"
+  },
+  "item.label.GitLab": {
+    "message": "GitLab",
+    "description": "Navbar item with label GitLab"
+  }
+}

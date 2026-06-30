@@ -1,0 +1,4932 @@
+openapi: 3.0.0
+info:
+  title: HC - OneClick API - Installments
+  version: 1.28.2
+  x-sidebar-label: API Versioning
+  description: |
+    API documentation for implementing the Home Credit interface in e-shops.
+
+    Version of documentation: 1.28.2
+
+    ## Version History
+
+    | Version | Release | Release date | News |
+    |---------|---------|--------------|------|
+    | 1.28.2  | CS133   | 8.10.2025    | replacement of endpoint for change application state |
+
+    ## Important Notes
+
+    List of attributes switching from required to optional:
+
+    - request.customer
+    - request.customer.firstName
+    - request.customer.lastName
+    - request.customer.fullName
+    - request.customer.email
+    - request.customer.phone
+    - request.customer.addresses
+    - request.customer.addresses.city
+    - request.customer.addresses.streetAddress
+    - request.customer.addresses.streetNumber
+    - request.customer.addresses.zip
+    - request.customer.addresses.addressType
+    - request.merchantUrls.notificationEndpoint
+
+    In case of any question, please contact our integration department (integrace_eshop@homecredit.cz).
+
+    > ⚠️ **IMPORTANT NOTE**: Resource calls made from Slovakia MUST use appropriate dedicated .sk endpoints. E.g. `https://api.homecredit.sk/financning/v1/applications`
+    ## Getting started
+
+    This online document describes Home Credit (HC) One-Click API - the means for partner e-shops through which they can offer their customers the benefits of one of Home Credit's payment methods.
+
+    The aim of here described services is to allow customers the smooth running through the process of an online purchase. The services that allow achieving this goal are divided into the following groups:
+
+    | Group of services                                           | Purpose                                                                                                                                                        |
+    | ---                                                         | ---                                                                                                                                                            |
+    | [Security](./security)                             | Security rules and principles                                                                                                                                           |
+    | [Application resources](./application-resources)   | Resources that allows processing of *application* during its whole life cycle                                                                                           |
+    | [Installments calculator resources](./installments-calculator-resources)   | Resources that allow partner e-shops to implement an installment calculator on their websites                                                   |
+    | [Merchantsite resources](./merchantsite-resources) | Resources that should be developed and exposed by a partner to allow HC asynchronously inform it about important changes regarding particular *applications and orders* |
+    | [Health check](./health-check) | Health check usage description                                                                                                                                                              |
+
+    ### Basic implementation
+
+
+    The basic and minimum way how to implement HCO API is to at least implement:
+
+    1. [Login](./login-partner)
+        - Partner must be authorized to be able to access the most resources
+    2. [Create application](./create-using-post-3)
+        - Partner calls this resource to start the loan approval process by creating an `application`. `Application` itself and its ID are essential for successful process completion.
+    3. Redirect handlers.
+        - Special URLs for customers that shows payment success or rejection (more info [here](#parameters-added-to-return-urls)).
+    4. [Application notification](./application-notification)
+        - This endpoint has to be exposed on your side to allow HC back-end to asynchronously notify you about the important changes regarding particular applications.
+    5. [Mark order items as shipped/delivered](./deliver-using-put)
+        - Home Credit does not start the process of financial compensation unless the `order` is marked as `SHIPPED` or `DELIVERED` .
+
+    ![Minimal implementation diagram](/img/sequence_diagram.png)
+
+    ![Application/Order state diagram](/img/state_diagram.png)
+
+    It is necessary to fill in all attributes marked as 'required' in the request. Filling optional parameters will result in a better application approval rate. Partner should always consider filling as many attributes as possible.
+  
+    ### Parameters added to your return URLs
+    
+    - During redirection of the customer from Home Credit's front-end back to e-shop (to one of the provided URLs - `approvedRedirectUrl`, `rejectedRedirectUrl`) there are some potentially useful information about a customer's outcome in Home Credit's front-end added:
+    - `orderNumber` (string) - E-shop's internal order number provided within API call of Create application
+    - `withdrawal` (boolean) - True when the customer's purchase is financed directly from his already existing revolving loan; false when a new contract is being created
+    - `downPayment` (number) - Value of down payment, usually set to 0
+    - `stateReason` (enum) - Application substate
+    - `applicationId` (string) - HCO application identifier
+    - `checkSum` (string) - hashed message
+    - e.g. ```http://youreshop.cz?orderNumber=0606104036&stateReason=PROCESSING_SIGNED&downPayment=100000&checkSum=443E150D3406F6A8DC62C1DB224AFDD84FA9907071BB1AD9B2C7701031793662191501B26AADF3A31361341EA176C80B23D8A9A5E5B5219538289945FE0C20A7&applicationId=01-11b00a1ef1&withdrawal=false```
+
+    ### Javascript widget integration 
+
+    In order to use Home Credit's javascript widget as an installment calculator, your e-shop back-end has to be configured properly. How to do it is currently described in [our on-line repository](/docs/documentation/widgets/install) (currently written in Czech).
+
+    ## Documentation principles
+
+    - attributes in request/response object are optional unless stated otherwise (`required` flag under attribute name)
+
+    - a required attribute in an optional object means, that if an optional object is specified, it must contain the required attribute.
+
+    - all values in request/response attributes are just examples, except for enum values - these are the only possible values for the given attribute.
+
+    - documentation adheres to [semantic versioning](https://semver.org/spec/v2.0.0.html), which makes a distinction between *major*, *minor*, and *patch* versions.
+
+    ### Naming conventions
+
+    - we use camelCase for all object and attribute names
+
+    - we use CAPITAL_UNDERSCORE for enum values
+
+    - we use plural in resource names
+
+    ## Home Credit REST API principles
+
+    ### Request restrictions
+
+
+    Please, keep in mind following restrictions regarding requests:
+
+
+    - Maximum request size is **10 MB**.
+
+
+    - Maximum size of accepted single file is **500 kB**.
+
+
+    - Here is the list of supported files:
+
+
+    | MIME type                                                                 | Example(s)                 |
+    | ---                                                                       | ---                        |
+    | application/pdf                                                           | *.pdf                      |
+    | application/vnd.openxmlformats-officedocument.spreadsheetml.sheet         | *.xlsx                     |
+    | application/vnd.openxmlformats-officedocument.wordprocessingml.document   | *.docx                     |
+    | application/vnd.openxmlformats-officedocument.presentationml.presentation | *.pptx                     |
+    | application/vnd.ms-excel                                                  | *.xls, *.xlt, *.xla        |
+    | application/msword                                                        | *.doc, *.dot               |
+    | application/vnd.ms-powerpoint                                             | *.ppt, *.pot, *.pps, *.ppa |
+    | plain/text                                                                | *.csv, *.txt               |
+    | image/jpeg                                                                | *.jpg, *.jpeg              |
+    | image/png                                                                 | *.png                      |
+    | image/gif                                                                 | *.gif                      |
+
+
+    ### API calls limits
+
+
+    When partner reaches API calls limit (partner calls the API more times than is partner's quota), he receives HTTP error 429. To inform partner about limits we use following response headers:
+
+
+    - `X-Rate-Limit-Limit` - The number of allowed requests in the current period
+
+
+    - `X-Rate-Limit-Remaining` - The number of remaining requests in the current period
+
+
+    - `X-Rate-Limit-Reset` - The number of seconds left in the current period
+
+
+    ### Versioning
+
+    We use API version in URL (e.g. `https://api.homecredit.cz/financing/v1/applications`). *Minor* changes and *patches* (see below) that don't break backwards compatibility do NOT increase API version, e.g. they MAY happen without prior notice and your application should be ready to handle them.
+
+    ### Response encoding
+
+    Unless stated otherwise, all responses are sent as `Content-Type: application/json; charset=utf-8`
+
+    ### HTTP status codes
+
+
+    We use following status codes throughout the API, except for OAuth flow when response codes are prescribed in RFC
+
+
+    - 200 `OK` - request was successful
+
+
+    - 201 `Created` - request was successful and resource was created
+
+
+    - 202 `Accepted` - request has been accepted for processing, but the processing has not been completed
+
+
+    - 204 `No Content` - we accepted partner's request but there is nothing to return (e.g. response is empty)
+
+
+    - 400 `Bad Request` - syntax error, e.g. request is missing required parameters/attributes or parameter values are of incorrect type
+
+
+    - 401 `Unauthorized` - partner is not authorized
+
+
+    - 403 `Forbidden` - access denied (e.g. user / application is not allowed to use the resource)
+
+
+    - 404 `Not Found` - resource could not be found
+
+
+    - 405 `Method Not Allowed` - specified method is not allowed for resource
+
+
+    - 422 `Unprocessable Entity` -  business (semantic) errors. Request is well-formed, but cannot be processed (e.g. payment due date is in past). Errors are specified in response body (see below)
+
+
+    - 429 `Too Many Requests` - partner exceeded the rate limit (see section [API calls limit](#api-calls-limits) above)
+
+
+    - 500 `Internal Server Error` - something went wrong on our side
+
+
+    - 503 `Service Unavailable` - there is planned service outage
+
+
+    ### Error handling
+
+
+    Besides HTTP status codes, which are the main indication if something goes wrong, we also use `errors` object to report more details about errors.
+
+
+    Errors object example:
+
+
+    ```javascript
+
+    {
+        ...
+
+        errors: [
+            {
+                "code": "ERR_100",
+                "message": "Invalid contract number",
+                "severity": "ERROR",
+                "attribute": "partyAccount.accountNumber",          // optional
+                "ticketId": "UAT1:AMS:20160516-091658.450:45e4" // optional
+            },
+            {
+                "code": 352,
+                "message": "Insufficiend funds for payment order realization",
+                "severity": "WARN"
+            },
+            {
+                "code": 523,
+                "message": "This order will trigger currency exchange operation",
+                "severity": "INFO"
+            }
+        ]
+    }
+
+    ```
+
+
+    Error object attributes
+
+    | Attribute name | Description                                                     |
+    | ---            | ---                                                             |
+    | code           | unique error code                                               |
+    | message        | human readable error description (non-localized)                |
+    | severity       | error severity (see below)                   |
+    | attribute      | json path of request attribute that caused the error (optional) |
+    | ticketId       | internal ticket ID, used for error backtracking                 |
+
+
+    There are 3 levels of error severity:
+
+
+    - `ERROR` - critical error, execution cannot continue. This MUST be indicated also by appropriate HTTP status code (e.g. `422 Unprocessable Entity`)
+
+
+    - `WARN` - non-critical error, execution can continue but further user interaction is advisable (for request to proceed, partner MUST specify this error code in `override` request attribute). This MIGHT be indicated also by appropriate HTTP status code.
+
+
+    - `INFO` - information only, execution can continue without user interaction.
+
+
+    #### Errors overview
+
+
+    | Status code | Code                  | Explanation                                                                     | Message                                                                                                        |
+    | ---         | ---                   | ---                                                                             | ---                                                                                                            |
+    | 400         | INVALID_REQUEST       | Request was not well formatted (malformed request syntax, size too large, etc.) | (*Various messages possible*) e.g. Unsupported combination of application status and order status              |
+    | 404         | OBJECT_NOT_FOUND      | The requested resource could not be found                                       | (*Various messages possible*) e.g. Specified object was not found                                              |
+    | 422         | NOT_ALLOWED           | Operation is not allowed (internal reason)                                      | (*Various messages possible*) e.g. Not allowed (other reason)                                                  |
+    | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable   | (*Various messages possible*) e.g. Failed to parse given JSON                                                  |
+
+    ### Formats
+
+    - **date** and **time** uses [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) formatting, e.g.:
+      - date is represented as `YYYY-mm-dd`. Timezone (local) is added when necessary.
+      - time is represented as `Thh:mm:ss`. Timezone is added when necessary. Time with arbitrary number of digits respresenting miliseconds is also accepted (when [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format criteria is met) but the time without miliseconds is always returned.
+      - day of week is represented as number 1..7, with 1 being Monday
+      - week no. 1 is the week with the year's first Thursday in it
+
+    - **phone numbers** uses international format starting with '+' and including country code (example of valid number: `+420739111222`)
+
+    - **numbers format** number format is defined by [JSON standard](http://www.json.org), e.g. decimals are separated by `.`
+
+    - **money format** uses [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) formatting (in minor units, e.g.: 12590 in minor units represents 125,90 CZK/EUR)
+
+  contact:
+    name: Home Credit Support
+    email: support@homecredit.cz
+  license:
+    name: Proprietary
+  tags:
+  - name: financing-v1
+    description: Application Controller
+paths:
+  /authentication/v1/partner:
+    post:
+      responses:
+        "200":
+          description: Partner acces token issued
+          headers: {}
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: Access token
+                  expiresIn:
+                    type: number
+                    description: Token validity remaining time (in seconds)
+                  tokentype:
+                    type: string
+                    description: token type. Always "bearer".
+                required:
+                  - accessToken
+                  - tokentype
+              examples:
+                response:
+                  value:
+                    accessToken: TokenForPartnerTokenForPartnerTokenForPartnerTokenForPartner
+                    expiresIn: 7200
+                    tokentype: bearer
+        "400":
+          description: Unable to authenticate partner
+          headers: {}
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          description: Unique internal error code
+                        message:
+                          type: string
+                          description: Human readable error description (non-localized)
+                        severity:
+                          type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                        attribute:
+                          type: string
+                          description: JSON path of request attribute that caused the error (if
+                            applicable)
+                        ticketId:
+                          type: string
+                          description: Internal ticket ID, used for error backtracking
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Array with errors
+                required:
+                  - errors
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: BAD_REQUEST
+                        message: Bad request
+                        severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
+      summary: Login partner
+      operationId: Login partner
+      description: Partner authenticate himself and obtain acces token
+      tags:
+        - Security
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Partner username
+                password:
+                  type: string
+                  description: Partner secret password
+              required:
+                - username
+                - password
+              example:
+                username: eShop
+                password: eShopSecretPassword
+  /financing/v1/applications:
+    post:
+      tags:
+        - Application resources
+      summary: Create application
+      description: |
+        Requires <b>applications.create</b> authority for authenticated user
+        Elementary flow starts when customer wants to use one of Home Credit's payment method for financing his purchase made in partner e-shop.
+
+        | Financing type | Supported            |
+        | ----------- | --------------- |
+        | `INSTALLMENT`         | YES  |
+
+        Use `/financing/v1/applications` resource with properly 
+        filled request that contains at least following data
+
+        - Customer information are not necessary to send, however, sending them is highly recommended - it will simplify the application process for the client
+          - Name (first name and last name or full name)
+          - E-mail
+          - Mobile phone number
+          - Addresess (array)
+            - City
+            - Street
+            - Street number
+            - ZIP
+            - Address type
+        
+        - Order details
+          - Number
+          - Total Price (including VAT)
+          - Order items (array, at least one item is required)
+            - Code
+            - Order item name
+            - Total price (all pieces, including VAT)
+        
+        - Financing type (always `INSTALLMENT`)
+        - Financing type details
+          - *Installment settings - preferred installment amount
+          - *Installment settings - preferred down payment amount
+          - *Installment settings - preferred program product code
+
+        - Additional information necessary for the continuation and completion of the process
+          - Your URL where the customer should be redirected after application approval
+          - Your URL where the customer should be redirected after application rejection
+          - URL of your notification endpoint you want us to send notifications about particular application updates to (in case the partner is using notifier)
+        
+        > * = Must be filled properly in case customer has already used installment calculator embedded on your website and selected preferred installment program. See the Installments calculator resources section for more details about possibility to embed installment calculator on your website. Leave empty otherwise.
+
+        If the request was successfully processed, you receive HTTP status code 201 and Application object with at least following information in the response:
+
+        - Application unique ID
+        - Application state
+        - Application substate
+        - Gateway redirect URL where you should redirect a customer after processing of the response
+
+        > You may also receive information about initially requested **down payment** - this 
+        can be later changed by customer during the process of finalization of financing 
+        application. In such cases we recommend you to check the final **down payment** of 
+        approved loan (after the application is approved) via `/financing/v1/applications/{applicationId}`.
+
+        If the request was **recognized as duplication**
+
+        - and previously created `Application` is canceled (`Application.state = CANCELLED` and 
+        `Application.stateReason = CANCELLED_NOT_PAID`), new `Application` is created, you 
+        receive HTTP status code 201 and `Application` object with information specified above (at least) in the response
+        - and previously created `Application` is still new (i.e. without any recorded action by a client), no `Application` is created, you receive HTTP status code 200 and the `Application` object created during the first related successful resource call.
+        - and previously created `Application` is neither canceled nor new anymore, you receive HTTP status code 422 with error code `DUPLICATE_ORDER_NUMBER`.
+
+        In case of an error, you receive one of the following results:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 422         | UNPROCESSABLE | Request was well-formed but was unable to be followed due to semantic errors |
+        | 422         | DUPLICATE_ORDER_NUMBER | Creating of Application with duplicated Order number is not allowed |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+      operationId: createUsingPOST_3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinancingV1ApplicationRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1Application"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  "/financing/v1/applications/{uuid}":
+    get:
+      tags:
+        - Application resources
+      summary: Application detail
+      description: |
+        Requires <b>applications.overview</b> authority for authenticated user
+
+        If you need to find out current information about particular *application* - primarily its state 
+        and other details - use `/financing/v1/applications/{applicationId}` resource where `{applicationId}` 
+        is the application ID you received in the response of `/financing/v1/applications` after its creation
+
+        | Financing type | Supported            |
+        | ----------- | --------------- |
+        | `INSTALLMENT`         | YES  |
+
+        If the request was successfully processed, you receive HTTP status code 200 and application object with at least following information in the response:
+
+        - Application unique ID
+        - Application type
+        - Application state
+        - Application substate
+        - Gateway redirect URL
+
+        > You may also receive information about current **down payment** which is useful when 
+        you need to find out whether customer's loan was approved with different down payment 
+        than had been initially set in your embedded installment calculator.
+
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 404         | APPLICATION_NOT_FOUND  | The requested resource could not be found |
+        | 422         | NOT_SUPPORTED | Resource is not supported for given financing type |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+      operationId: getUsingGET_7
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1Application"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  "/financing/v1/applications/{uuid}/cancel":
+    put:
+      tags:
+        - Application resources
+      summary: Cancel application
+      description: |
+        Requires <b>applications.cancel</b> authority for authenticated user
+
+        If there is need to completely cancel customer's order, it is necessary to cancel respective 
+        *application*. For this purpose use `/financing/v1/applications/{applicationId}/cancel` 
+        resource where `{applicationId}` is the *application* ID you received in the response of 
+        `/financing/v1/applications` after its creation.
+
+        | Financing type | Supported            |
+        | ----------- | --------------- |
+        | `INSTALLMENT`         | YES  |
+
+
+        | Application state | Availability            |
+        | ----------- | --------------- |
+        | `REJECTED`         | YES  |
+        | `CANCELED`         | YES  |
+        | `PROCESSING`         | YES  |
+        | `READY`         | YES  |
+
+        If the request was successfully processed but the application had been already paid 
+        (`Application.stateReason = READY_PAID`) you receive HTTP status code **202 ACCEPTED** 
+        that means the process of a cancelation of the *application* began. It SHOULD be 
+        completed after fulfilment of several back office manual actions.
+
+        In other cases, when the request is successfully processed, you receive HTTP status code **200 OK**.
+
+        You also receive at least following information about (soon to be) cancelled application in the response:
+
+        - Application unique ID
+        - Application type
+        - Application state
+        - Application substate
+
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 404         | OBJECT_NOT_FOUND  | The requested resource could not be found |
+        | 422         | NOT_SUPPORTED | Resource is not supported for given financing type |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 422         | APPLICATION_REJECTED | When you try to cancel already `REJECTED` `Application`, which is not allowed |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+      operationId: cancelUsingPUT
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinancingV1ApplicationCancelRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1Application"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  "/financing/v1/applications/{uuid}/order":
+    put:
+      tags:
+        - Application resources
+      summary: Change application order
+      description: |
+        Requires <b>applications.order.edit</b> authority for authenticated user
+
+        When there's some changes within order that may have an important impact on the 
+        repayment process after its submission, use `/financing/v1/applications/{applicationId}/order` 
+        resource in order we can adjust everything properly. `{applicationId}` is the application ID 
+        you received in the response of `/financing/v1/applications` after its creation.
+
+        | Financing type | Supported            |
+        | ----------- | --------------- |
+        | `INSTALLMENT`         | YES  |
+
+        | Application state | Availability            |
+        | ----------- | --------------- |
+        | `REJECTED`         | NO  |
+        | `CANCELED`         | NO  |
+        | `PROCESSING`         | YES  |
+        | `READY`         | YES* (see the availability note below)  |
+
+        Use `/financing/v1/applications/{applicationId}/order` resource with properly filled 
+        request that contains (only) changed data (resource allows partial put).
+
+        > **AVAILABILITY NOTE**: Valid request object contains only order number (`order.number`) 
+        and/or one item in the array `order.variableSymbols[]`. Supported `stateReason` of `state READY` 
+        are `READY_TO_SHIP`, `READY_SHIPPED`, `READY_DELIVERING` (`state PROCESSING` is supported without any limitations).
+
+        If the request was successfully processed, you receive HTTP status code 200 and 
+        object of information about changed order plus basic information about respective 
+        application (ID, state, substate) with at least following information in the response:
+
+        - Order number
+        - Order total price (including VAT)
+        - Order items (array)
+          - Order item name
+          - Total price (all pieces, including VAT)
+          - Order item state
+        - Order state
+        - Application basic information
+          - ID
+          - Application state
+          - Application substate
+        
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 404         | OBJECT_NOT_FOUND  | The requested resource could not be found |
+        | 422         | NOT_SUPPORTED | Resource is not supported for given financing type |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 422         | APPLICATION_REJECTED | When you try to cancel already `REJECTED` `Application`, which is not allowed |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+      operationId: changeApplicationOrderUsingPUT
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinancingV1OrderChangeRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1OrderExtended"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  "/financing/v1/applications/{uuid}/order/deliver":
+    put:
+      tags:
+        - Application resources
+      summary: Mark order as delivered
+      description: |
+        Requires <b>applications.order.ship_deliver</b> authority for authenticated user
+
+        When the whole order was delivered to the customer, use `/financing/v1/applications/{applicationId}/order/deliver` 
+        resource where `{applicationId}` is the application ID you received in the response of `/financing/v1/applications` after its creation. 
+
+        | Financing type | Supported            |
+        | ----------- | --------------- |
+        | `INSTALLMENT`         | YES  |
+
+        | Application state | Availability            |
+        | ----------- | --------------- |
+        | `PROCESSING`         | NO  |
+        | `REJECTED`         | NO  |
+        | `CANCELED`         | NO  |
+        | `READY`         | YES* (see the availability note below)  |
+
+        > AVAILABILITY NOTE: Request is valid when `Application.stateReason = READY_TO_SHIP`. 
+        Request is also valid after the transition of `Application` to the `stateReason = READY_DELIVERED` 
+        or `stateReason = READY_PAID` (i.e. repeated valid requests return HTTP status code 200 OK unless the 
+        `Application.stateReason = CANCELLED_RETURNED`)
+
+        If the request was successfully processed, you receive HTTP status code 200 and object 
+        of information about changed order plus basic information about respective application 
+        (ID, state, substate) with at least following information in the response:
+
+        - Order number
+        - Order total price (including VAT)
+        - Order items (array)
+          - Order item name
+          - Total price (all pieces, including VAT)
+          - Order item state
+        - Order state
+        - Application basic information
+          - ID
+          - Application state
+          - Application substate
+        
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 404         | OBJECT_NOT_FOUND  | The requested resource could not be found |
+        | 422         | NOT_SUPPORTED | Resource is not supported for given financing type |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+      operationId: deliverUsingPUT
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1OrderExtended"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  "/financing/v1/applications/{uuid}/order/send":
+    put:
+      tags:
+        - Application resources
+      summary: Mark order as sent
+      description: |
+        Requires <b>applications.order.ship_deliver</b> authority for authenticated user
+
+        When the whole order was shipped to the customer, use `/financing/v1/applications/{applicationId}/order/send` 
+        resource where `{applicationId}` is the application ID you received in the response of `/financing/v1/applications` after its creation.
+
+        | Financing type | Supported            |
+        | ----------- | --------------- |
+        | `INSTALLMENT`         | YES  |
+
+        | Application state | Availability            |
+        | ----------- | --------------- |
+        | `PROCESSING`         | NO  |
+        | `REJECTED`         | NO  |
+        | `CANCELLED`         | NO  |
+        | `READY`         | YES (* available only when `Application.stateReason = READY_TO_SHIP`)  |
+
+        If the request was successfully processed, you receive HTTP status code 200 and object 
+        of information about changed order plus basic information about respective application 
+        (ID, state, substate) with at least following information in the response:
+
+        - Order number
+        - Order total price (including VAT)
+        - Order items (array)
+          - Order item name
+          - Total price (all pieces, including VAT)
+          - Order item state
+        - Order state
+        - Application basic information
+          - ID
+          - Application state
+          - Application substate
+        
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 404         | OBJECT_NOT_FOUND  | The requested resource could not be found |
+        | 422         | NOT_SUPPORTED | Resource is not supported for given financing type |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+      operationId: sendOrderItemsUsingPUT
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1OrderExtended"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  /financing/v1/health:
+    get:
+      tags:
+        - Health check
+      summary: API health check
+      description: |
+        If the API back-end services is up and running, you receive HTTP status code 204. In other cases, you receive one of the following errors:
+
+        | Status code | Code            |
+        | ----------- | --------------- |
+        | 500         | SERVICE_FAILED  |
+        | 504         | SERVICE_TIMEOUT |
+
+        > Note: resource requires valid access_token in the HTTP header of the request
+      operationId: getHealthUsingGET
+      parameters:
+        - name: timeout
+          in: query
+          description: timeout
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 2000
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/IssueList"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      deprecated: false
+  /financing/v1/installmentPrograms:
+    post:
+      tags:
+        - Installments calculator resources
+      summary: Installment programs
+      operationId: calculateInstallmentProgramUsingPOST
+      description: |
+        When a customer wants to know details of one of previously offered 
+        installment programs use `/financing/v1/installmentPrograms` resource 
+        with properly filled request that contains at least following data:
+
+        - Product code of given installment program
+        - Price of customer's purchase
+
+        If the request was successfully processed, you receive HTTP status 
+        code 200 and object of information about specified installment 
+        program with at least following information in the response:
+
+        - Installment program type
+        - Installment amount
+        - Number of installments
+        - Installment program details
+
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+
+        Calculate installment program detailed information. It returns the installment program that most closely matches specified input.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstallmentProgramsRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/InstallmentProgram"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      deprecated: false
+  /financing/v1/installmentProgramsDownPayments:
+    post:
+      tags:
+        - Installments calculator resources
+      summary: Installment programs down payments
+      description: |
+        When a customer wants to pay for a purchase by a loan and also 
+        wants to choose own down payments settings within offered installment 
+        programs, use `/financing/v1/installmentProgramsDownPayments` resource 
+        with properly filled request that contains at least following data:
+
+        - Product set code (you should know the proper product set code from 
+        Home Credit's sales representative or other similar source)
+        - Price of customer's purchase
+
+        If the request was successfully processed, you receive HTTP status code 
+        200 and object of information about available down payments settings 
+        with at least following information in the response:
+
+        - Minimum down payment amount
+        - Maximum down payment amount
+        - Step between given minimum and maximum down payment amounts
+
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+
+        Calculate installment programs down payments according to specified input
+      operationId: calculateInstallmentProgramDownPaymentsUsingPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstallmentProgramDownPaymentsRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/InstallmentProgramDownPaymentsResponse"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      deprecated: false
+  /financing/v1/installmentProgramsOffers:
+    post:
+      tags:
+        - Installments calculator resources
+      summary: Installment programs offers
+      description: |
+        When a customer wants to pay for a purchase by a loan and you want 
+        to show him an offer of available installment programs, 
+        use `/financing/v1/installmentProgramsOffers` resource with properly 
+        filled request that contains at least following data:
+
+        - Product set code (you should know the proper product set code from 
+        Home Credit's sales representative or other similar source; 
+        if you don't provide product set code, your default product set will be used)
+        - Price of customer's purchase
+
+        If the request was successfully processed, you receive HTTP status code 200 
+        and array of objects of available installment programs with at least 
+        following information in the response:
+
+        - Installment program (array)
+          - Installment program product code
+          - Installment program type (in case of only one installment program offer 
+          in response it is of type `FAVOURITE`)
+          - Installment amount
+          - Number of installments
+        
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+      operationId: calculateInstallmentProgramsUsingPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstallmentProgramsOffersRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/InstallmentProgramsResponse"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      deprecated: false
+  /financing/v1/orders:
+    get:
+      tags:
+        - Application resources
+      summary: Orders
+      description: |
+        Requires <b>applications.overview</b> authority for authenticated user
+
+        If you need to find out current information about particular order - primarily its state 
+        and other details - use `/financing/v1/orders{?applicationId}` resource where `{applicationId}` 
+        is the application ID you received in the response of `/financing/v1/applications` after its creation.
+
+        | Financing type | Supported            |
+        | ----------- | --------------- |
+        | `INSTALLMENT`         | YES  |
+
+        | Application state | Availability            |
+        | ----------- | --------------- |
+        | `PROCESSING`         | YES  |
+        | `REJECTED`         | YES  |
+        | `CANCELED`         | YES  |
+        | `READY`         | YES  |
+
+        If the request was successfully processed, you receive HTTP status code 200 and object 
+        of information about specified order plus basic information about respective application 
+        (ID, state, substate) with at least following information in the response:
+
+        - Order number
+        - Order total price (including VAT)
+        - Order items (array)
+          - Order item name
+          - Total price (all pieces, including VAT)
+          - Order item state
+        - Order state
+        - Application basic information
+          - ID
+          - Application state
+          - Application substate
+
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 404         | OBJECT_NOT_FOUND  | The requested resource could not be found |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+      operationId: getUsingGET_9
+      parameters:
+        - name: applicationId
+          in: query
+          description: applicationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1OrderExtended"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  "/financing/v1/{application.merchantUrls.notificationEndpoint}":
+    post:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+              example:
+                status: OK
+        "400":
+          description: Bad Request
+          headers: {}
+      summary: Application notification
+      operationId: Application notification
+      description: |
+        Notify partner about changes in application.
+        We use this resource when there is need to let you know about important changes within particular application. Namely in following situations:
+
+        | Trigger | Corresponding Application.stateReason | Expected reaction |
+        | ------- | ------------------------------------- | ----------------- |
+        | Application was approved (approval process is proceeding correctly) | PROCESSING_APPROVED | Do not cancel customer's order prematurely |
+        | Application was rejected | REJECTED | You should probably cancel respective order and release reserved goods |
+        | Application was cancelled (before delivery) | CANCELLED_NOT_PAID | You should probably cancel respective order and release reserved goods |
+        | Order to dispatch (we commit to finance customer's order) | READY_TO_SHIP | Dispatch the order to the customer |
+        | Application is going to be paid out | READY_PAID | Wait for us processing financial compensation with you |
+
+        We fill the request with at least following information:
+
+        - Application unique ID
+        - Application state
+        - Application substate
+        - Down payment
+        - Timestamp of the notification
+        - Hashed message (check sum)
+
+        > USEFUL NOTE: If you think it takes us unusually long time to send you particular notification, do not hesitate to use `/financing/v1/applications/{applicationId}` resource (where `{applicationId}` is the application ID you received in the response of `/financing/v1/applications` after its creation) to directly find out information you seek.
+      tags:
+        - Merchantsite resources
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Primary identifier of the application
+                state:
+                  type: string
+                  enum:
+                    - PROCESSING
+                    - READY
+                    - REJECTED
+                    - CANCELED
+                  description: Status of the application
+                stateReason:
+                  enum:
+                  - PROCESSING_REDIRECT_NEEDED
+                  - PROCESSING_PREAPPROVED
+                  - PROCESSING_APPROVED
+                  - PROCESSING_REVIEW
+                  - PROCESSING_ALT_OFFER
+                  - PROCESSING_SIGNED
+                  - READY_TO_SHIP
+                  - READY_SHIPPED
+                  - READY_DELIVERING
+                  - READY_DELIVERED
+                  - READY_PAID
+                  - REJECTED
+                  - CANCELLED_NOT_PAID
+                  - CANCELLED_RETURNED
+                orderNumber:
+                  type: string
+                  description: Order number (internal for e-shop)
+                notificationDate:
+                  type: string
+                  description: Time when notification was created (uses [ISO
+                    8601](https://en.wikipedia.org/wiki/ISO_8601)
+                    formatting)
+                orderState:
+                  type: string
+                  enum:
+                    - IN_PROCESS
+                    - TO_SHIP
+                    - SHIPPED
+                    - CHECKING_DELIVERY
+                    - DELIVERED
+                    - PAID
+                    - CANCELLED
+                    - TERMINATED
+                  description: Status of the Order
+                downPayment:
+                  type: object
+                  properties:
+                    amount:
+                      type: number
+                      description: Amount in minor units (150000 represents 1 500) [ISO
+                        4217](https://en.wikipedia.org/wiki/ISO_4217)
+                    currency:
+                      type: string
+                      description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
+                        Only local currency is allowed (CZK in Czech
+                        Republic and EUR in Slovakia).
+                  required:
+                    - amount
+                    - currency
+                  description: Current down payment set by a customer
+                sendDate:
+                  type: string
+                  description: Time when notification was created (uses [ISO
+                    8601](https://en.wikipedia.org/wiki/ISO_8601)
+                    formatting)
+                sequenceNumber:
+                  type: number
+                  description: Notification sequence number
+                checkSum:
+                  type: string
+                  description: Message checksum - result of HMAC with SHA512 (secret key is used)
+              required:
+                - id
+                - state
+                - stateReason
+                - orderNumber
+                - notificationDate
+                - orderState
+                - downPayment
+                - sentDate
+                - checkSum
+                - sequenceNumber
+              example:
+                id: 01-11200a0ee1
+                state: PROCESSING
+                stateReason: PROCESSING_APPROVED
+                orderNumber: AA234
+                notificationDate: 2017-07-15T00:00:00+02:00
+                orderState: PROCESSING
+                downPayment:
+                  value: 300000
+                  currency: CZK
+                sequenceNumber: 1
+                sentDate: 2017-07-16T00:00:00+02:00
+                checksum: 443E150D3406F6A8DC62C1DB224AFDD84FA9907071BB1AD9B2C7701031793662191501B26AADF3A31361341EA176C80B23D8A9A5E5B5219538289945FE0C20A7
+  /financing/v1/scorings/precheck/extended:
+    post:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/PrecheckResult"
+              examples:
+                response:
+                  value:
+                    recommendation: false
+                    message: V HCO peněžence nemáte dostatečný limit.
+                    id: "1234"
+                    customer:
+                      firstName: John
+                      lastName: Newborn
+                      email: john.newborn@country.com
+                      phone: "+420777123456"
+                      externalId: "1576849"
+                    potentialCreditAmount:
+                      amount: 133000
+                      currency: CZK
+        "400":
+          description: Error in processing request
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Errors"
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: BAD_REQUEST
+                        message: Bad request
+                        severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
+      summary: Precheck
+      operationId: Run precheck
+      description: |
+        Simple operation for customer preliminary scoring. Returns a possible credit amount the customer 
+        can obtain. It is best suitable for identifying clients who will probably be rejected. 
+        Take into account that positive recommendation can not guarantee customer's approval as the result 
+        is based only on a few elementary pieces of information about the customer.
+        
+        Resource has to be called with valid access token (see the [Security section](./security)) 
+        from your server. If you plan to integrate it in a client flow, you should implement REST endpoint 
+        bound to your shopping basket session that will be used as a proxy to call HC API - 
+        **NEVER put access token directly to client side.**
+
+        Possible error codes explanation:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 500         | FAILURE | Internal failure |
+      tags:
+        - Scoring resources
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              $ref: "#/components/schemas/ScoringData"
+            example:
+              customer:
+                firstName: John
+                lastName: Newborn
+                email: john.newborn@country.com
+                phone: "+420777123456"
+                externalId: "1576849"
+  /financing/v1/scorings/precheck/extended/batches:
+    post:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/MultiPrecheckResponse"
+              examples:
+                response:
+                  value:
+                    id: ""
+        "400":
+          description: Error in processing request
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Errors"
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: BAD_REQUEST
+                        message: Bad request
+                        severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
+      summary: MultiPrecheck
+      operationId: Run multiPrecheck
+      description: |
+        Multi precheck is basic Precheck run on many clients. Typically used outside businness 
+        hours. Operation is asynchronous, partner gets only unique identifier of batch and the 
+        result is available in Multi precheck result resource (see [Multi precheck result](#multi-precheck-result))
+
+        Resource has to be called with valid access token (see the [Security section](./security)) 
+        from your server. If you plan to integrate it in a client flow, you should implement REST endpoint 
+        bound to your shopping basket session that will be used as a proxy to call HC API - 
+        **NEVER put access token directly to client side.**
+
+        Possible error codes explanation:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 500         | FAILURE | Internal failure |
+      tags:
+        - Scoring resources
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              $ref: "#/components/schemas/MultiPrecheckRequest"
+            example:
+              scoringData:
+                - customer:
+                    firstName: John
+                    lastName: Newborn
+                    email: john.newborn@country.com
+                    phone: "+420777123456"
+                    externalId: "1576849"
+              notificationEndpoint: https://www.youreshop.cz/multiPrecheck/results
+  "/financing/v1/scorings/precheck/extended/batches/{batchId}":
+    get:
+      responses:
+        "200":
+          description: Actual application data
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/MultiPrecheckResult"
+              examples:
+                response:
+                  value:
+                    id: ""
+                    status: SUCCESS
+                    data:
+                      - recommendation: false
+                        message: V HCO peněžence nemáte dostatečný limit.
+                        id: "1234"
+                        customer:
+                          firstName: John
+                          lastName: Newborn
+                          email: john.newborn@country.com
+                          phone: "+420777123456"
+                          externalId: "1576849"
+                        potentialCreditAmount:
+                          amount: 133000
+                          currency: CZK
+      summary: Multi precheck result
+      operationId: Get multi precheck result
+      description: |
+        Getting result of finished multi precheck.
+
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code            | Explanation          |
+        | ----------- | --------------- | -------------------- |
+        | 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+        | 404         | APPLICATION_NOT_FOUND  | The requested resource could not be found |
+        | 422         | NOT_SUPPORTED | Resource is not supported for given financing type |
+        | 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+        | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+      tags:
+        - Scoring resources
+      parameters:
+        - name: batchId
+          in: path
+          description: ""
+          required: true
+          example: 11200a0ee1
+          schema:
+            type: string
+  "/{multiPrecheckRequest.notificationEndpoint}":
+    post:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: OK
+              examples:
+                response:
+                  value:
+                    status: OK
+        "400":
+          description: Bad Request
+          headers: {}
+      summary: Multi precheck result notification
+      operationId: Result notification
+      description: |
+        Notify partner about finished multiprecheck.
+        Notification resource which needs to be provided by partner and the uri is specified 
+        during initialization of multi precheck. Notification does not contain result of 
+        customers precheck, only information, that results are now available.
+      tags:
+        - Scoring resources
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              $ref: "#/components/schemas/BatchNotification"
+            example:
+              id: ""
+              status: SUCCESS
+servers:
+  - url: https://api.homecredit.cz
+tags:
+  - name: Security
+    description: >-
+      To access our API, partner has to obtain *access token* first; this token
+      is a string of arbitrary length (30+ chars) and it has to be included in
+      HTTP header to every request to API. This section describes way to obtain
+      valid access token and use it to access protected resources.
+
+
+      - to obtain access token, use `/authentication/v1/partner` resource with appropriate parameters (see the [`/authentication/v1/partner` resource documentation](./login-partner))
+
+
+      - access token should be present in every request using request header `Authorization`, with type `Bearer`. If partner's access token has value `secret_token`, it should be specified as follows:
+
+
+      `Authorization: Bearer secret_token`
+
+
+      So the real example using curl will look like:
+
+
+      ```
+
+      curl -H "Authorization: Bearer secret_token" https://api.homecredit.cz/financing/v1/applications
+
+      ```
+
+
+      - access token has limited time validity (for 2 hours). After it is expired, partner has to obtain new one using `/authentication/v1/partner` resource.
+
+
+      - if partner fails to specify access token, he will receive `401 Unauthorized` error and following response body:
+
+
+      ```
+
+      {
+         "error_description": "The access token is missing",
+         "error": "invalid_request"
+      }
+
+      ```
+
+
+      - if partner provides invalid access token, he will receive `401 Unauthorized` error and following response body:
+
+
+      ```
+
+      {
+          "error_description":"The access token is invalid or has expired",
+          "error":"invalid_token"
+      }
+
+      ```
+
+
+      > IMPORTANT NOTE: Partner must keep his access token and login credentials safe. Login credentials nor access token should NEVER be put into client page. If partner plans to integrate API calls in customer flow without submitting the page to server, partner should implement REST endpoint bound to partner's shopping basket session, that will be used as a proxy to call HC API.
+
+
+      > NEVER transfer access token nor login credentials over plain HTTP. Such requests will be refused.
+  - name: Application resources
+    description: |
+      Services that allow the processing of *application* during and
+      **order** during their whole lifecycle.
+  - name: Health check
+    description: |
+      To easily find out current API state use the [API state check resource](./get-health-using-get).
+  - name: Scoring resources
+    description: |
+      Services that allow partner e-shops to find out a probability of
+      *application's* approval.
+  - name: Installments calculator resources
+    description: |
+      When you want to provide your customer (that wants to pay for a purchase by a loan) 
+      an option to choose from available installment programs while he is still on your 
+      website, it is necessary to implement "installments calculator".
+
+      Choose one of the following approaches to integrate installments calculator into your website:
+
+      - A) Implementing your own installment calculator, with your FE in your design that uses designated API resources ([described below](#implementing-own-installments-calculator)).
+
+
+      - B) Integrating Home Credit's javascript widget (described in [special chapter](../Reference/java-script-widget-integration)) that:
+        - provides GUI and front-end functionalities
+        - process all needed calculations
+        - provides necessary data to e-shop's back-end in order to easily use them within [*application* creation request](./create-using-post-3)
+
+      > NOTE: Implementation of installment calculator is optional. Customers can always use the installment calculator embedded in Home Credit's front-end.
+
+
+      ## Implementing own installments calculator
+
+      In order to implement your own installment calculator (with your GUI design) you will need following resources:
+
+      - `/financing/v1/installmentProgramsOffers` - to find out available installment programs offers and their details
+
+      - `/financing/v1/installmentPrograms` - to find out details of a chosen installment program
+
+      - `/financing/v1/installmentProgramsDownPayments` - to find out down payment options within available installment programs offers
+  - name: Merchantsite resources
+    description: | 
+      Services that should be developed and exposed by partner e-shops to allow
+      HC asynchronously inform these partner e-shops about important changes
+      regarding particular *applications* and *orders*
+
+      > **ATTENTION:** This set of APIs is NOT exposed from HC. Instead, it should be developed by partner and accept calls specified below.
+components:
+  schemas:
+    AcademicIdentificationDocumentFull:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - number
+        - type
+      properties:
+        firstName:
+          type: string
+          description: Academic card first name
+        issuer:
+          type: string
+          description: Issuer of document
+        lastName:
+          type: string
+          description: Academic card last name
+        number:
+          type: string
+          description: Number of the identification document
+          minLength: 0
+          maxLength: 100
+        type:
+          type: string
+          description: Academic card type
+          enum:
+            - ALIVE
+            - ISIC
+            - ISIC_SCHOLAR
+            - ITIC
+            - IYTC
+        validity:
+          type: string
+          format: date
+          description: Date, until which the document is valid<br>Required only in
+            FullDocument context
+      title: AcademicIdentificationDocumentFull
+    AccountIban:
+      type: object
+      required:
+        - iban
+      properties:
+        iban:
+          type: string
+      title: AccountIban
+    AccountNational:
+      type: object
+      required:
+        - accountNumber
+        - bankCode
+      properties:
+        accountNumber:
+          type: string
+          description: Account number. For domestic accounts, this will be specified in
+            national format.
+        bankCode:
+          type: string
+          description: For domestic accounts, bank code in national format
+        prefix:
+          type: string
+          description: Account number prefix. For domestic accounts, this will be
+            specified in national format.
+      title: AccountNational
+    Address:
+      type: object
+      required:
+        - city
+        - flags
+        - streetAddress
+        - streetNumber
+        - zip
+      properties:
+        city:
+          type: string
+          description: city
+          minLength: 0
+          maxLength: 40
+        country:
+          type: string
+          minLength: 0
+          maxLength: 30
+        flags:
+          type: array
+          description: type of the address. Only some of the types are allowed in each
+            context.
+          items:
+            type: string
+            enum:
+              - BILLING
+              - CONTACT
+              - DELIVERY
+              - PERMANENT
+        streetAddress:
+          type: string
+          description: street/city part
+          minLength: 0
+          maxLength: 50
+          pattern: "[0-9a-zA-Zá-žÁ-Ž/\\-  '.]*"
+        streetNumber:
+          type: string
+          description: street number
+          minLength: 0
+          maxLength: 10
+        zip:
+          type: string
+          description: postal code
+      title: Address
+    AddressBase:
+      type: object
+      required:
+        - city
+        - streetAddress
+        - streetNumber
+        - zip
+      properties:
+        city:
+          type: string
+          description: city
+          minLength: 0
+          maxLength: 40
+        country:
+          type: string
+          minLength: 0
+          maxLength: 30
+        streetAddress:
+          type: string
+          description: street/city part
+          minLength: 0
+          maxLength: 50
+          pattern: "[0-9a-zA-Zá-žÁ-Ž/\\-  '.]*"
+        streetNumber:
+          type: string
+          description: street number
+          minLength: 0
+          maxLength: 10
+        zip:
+          type: string
+          description: postal code
+      title: AddressBase
+    Amount:
+      type: object
+      required:
+        - currency
+        - value
+      properties:
+        currency:
+          type: string
+        value:
+          type: number
+      title: Amount
+    ApplicationContact:
+      type: object
+      required:
+        - contactType
+      properties:
+        contactType:
+          type: string
+          enum:
+            - EMAIL
+            - FAX
+            - MOBILE
+            - PHONE
+            - WEB
+        email:
+          $ref: "#/components/schemas/Email"
+        mobile:
+          $ref: "#/components/schemas/Phone"
+        phone:
+          $ref: "#/components/schemas/Phone"
+      title: ApplicationContact
+    BankAccount:
+      type: object
+      properties:
+        iban:
+          $ref: "#/components/schemas/AccountIban"
+        national:
+          $ref: "#/components/schemas/AccountNational"
+        type:
+          type: string
+          enum:
+            - IBAN
+            - NATIONAL
+      title: BankAccount
+    BirthCertificateFull:
+      type: object
+      required:
+        - number
+      properties:
+        issuer:
+          type: string
+          description: Issuer of document
+        number:
+          type: string
+          description: Number of the identification document
+          minLength: 0
+          maxLength: 100
+      title: BirthCertificateFull
+    BrokeredOrder:
+      type: object
+      required:
+        - merchantOrders
+      properties:
+        merchantOrders:
+          type: array
+          description: Merchant orders
+          items:
+            $ref: "#/components/schemas/MerchantOrder"
+      title: BrokeredOrder
+    CalculationDetail:
+      type: object
+      properties:
+        amountToPay:
+          $ref: "#/components/schemas/Amount"
+        annualInterestRate:
+          type: number
+          description: |-
+            Annual interest rate
+            e.g. 0.17
+        annualPercentageRate:
+          type: number
+          description: |-
+            RPSN
+            e.g. 0.23
+        installment:
+          $ref: "#/components/schemas/Amount"
+        installmentDay:
+          type: number
+          description: |-
+            Installment date (day in month)
+            e.g. 20
+        installmentFirstDate:
+          type: string
+          example: yyyy-MM-dd['T'HH:mm:ss[xxx]]
+          description: |-
+            Date of the first installment
+            e.g. 2017-05-20
+        installmentLastDate:
+          type: string
+          example: yyyy-MM-dd['T'HH:mm:ss[xxx]]
+          description: |-
+            Date of the last installment
+            e.g. 2018-03-20
+        legalLine:
+          type: string
+          description: >-
+            Text interpretation of the offer
+
+            e.g.
+
+            "Uvedené hodnoty jsou spočítány k datu poskytnutí 18.1.2017, datu 1. splátky 20.1.2017 a se splatností všech dalších splátek k 20. dni v měsíci počítaje 20.1.2017. Nejedná se o nabídku či veřejnou nabídku. Platí při splnění podmínek Home Credit...."
+        maturityTextForm:
+          type: string
+          description: |-
+            Text representation of maturity
+            e.g. 3 roky a 8 měsíců
+        maximalAnnualPercentageRate:
+          type: number
+          description: Maximal RPSN for given product segment
+        numberOfInstallments:
+          type: integer
+          format: int32
+          description: Number of installments
+        predictedProvisionDate:
+          type: string
+          example: yyyy-MM-dd['T'HH:mm:ss[xxx]]
+          description: |-
+            Predicted provision date
+            e.g. 2017-05-20
+      title: CalculationDetail
+    CallDate:
+      type: object
+      required:
+        - date
+      properties:
+        date:
+          type: string
+          format: date-time
+          description: Wrapped call date
+      title: CallDate
+    CallRequest:
+      type: object
+      required:
+        - type
+      properties:
+        dates:
+          type: array
+          description: Call request preferred dates
+          items:
+            $ref: "#/components/schemas/CallDate"
+        type:
+          type: string
+          description: Type of call request
+          enum:
+            - DATES
+      title: CallRequest
+    Cancellation:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - ANOTHER_APPLICATION_IN_PROGRESS
+            - DIFFERENT_REGISTER_DATA
+            - INCONSISTENT_VERIFICATION_DATA
+            - MISMATCH_REPRESENTATIVE
+            - MISSING_OFFER
+            - PARAMETERS_CHANGED
+            - UNDEFINED
+            - UNSUPPORTED_CLIENT_SEGMENT
+            - UNSUPPORTED_PROCESS
+            - VERIFICATION_INVALID
+            - WITHDRAWAL_FROM_CONTRACT
+      title: Cancellation
+    CarLoanOrder:
+      type: object
+      required:
+        - requiredDocuments
+      properties:
+        requiredDocuments:
+          type: array
+          description: Required documents
+          items:
+            $ref: "#/components/schemas/RequiredDocumentDetail"
+      title: CarLoanOrder
+    CashBase:
+      type: object
+      required:
+        - financing
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/CashFinancing"
+      title: CashBase
+    CashFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        cashLoan:
+          $ref: "#/components/schemas/CashLoanSettings"
+        loanWallet:
+          $ref: "#/components/schemas/LoanWalletSettings"
+        type:
+          type: string
+          description: Cash financing type
+          enum:
+            - CASH_LOAN
+            - LOAN_WALLET
+      title: CashFinancing
+    CashLoanSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredNumberOfInstallments:
+          type: integer
+          format: int64
+          description: Preferred number of installments
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+      title: CashLoanSettings
+    ClientExtraData:
+      type: object
+      properties:
+        cartItemsRemoved:
+          type: integer
+          format: int64
+          description: Total count of removed items form shopping basket during current
+            shopping
+        cashlessTransactionsNumber:
+          type: integer
+          format: int64
+          description: Historical count of customer's cashless transactions made in
+            partner's e-shop
+        cashlessTransactionsSum:
+          $ref: "#/components/schemas/Amount"
+        earliestTransactionDate:
+          type: string
+          example: yyyy-MM-dd
+          description: oldest transaction date on partner e-shop
+        itemsViewed:
+          type: integer
+          format: int64
+          description: Number of viewed pages with products
+        latestTransactionDate:
+          type: string
+          example: yyyy-MM-dd
+          description: newest transaction date on partner e-shop.
+        pageReviewsTime:
+          type: integer
+          format: int64
+          description: Total time spent on partners website in review and comments
+            sections (in seconds)
+        pageTotalTime:
+          type: integer
+          format: int64
+          description: Total time spent on partners website (in seconds)
+        transactionsNumber:
+          type: integer
+          format: int64
+          description: Historical count of customer's cash transactions made in partner's
+            e-shop
+        transactionsSum:
+          $ref: "#/components/schemas/Amount"
+      title: ClientExtraData
+    CompanyAdditionalData:
+      type: object
+      properties:
+        offshoreUnits:
+          type: boolean
+        publicOrganizationStructure:
+          type: boolean
+        silentPartner:
+          type: boolean
+      title: CompanyAdditionalData
+    CompanyIncome:
+      type: object
+      properties:
+        primary:
+          $ref: "#/components/schemas/PrimaryCompanyIncome"
+      title: CompanyIncome
+    ConsolidationSettings:
+      type: object
+      properties:
+        installment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+      title: ConsolidationSettings
+    ConsumerLoanSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferred number of installments (in months)
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+      title: ConsumerLoanSettings
+    ContractDuration:
+      type: object
+      properties:
+        employedFrom:
+          type: string
+          format: date
+        fixedTerm:
+          $ref: "#/components/schemas/ContractDurationFixedTerm"
+        type:
+          type: string
+          enum:
+            - FIXED_TERM
+            - PERMANENT
+      title: ContractDuration
+    ContractDurationFixedTerm:
+      type: object
+      properties:
+        employedTo:
+          type: string
+          format: date
+      title: ContractDurationFixedTerm
+    ContractTariff:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          enum:
+            - STANDARD
+            - BASIC
+            - PLUS
+        fee:
+          $ref: "#/components/schemas/Amount"
+      title: ContractTariff
+    Detail:
+      type: object
+      properties:
+        annualInterestRate:
+          type: number
+          description: |-
+            Annual interest rate
+            e.g. 0.17
+        installmentDay:
+          type: number
+          description: |-
+            Installment date (day in month)
+            e.g. 20
+        installmentFirstDate:
+          type: string
+          format: date
+          description: |-
+            Date of the first installment
+            e.g. 2017-05-20
+        installmentLastDate:
+          type: string
+          format: date
+          description: |-
+            Date of the last installment
+            e.g. 2018-03-20
+        legalline:
+          type: string
+          description: >-
+            Text interpretation of the offer
+
+            e.g.
+
+            "Uvedené hodnoty jsou spočítány k datu poskytnutí 18.1.2017, datu 1. splátky 20.1.2017 a se splatností všech dalších splátek k 20. dni v měsíci počítaje 20.1.2017. Nejedná se o nabídku či veřejnou nabídku. Platí při splnění podmínek Home Credit...."
+        paidBack:
+          $ref: "#/components/schemas/Amount"
+        predictedProvisionDate:
+          type: string
+          format: date
+          description: |-
+            Predicted provision date
+            e.g. 2017-05-20
+        rpsn:
+          type: number
+          description: |-
+            RPSN
+            e.g. 0.23
+      title: Detail
+    Email:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: string
+      title: Email
+    Employee:
+      type: object
+      properties:
+        businessArea:
+          type: string
+          enum:
+            - AGRICULTURE
+            - ARMS
+            - AUTOMOTIVE
+            - BEAUTY_SERVICES
+            - CONSTRUCTION_INDUSTRY
+            - CRYPTOCURRENCY_OR_PRECIOUS_METAL_TRADING
+            - CULTURE
+            - EDUCATION_OR_SCIENCE_AND_RESEARCH
+            - FINANCIAL_SERVICES
+            - GAMBLING_OR_MONEY_EXCHANGE
+            - HEALTH_CARE_AND_PHARMACY
+            - HOSPITALITY
+            - IT
+            - LEGAL_SERVICES_OR_REAL_ESTATE_OR_FINANCIAL_ADVISER
+            - MINING_INDUSTRY
+            - OTHER_MANUFACTURE_AND_INDUSTRY
+            - OTHER_TRADE_AND_SERVICES
+            - RETAIL_SALES
+            - STATE_ADMINISTRATION
+            - TAXI
+            - TRANSPORT_AND_LOGISTICS
+            - USED_GOODS_SALE
+        positionType:
+          type: string
+          enum:
+            - REGULAR_EMPLOYEE
+            - TOP_MANAGEMENT
+        contractDuration:
+          $ref: "#/components/schemas/ContractDuration"
+        employer:
+          $ref: "#/components/schemas/Employer"
+      title: Employee
+    Employer:
+      type: object
+      properties:
+        addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddressBase"
+        businessIdentificationNumber:
+          type: string
+          minLength: 0
+          maxLength: 100
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+      title: Employer
+    Entrepreneur:
+      type: object
+      properties:
+        activeFrom:
+          type: string
+          format: date
+        addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddressBase"
+        businessArea:
+          type: string
+          enum:
+            - AGRICULTURE
+            - ARMS
+            - AUTOMOTIVE
+            - BEAUTY_SERVICES
+            - CONSTRUCTION_INDUSTRY
+            - CRYPTOCURRENCY_OR_PRECIOUS_METAL_TRADING
+            - CULTURE
+            - EDUCATION_OR_SCIENCE_AND_RESEARCH
+            - FINANCIAL_SERVICES
+            - GAMBLING_OR_MONEY_EXCHANGE
+            - HEALTH_CARE_AND_PHARMACY
+            - HOSPITALITY
+            - IT
+            - LEGAL_SERVICES_OR_REAL_ESTATE_OR_FINANCIAL_ADVISER
+            - MINING_INDUSTRY
+            - OTHER_MANUFACTURE_AND_INDUSTRY
+            - OTHER_TRADE_AND_SERVICES
+            - RETAIL_SALES
+            - STATE_ADMINISTRATION
+            - TAXI
+            - TRANSPORT_AND_LOGISTICS
+            - USED_GOODS_SALE
+        businessIdentificationNumber:
+          type: string
+          minLength: 0
+          maxLength: 100
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+      title: Entrepreneur
+    ExtendedGuarantee:
+      type: object
+      required:
+        - amount
+        - serviceVariantCode
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        serviceVariantCode:
+          type: string
+          description: Code variant of service
+      title: ExtendedGuarantee
+    FileData:
+      type: object
+      properties:
+        content:
+          type: string
+          description: File content (Base64 encoded, maximum size of encoded string is
+            500kB)
+        filename:
+          type: string
+          description: file name
+        url:
+          type: string
+          description: File URL
+      title: FileData
+    FinancedSubjectBase:
+      type: object
+      required:
+        - type
+      properties:
+        cash:
+          $ref: "#/components/schemas/CashBase"
+        liability:
+          $ref: "#/components/schemas/LiabilityBase"
+        order:
+          $ref: "#/components/schemas/OrderBase"
+        type:
+          type: string
+          description: Type of the financed subject
+          enum:
+            - CASH
+            - ORDER
+            - LIABILITY
+            - WALLET
+        wallet:
+          $ref: "#/components/schemas/WalletBase"
+      title: FinancedSubjectBase
+    FinancialDataCompany:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        incomeStatement:
+          $ref: "#/components/schemas/Amount"
+        taxBase:
+          $ref: "#/components/schemas/Amount"
+        turnover:
+          $ref: "#/components/schemas/FinancialTurnover"
+      title: FinancialDataCompany
+    FinancialTurnover:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        period:
+          type: string
+          enum:
+            - QUARTERLY
+      title: FinancialTurnover
+    FinancingApplicationBase:
+      type: object
+      required:
+        - id
+        - status
+        - workflowSteps
+      properties:
+        id:
+          type: string
+          description: Unique identifier in HCO
+        status:
+          type: string
+          description: Application status
+          enum:
+            - CREATED
+            - VERIFICATION
+            - PRESCORED
+            - APPROVED
+            - REJECTED
+            - ALTERNATIVE
+            - CONFIRMED
+            - CANCELLED
+        workflowSteps:
+          type: array
+          description: Collection of application process actions available for current
+            application status
+          items:
+            $ref: "#/components/schemas/FinancingWorkflowStep"
+      title: FinancingApplicationBase
+    FinancingCalculateOffersResult:
+      type: object
+      properties:
+        consolidation:
+          $ref: "#/components/schemas/FinancingProductOffer"
+        loanWallet:
+          $ref: "#/components/schemas/FinancingLoanWalletOffer"
+        type:
+          type: string
+          enum:
+            - CONSOLIDATION
+            - LOAN_WALLET
+      title: FinancingCalculateOffersResult
+    FinancingCash:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/FinancingCashFinancing"
+        status:
+          type: string
+          description: Status
+          enum:
+            - TO_PAY
+            - IN_PROCESS
+            - CANCELED
+            - PAID
+      title: FinancingCash
+    FinancingCashBase:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/FinancingCashFinancing"
+      title: FinancingCashBase
+    FinancingCashCalculateOffers:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/CashFinancing"
+      title: FinancingCashCalculateOffers
+    FinancingCashFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        cashLoan:
+          $ref: "#/components/schemas/FinancingSettings"
+        loanWallet:
+          $ref: "#/components/schemas/FinancingLoanWalletSettings"
+        type:
+          type: string
+          description: Cash financing type
+          enum:
+            - CASH_LOAN
+            - LOAN_WALLET
+      title: FinancingCashFinancing
+    FinancingConsolidationSettings:
+      type: object
+      properties:
+        installment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+      title: FinancingConsolidationSettings
+    FinancingFile:
+      type: object
+      properties:
+        content:
+          type: string
+          description: File content (Base64 encoded, maximum size of encoded string is
+            500kB)
+        filename:
+          type: string
+          description: file name
+        url:
+          type: string
+          description: File URL
+      title: FinancingFile
+    FinancingFinancedSubjectAbstract:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: Type of the financed subject
+          enum:
+            - CASH
+            - LIABILITY
+            - ORDER
+            - WALLET
+      title: FinancingFinancedSubjectAbstract
+    FinancingFinancedSubjectCalculateOffers:
+      type: object
+      required:
+        - type
+      properties:
+        cash:
+          $ref: "#/components/schemas/FinancingCashCalculateOffers"
+        liability:
+          $ref: "#/components/schemas/FinancingLiabilityCalculateOffers"
+        type:
+          type: string
+          description: Type of the financed subject
+          enum:
+            - CASH
+            - ORDER
+            - LIABILITY
+            - WALLET
+      title: FinancingFinancedSubjectCalculateOffers
+    FinancingInstallmentSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferred number of installments (in months)
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+      title: FinancingInstallmentSettings
+    FinancingLiabilityBase:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/FinancingLiabilityFinancing"
+      title: FinancingLiabilityBase
+    FinancingLiabilityCalculate:
+      type: object
+      required:
+        - type
+      properties:
+        consolidation:
+          $ref: "#/components/schemas/FinancingLiabilityCalculateSettings"
+        type:
+          type: string
+          enum:
+            - CONSOLIDATION
+      title: FinancingLiabilityCalculate
+    FinancingLiabilityCalculateOffers:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/FinancingLiabilityCalculate"
+      title: FinancingLiabilityCalculateOffers
+    FinancingLiabilityCalculateSettings:
+      type: object
+      properties:
+        productCode:
+          type: string
+        productSetCode:
+          type: string
+      title: FinancingLiabilityCalculateSettings
+    FinancingLiabilityFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        consolidation:
+          $ref: "#/components/schemas/FinancingConsolidationSettings"
+        type:
+          type: string
+          description: Liability financing type
+          enum:
+            - CONSOLIDATION
+      title: FinancingLiabilityFinancing
+    FinancingLoanWalletOffer:
+      type: object
+      properties:
+        calculation:
+          $ref: "#/components/schemas/CalculationDetail"
+        creditAmount:
+          $ref: "#/components/schemas/PossibleCreditAmount"
+        flags:
+          type: array
+          items:
+            type: string
+            enum:
+              - FAVOURITE
+        productCode:
+          type: string
+        repaymentExamples:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancingRepaymentExample"
+      title: FinancingLoanWalletOffer
+    FinancingLoanWalletSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+        repaymentExamples:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancingRepaymentExample"
+      title: FinancingLoanWalletSettings
+    FinancingMerchantOrder:
+      type: object
+      required:
+        - name
+      properties:
+        businessId:
+          type: string
+          description: Company identification number
+          minLength: 0
+          maxLength: 8
+          pattern: \d*
+        items:
+          type: array
+          description: Information about particular item's of merchant order
+          items:
+            $ref: "#/components/schemas/FinancingOrderItem"
+        logo:
+          $ref: "#/components/schemas/FinancingFile"
+        name:
+          type: string
+          description: Merchant name
+          minLength: 0
+          maxLength: 60
+        number:
+          type: string
+          description: "Internal order number of the merchant (e-shop, POS shop). "
+          minLength: 0
+          maxLength: 100
+        url:
+          type: string
+          description: URL of the merchant's web site (e-shop)
+          minLength: 0
+          maxLength: 1000
+      title: FinancingMerchantOrder
+    FinancingOrderItem:
+      type: object
+      required:
+        - name
+        - totalPrice
+      properties:
+        code:
+          type: string
+          description: Internal code for item (internal to e-shop). Used to better
+            identify the item for future changes
+          minLength: 0
+          maxLength: 100
+        ean:
+          type: string
+          description: EAN code
+          minLength: 0
+          maxLength: 32
+        image:
+          $ref: "#/components/schemas/FinancingFile"
+        name:
+          type: string
+          description: Item name
+        producer:
+          type: string
+          description: Producer
+        quantity:
+          type: integer
+          format: int64
+          description: Item quantity. If empty, considered as 1
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          description: item type
+          enum:
+            - DIGITAL
+            - DISCOUNT
+            - FEE
+            - GIFT_CARD
+            - INSURANCE
+            - PHYSICAL
+            - SALES_TAX
+            - SHIPPING_FEE
+            - STORE_CREDIT
+        unitPrice:
+          $ref: "#/components/schemas/Amount"
+      title: FinancingOrderItem
+    FinancingOrderItemBase:
+      type: object
+      required:
+        - name
+      properties:
+        code:
+          type: string
+          description: Internal code for item (internal to e-shop). Used to better
+            identify the item for future changes
+          minLength: 0
+          maxLength: 100
+        ean:
+          type: string
+          description: EAN code
+          minLength: 0
+          maxLength: 32
+        name:
+          type: string
+          description: Item name
+        quantity:
+          type: integer
+          format: int64
+          description: Item quantity. If empty, considered as 1
+      title: FinancingOrderItemBase
+    FinancingParameter:
+      type: object
+      required:
+        - type
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        amountWithoutVat:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          description: Type of financing
+          enum:
+            - BASE
+            - EARLY_REPAYMENT_FEE
+            - EARNING
+            - EXCESSIVE_WEAR_FEE
+            - REDEMPTION_VALUE
+            - RESIDUAL_VALUE
+      title: FinancingParameter
+    FinancingProductOffer:
+      type: object
+      properties:
+        calculation:
+          $ref: "#/components/schemas/CalculationDetail"
+        creditAmount:
+          $ref: "#/components/schemas/PossibleCreditAmount"
+        flags:
+          type: array
+          items:
+            type: string
+            enum:
+              - FAVOURITE
+        productCode:
+          type: string
+      title: FinancingProductOffer
+    FinancingRedirectUrl:
+      type: object
+      properties:
+        gatewayRedirectUrl:
+          type: string
+          description: Gateway redirect URL. Redirect user to this URL to complete this
+            application.
+      title: FinancingRedirectUrl
+    FinancingRepaymentExample:
+      type: object
+      properties:
+        amountToPay:
+          $ref: "#/components/schemas/Amount"
+        flags:
+          type: array
+          items:
+            type: string
+            enum:
+              - FAVOURITE
+        installment:
+          $ref: "#/components/schemas/Amount"
+        maturityTextForm:
+          type: string
+        numberOfInstallments:
+          type: integer
+          format: int32
+      title: FinancingRepaymentExample
+    FinancingSettings:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+      title: FinancingSettings
+    FinancingV1AdditionalDataRequest:
+      type: object
+      properties:
+        idCard:
+          type: string
+          description: ID card number
+        idCardExpiryDate:
+          type: string
+          format: date
+          description: ID card expiration date
+        idCardScan:
+          $ref: "#/components/schemas/FinancingV1IdCardScan"
+        personalId:
+          type: string
+          description: Personal identification number (format XXXXXXYYYY or XXXXXX/[Y]YYY)
+      title: FinancingV1AdditionalDataRequest
+    FinancingV1Address:
+      type: object
+      properties:
+        addressType:
+          type: string
+          description: type of the address. Only some of the types are allowed in each
+            context.
+          enum:
+            - PERMANENT
+            - CONTACT
+            - DELIVERY
+            - BILLING
+        city:
+          type: string
+          description: city
+        name:
+          type: string
+          description: name on address
+        streetAddress:
+          type: string
+          description: street/city part
+        streetNumber:
+          type: string
+          description: street number
+        zip:
+          type: string
+          description: postal code
+      title: FinancingV1Address
+    FinancingV1Amount:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          description: Amount in decimal format
+        currency:
+          type: string
+          description: Amount currency. ISO 4217
+      title: FinancingV1Amount
+    FinancingV1Application:
+      type: object
+      required:
+        - id
+        - state
+      properties:
+        customer:
+          $ref: "#/components/schemas/FinancingV1CustomerBase"
+        gatewayRedirectUrl:
+          type: string
+          description: Gateway redirect URL. Redirect user to this URL if state is
+            PROCESSING and stateReason is PROCESSING_ADDITIONAL_DATA or
+            PROCESSING_VERIFICATION or PROCESSING_REDIRECT_NEEDED.
+        id:
+          type: string
+          description: Unique identifier in HCO
+        order:
+          $ref: "#/components/schemas/FinancingV1Order"
+        settingsConsumerLoan:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        settingsGoodsFinancing:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        settingsInstallment:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        state:
+          type: string
+          description: Application state.
+          enum:
+            - CANCELLED
+            - PROCESSING
+            - READY
+            - REJECTED
+        stateReason:
+          type: string
+          description: Describes internal state of application, e.g. when state is
+            PROCESSING - reason why application remains in processing state
+          enum:
+            - CANCELLED_NOT_PAID
+            - CANCELLED_RETURNED
+            - CANCELLED_TO_RETURN
+            - PROCESSING_ADDITIONAL_DATA
+            - PROCESSING_ALT_OFFER
+            - PROCESSING_APPROVED
+            - PROCESSING_NEW
+            - PROCESSING_PREAPPROVED
+            - PROCESSING_REDIRECT_NEEDED
+            - PROCESSING_REVIEW
+            - PROCESSING_SIGNED
+            - PROCESSING_VALIDATION_IN_PROGRESS
+            - PROCESSING_VERIFICATION
+            - READY_DELIVERED
+            - READY_DELIVERING
+            - READY_PAID
+            - READY_SHIPPED
+            - READY_TO_SHIP
+            - REJECTED
+        type:
+          type: string
+          description: Financing type
+          enum:
+            - CONSUMER_LOAN
+            - GOODS_FINANCING
+            - INSTALLMENT
+            - OPERATING_LEASE
+      title: FinancingV1Application
+    FinancingV1ApplicationBase:
+      type: object
+      required:
+        - id
+        - state
+      properties:
+        id:
+          type: string
+          description: Unique identifier in HCO
+        state:
+          type: string
+          description: Application state.
+          enum:
+            - CANCELLED
+            - PROCESSING
+            - READY
+            - REJECTED
+        stateReason:
+          type: string
+          description: Describes internal state of application, e.g. when state is
+            PROCESSING - reason why application remains in processing state
+          enum:
+            - CANCELLED_NOT_PAID
+            - CANCELLED_RETURNED
+            - CANCELLED_TO_RETURN
+            - PROCESSING_ADDITIONAL_DATA
+            - PROCESSING_ALT_OFFER
+            - PROCESSING_APPROVED
+            - PROCESSING_NEW
+            - PROCESSING_PREAPPROVED
+            - PROCESSING_REDIRECT_NEEDED
+            - PROCESSING_REVIEW
+            - PROCESSING_SIGNED
+            - PROCESSING_VALIDATION_IN_PROGRESS
+            - PROCESSING_VERIFICATION
+            - READY_DELIVERED
+            - READY_DELIVERING
+            - READY_PAID
+            - READY_SHIPPED
+            - READY_TO_SHIP
+            - REJECTED
+      title: FinancingV1ApplicationBase
+    FinancingV1ApplicationCancelRequest:
+      type: object
+      properties:
+        customReason:
+          type: string
+          description: Specification of APPLICATION_CANCELLED_OTHER reason
+        reason:
+          type: string
+          description: Reason of cancellation. Considered as APPLICATION_CANCELLED_OTHER
+            if not set.
+          enum:
+            - APPLICATION_CANCELLED_CARRIER_CHANGED
+            - APPLICATION_CANCELLED_CART_CONTENT_CHANGED
+            - APPLICATION_CANCELLED_BY_CUSTOMER
+            - APPLICATION_CANCELLED_BY_ERP
+            - APPLICATION_CANCELLED_EXPIRED
+            - APPLICATION_CANCELLED_UNFINISHED
+            - APPLICATION_CANCELLED_BY_ESHOP_RULES
+            - APPLICATION_CANCELLED_OTHER
+      title: FinancingV1ApplicationCancelRequest
+    FinancingV1ApplicationRequest:
+      type: object
+      required:
+        - merchantUrls
+        - order
+        - type
+      properties:
+        customer:
+          $ref: "#/components/schemas/FinancingV1ApplicationRequestCustomer"
+        merchantUrls:
+          $ref: "#/components/schemas/FinancingV1MerchantUrls"
+        order:
+          $ref: "#/components/schemas/FinancingV1ApplicationRequestOrder"
+        precheckIds:
+          type: array
+          description: Array of all precheck ids related to this application. See precheck
+            operations and it's response (PrecheckResults).
+          items:
+            type: string
+        settingsConsumerLoan:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        settingsGoodsFinancing:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        settingsInstallment:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        type:
+          type: string
+          description: Financing type
+          enum:
+            - CONSUMER_LOAN
+            - GOODS_FINANCING
+            - INSTALLMENT
+      title: FinancingV1ApplicationRequest
+    FinancingV1ApplicationRequestCustomer:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: addresses. Only `PERMANENT` and `CONTACT` types are allowed.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        email:
+          type: string
+          description: E-mail address of customer
+        extraData:
+          $ref: "#/components/schemas/FinancingV1CustomerExtraData"
+        fingerprintComponents:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeyValue"
+        firstName:
+          type: string
+          description: Customer first (given) name
+        fullName:
+          type: string
+          description: Customer full name, including academical degrees and salutation.
+        ipAddress:
+          type: string
+          description: IPv4 or IPv6 address of a customer
+        lastName:
+          type: string
+          description: Customer last (family) name
+        phone:
+          type: string
+          description: Phone number with country code (including leading `+`)
+        tin:
+          type: string
+          description: tax identification number (ICO)
+      title: FinancingV1ApplicationRequestCustomer
+    FinancingV1ApplicationRequestOrder:
+      type: object
+      required:
+        - items
+        - number
+        - totalPrice
+      properties:
+        deliveryType:
+          type: string
+          description: delivery type, for `DELIVERY_CARRIER` type can be further specified
+            by DeliveryCarrier attribute.Typ doruceni. Dopravcem, osobni
+            prevzeti, online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: order items
+          items:
+            $ref: "#/components/schemas/FinancingV1ApplicationRequestOrderItem"
+        number:
+          type: string
+          description: order number (internal for e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Date and time until order is reserved. After this date, e-shop does
+            not guarantee items availability (if application processing is
+            longer, it may endanger order fullfillment).
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variable symbols (internal for e-shop)
+          items:
+            type: string
+      title: FinancingV1ApplicationRequestOrder
+    FinancingV1ApplicationRequestOrderItem:
+      type: object
+      required:
+        - name
+        - totalPrice
+      properties:
+        code:
+          type: string
+          description: internal code for item (internal to e-shop). Used to better
+            identify the item for future changes
+          minLength: 0
+          maxLength: 100
+        ean:
+          type: string
+          description: EAN code
+          minLength: 0
+          maxLength: 32
+        image:
+          $ref: "#/components/schemas/FinancingFile"
+        name:
+          type: string
+          description: item name
+        producer:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+          description: Item quantity
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        type:
+          type: string
+          description: item type
+          enum:
+            - DIGITAL
+            - DISCOUNT
+            - FEE
+            - GIFT_CARD
+            - INSURANCE
+            - PHYSICAL
+            - SALES_TAX
+            - SHIPPING_FEE
+            - STORE_CREDIT
+        unitPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+      title: FinancingV1ApplicationRequestOrderItem
+    FinancingV1CustomerBase:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: addresses. Only `PERMANENT` and `CONTACT` types are allowed.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        email:
+          type: string
+          description: E-mail address of customer
+        firstName:
+          type: string
+          description: Customer first (given) name
+        fullName:
+          type: string
+          description: Customer full name, including academical degrees and salutation.
+        lastName:
+          type: string
+          description: Customer last (family) name
+        phone:
+          type: string
+          description: Phone number with country code (including leading `+`)
+        tin:
+          type: string
+          description: tax identification number (ICO)
+      title: FinancingV1CustomerBase
+    FinancingV1CustomerExtraData:
+      type: object
+      properties:
+        cartItemsRemoved:
+          type: integer
+          format: int64
+          description: Total count of removed items form shopping basket during current
+            shopping
+        cashlessTransactionsNumber:
+          type: integer
+          format: int64
+          description: Historical count of customer's cashless transactions made in
+            partner's e-shop
+        cashlessTransactionsSum:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        earliestTransactionDate:
+          type: string
+          format: date
+          description: oldest transaction date on partner e-shop
+        itemsViewed:
+          type: integer
+          format: int64
+          description: Number of viewed pages with products
+        latestTransactionDate:
+          type: string
+          format: date
+          description: newest transaction date on partner e-shop.
+        pageReviewsTime:
+          type: integer
+          format: int64
+          description: Total time spent on partners website in review and comments
+            sections (in seconds)
+        pageTotalTime:
+          type: integer
+          format: int64
+          description: Total time spent on partners website (in seconds)
+        transactionsNumber:
+          type: integer
+          format: int64
+          description: Historical count of customer's cash transactions made in partner's
+            e-shop
+        transactionsSum:
+          $ref: "#/components/schemas/FinancingV1Amount"
+      title: FinancingV1CustomerExtraData
+    FinancingV1DeliveryCarrier:
+      type: object
+      properties:
+        carrierCustom:
+          type: string
+          description: for carriers not found in enumeration of customer ID, specify value
+            as text
+        carrierId:
+          type: string
+          enum:
+            - CZ_POST_HAND
+            - CZ_POST_OFFICE
+            - CZ_POST_OTHER
+            - PPL
+            - DPD
+            - GEIS
+            - IN_TIME
+            - TOP_TRANS
+            - GEBRUDER_WEISS
+            - LOCAL_COURIER
+            - TNT
+            - GLS
+            - HDS_COMFORT
+            - HDS_STANDARD
+      title: FinancingV1DeliveryCarrier
+    FinancingV1Document:
+      type: object
+      required:
+        - file
+        - type
+      properties:
+        description:
+          type: string
+          description: File description
+        extraData:
+          $ref: "#/components/schemas/FinancingV1DocumentExtraData"
+        file:
+          $ref: "#/components/schemas/FinancingFile"
+        type:
+          type: string
+          description: Type of the document
+          enum:
+            - INVOICE
+            - PROFORMA_INVOICE
+            - CREDIT_NOTE
+            - OTHER
+      title: FinancingV1Document
+    FinancingV1DocumentExtraData:
+      type: object
+      properties:
+        variableSymbol:
+          type: string
+          description: variable symbol (internal for e-shop)
+      title: FinancingV1DocumentExtraData
+    FinancingV1FinancingSettings:
+      type: object
+      properties:
+        preferredDownPayment:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        preferredInstallment:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferred number of installments (in months)
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Product set code, this will limit further calculations
+      title: FinancingV1FinancingSettings
+    FinancingV1IdCardScan:
+      type: object
+      properties:
+        back:
+          $ref: "#/components/schemas/FinancingFile"
+        front:
+          $ref: "#/components/schemas/FinancingFile"
+      title: FinancingV1IdCardScan
+    FinancingV1Limit:
+      type: object
+      required:
+        - availableLimit
+        - totalLimit
+      properties:
+        availableLimit:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        totalLimit:
+          $ref: "#/components/schemas/FinancingV1Amount"
+      title: FinancingV1Limit
+    FinancingV1MerchantUrls:
+      type: object
+      required:
+        - approvedRedirect
+        - rejectedRedirect
+      properties:
+        approvedRedirect:
+          type: string
+          description: URL of the partner used for redirection of the customer back to
+            partner website (from HCO gateway) after application approval.
+        notificationEndpoint:
+          type: string
+          description: URL of the partner used as a notification endpoint for obtaining
+            important updates about application (approval, rejection, storno,
+            etc.).
+        rejectedRedirect:
+          type: string
+          description: URL of the partner used for redirection of the customer back to
+            partner website (from HCO gateway) after application rejection.
+      title: FinancingV1MerchantUrls
+    FinancingV1Order:
+      type: object
+      required:
+        - items
+        - number
+        - state
+        - totalPrice
+      properties:
+        deliveryDate:
+          type: string
+          format: date
+          description: date and time of delivery
+        deliveryTrackingNumber:
+          type: string
+          description: delivery tracking number
+        deliveryType:
+          type: string
+          description: delivery type, for `DELIVERY_CARRIER` type can be further specified
+            by DeliveryCarrier attribute.Typ doruceni. Dopravcem, osobni
+            prevzeti, online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: order items
+          items:
+            $ref: "#/components/schemas/FinancingV1OrderItem"
+        number:
+          type: string
+          description: order number (internal for e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Date and time until order is reserved. After this date, e-shop does
+            not guarantee items availability (if application processing is
+            longer, it may endanger order fullfillment).
+        sentDate:
+          type: string
+          format: date
+          description: date and time of order shipping
+        state:
+          type: string
+          description: Order state
+          enum:
+            - CANCELLED
+            - DELIVERED
+            - PROCESSING
+            - RETURNED
+            - SENT
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variable symbols (internal for e-shop)
+          items:
+            type: string
+      title: FinancingV1Order
+    FinancingV1OrderChange:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: Addresses. Only `BILLING` and `DELIVERY` types are allowed.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        deliveryCarrier:
+          $ref: "#/components/schemas/FinancingV1DeliveryCarrier"
+        deliveryType:
+          type: string
+          description: delivery type, for `DELIVERY_CARRIER` type can be further specified
+            by DeliveryCarrier attribute.Typ doruceni. Dopravcem, osobni
+            prevzeti, online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        documents:
+          type: array
+          description: attached documents (invoices etc.)
+          items:
+            $ref: "#/components/schemas/FinancingV1Document"
+        items:
+          type: array
+          description: order items
+          items:
+            $ref: "#/components/schemas/FinancingV1ApplicationRequestOrderItem"
+        number:
+          type: string
+          description: order number (internal for e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Date and time until order is reserved. After this date, e-shop does
+            not guarantee items availability (if application processing is
+            longer, it may endanger order fullfillment).
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variable symbols (internal for e-shop)
+          items:
+            type: string
+      title: FinancingV1OrderChange
+    FinancingV1OrderChangeRequest:
+      type: object
+      required:
+        - order
+      properties:
+        order:
+          $ref: "#/components/schemas/FinancingV1OrderChange"
+        reason:
+          type: string
+          description: Reason of change
+      title: FinancingV1OrderChangeRequest
+    FinancingV1OrderExtended:
+      type: object
+      required:
+        - applicationInfo
+        - items
+        - number
+        - state
+        - totalPrice
+      properties:
+        applicationInfo:
+          $ref: "#/components/schemas/FinancingV1ApplicationBase"
+        deliveryDate:
+          type: string
+          format: date
+          description: date and time of delivery
+        deliveryTrackingNumber:
+          type: string
+          description: delivery tracking number
+        deliveryType:
+          type: string
+          description: delivery type, for `DELIVERY_CARRIER` type can be further specified
+            by DeliveryCarrier attribute.Typ doruceni. Dopravcem, osobni
+            prevzeti, online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: order items
+          items:
+            $ref: "#/components/schemas/FinancingV1OrderItem"
+        number:
+          type: string
+          description: order number (internal for e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Date and time until order is reserved. After this date, e-shop does
+            not guarantee items availability (if application processing is
+            longer, it may endanger order fullfillment).
+        sentDate:
+          type: string
+          format: date
+          description: date and time of order shipping
+        state:
+          type: string
+          description: Order state
+          enum:
+            - CANCELLED
+            - DELIVERED
+            - PROCESSING
+            - RETURNED
+            - SENT
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variable symbols (internal for e-shop)
+          items:
+            type: string
+      title: FinancingV1OrderExtended
+    FinancingV1OrderItem:
+      type: object
+      required:
+        - name
+        - state
+        - totalPrice
+      properties:
+        code:
+          type: string
+          description: internal code for item (internal to e-shop). Used to better
+            identify the item for future changes
+          minLength: 0
+          maxLength: 100
+        deliveryDate:
+          type: string
+          format: date
+          description: date when item was delivered. Only when the whole order was NOT
+            sent at once.
+        deliveryTrackingNumber:
+          type: string
+          description: Tracking number for the item. Only when the whole order was NOT
+            sent at once.
+        ean:
+          type: string
+          description: EAN code
+          minLength: 0
+          maxLength: 32
+        image:
+          $ref: "#/components/schemas/FinancingFile"
+        name:
+          type: string
+          description: item name
+        producer:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+          description: Item quantity
+        sentDate:
+          type: string
+          format: date
+          description: date when item was sent. Only when the whole order was NOT sent at
+            once.
+        state:
+          type: string
+          enum:
+            - CANCELLED
+            - DELIVERED
+            - PROCESSING
+            - RETURNED
+            - SENT
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        type:
+          type: string
+          description: item type
+          enum:
+            - DIGITAL
+            - DISCOUNT
+            - FEE
+            - GIFT_CARD
+            - INSURANCE
+            - PHYSICAL
+            - SALES_TAX
+            - SHIPPING_FEE
+            - STORE_CREDIT
+        unitPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+      title: FinancingV1OrderItem
+    FinancingV1PrecheckRequest:
+      type: object
+      properties:
+        agreementPersonalDataProcessing:
+          type: boolean
+          description: flag indicating already approved personal data processing
+        customer:
+          $ref: "#/components/schemas/FinancingV1PrecheckRequestCustomer"
+        order:
+          $ref: "#/components/schemas/FinancingV1PrecheckRequestOrder"
+        settingsInstallment:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        type:
+          type: string
+          description: Financing type
+          enum:
+            - CONSUMER_LOAN
+            - GOODS_FINANCING
+            - INSTALLMENT
+            - OPERATING_LEASE
+      title: FinancingV1PrecheckRequest
+    FinancingV1PrecheckRequestCustomer:
+      type: object
+      properties:
+        additionalData:
+          $ref: "#/components/schemas/FinancingV1AdditionalDataRequest"
+        addresses:
+          type: array
+          description: addresses. Only `PERMANENT` and `CONTACT` types are allowed.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        email:
+          type: string
+          description: E-mail address of customer
+        extraData:
+          $ref: "#/components/schemas/FinancingV1CustomerExtraData"
+        fingerprintComponents:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeyValue"
+        firstName:
+          type: string
+          description: Customer first (given) name
+        fullName:
+          type: string
+          description: Customer full name, including academical degrees and salutation.
+        ipAddress:
+          type: string
+          description: IPv4 or IPv6 address of a customer
+        lastName:
+          type: string
+          description: Customer last (family) name
+        phone:
+          type: string
+          description: Phone number with country code (including leading `+`)
+        tin:
+          type: string
+          description: tax identification number (ICO)
+      title: FinancingV1PrecheckRequestCustomer
+    FinancingV1PrecheckRequestOrder:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: addresses. Only `BILLING` and `DELIVERY` types are allowed.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        deliveryCarrier:
+          $ref: "#/components/schemas/FinancingV1DeliveryCarrier"
+        deliveryType:
+          type: string
+          description: delivery type, for `DELIVERY_CARRIER` type can be further specified
+            by DeliveryCarrier attribute.Typ doruceni. Dopravcem, osobni
+            prevzeti, online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        documents:
+          type: array
+          description: attached documents (invoices etc.)
+          items:
+            $ref: "#/components/schemas/FinancingV1Document"
+        items:
+          type: array
+          description: order items
+          items:
+            $ref: "#/components/schemas/FinancingV1ApplicationRequestOrderItem"
+        number:
+          type: string
+          description: order number (internal for e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Date and time until order is reserved. After this date, e-shop does
+            not guarantee items availability (if application processing is
+            longer, it may endanger order fullfillment).
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variable symbols (internal for e-shop)
+          items:
+            type: string
+      title: FinancingV1PrecheckRequestOrder
+    FinancingV1PrecheckResponse:
+      type: object
+      required:
+        - id
+        - results
+      properties:
+        id:
+          type: string
+        limits:
+          $ref: "#/components/schemas/FinancingV1Limit"
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancingV1PrecheckResult"
+      title: FinancingV1PrecheckResponse
+    FinancingV1PrecheckResult:
+      type: object
+      required:
+        - code
+        - customerDueDateCategory
+        - customerType
+        - probabilityOfApproval
+        - recommendation
+        - revolvingUsability
+        - type
+      properties:
+        additionalActions:
+          type: array
+          items:
+            type: string
+        additionalData:
+          type: array
+          items:
+            type: string
+        code:
+          type: string
+          enum:
+            - OK
+            - UNKNOWN
+            - ADDITIONAL_DATA_SECURITY
+            - ADDITIONAL_DATA_LIMIT
+            - INSUFFICIENT_LIMIT
+            - INSUFFICIENT_LIMIT_OPPORTUNITY
+            - DETAILS_NOT_MATCHING
+            - REVOLVING_REQUIRED
+            - NOT_AVAILABLE
+        completeness:
+          type: number
+        customerDueDateCategory:
+          type: string
+          enum:
+            - CATEGORY_CLASSIC
+            - CATEGORY_EXTENDED
+        customerOrdersCountLimit:
+          type: integer
+          format: int64
+          description: The maximum orders count that the customer can make. Not set if
+            there is no limit.
+        customerOrdersCountRemaining:
+          type: integer
+          format: int64
+          description: The remaining orders count that the customer can make. Not set if
+            there is no limit.
+        customerType:
+          type: string
+          enum:
+            - UNKNOWN
+            - FIRST_ORDER
+            - FULL
+            - BLOCKED
+        message:
+          type: string
+        probabilityOfApproval:
+          type: number
+          format: float
+        recommendation:
+          type: boolean
+        revolvingCode:
+          type: string
+          enum:
+            - OK
+            - ADDITIONAL_DATA_SECURITY
+            - ADDITIONAL_ACTION
+            - NEW_REVOLVING
+            - NOT_AVAILABLE
+        revolvingUsability:
+          type: boolean
+        type:
+          type: string
+          enum:
+            - DEFERRED_PAYMENT
+            - INSTALLMENT
+            - SUBSCRIPTION
+            - TRY_AND_PAY
+      title: FinancingV1PrecheckResult
+    FinancingV1ScoringPrecheckRequest:
+      type: object
+      required:
+        - customer
+      properties:
+        customer:
+          $ref: "#/components/schemas/FinancingV1ApplicationRequestCustomer"
+      title: FinancingV1ScoringPrecheckRequest
+    FinancingV1ScoringPrecheckResponse:
+      type: object
+      required:
+        - id
+        - recommendation
+      properties:
+        id:
+          type: string
+          description: Unique identificator of Precheck. Send this identificator in
+            ApplicationRequest for better approval rate.
+        message:
+          type: string
+          description: Custom message for customer.
+        recommendation:
+          type: boolean
+          description: "A recommendation of whether the order should be passed to the HCO.
+            true = Application is likely going to be approved. false =
+            Application is likely going to be rejected. "
+      title: FinancingV1ScoringPrecheckResponse
+    FinancingWorkflowStep:
+      type: object
+      properties:
+        cancellation:
+          $ref: "#/components/schemas/Cancellation"
+        code:
+          type: string
+          description: Workflow code
+          enum:
+            - CANCELLATION
+            - DELIVERY
+            - REDIRECT
+        mandatory:
+          type: boolean
+          description: Is the step mandatory
+        priority:
+          type: integer
+          format: int64
+          description: Priority of the workflowstep
+        redirect:
+          $ref: "#/components/schemas/FinancingRedirectUrl"
+      title: FinancingWorkflowStep
+    GoodsFinancingSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferred number of installments (in months)
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+      title: GoodsFinancingSettings
+    IdentificationDocumentFull:
+      type: object
+      required:
+        - number
+      properties:
+        issuer:
+          type: string
+          description: Issuer of document
+        number:
+          type: string
+          description: Number of the identification document
+          minLength: 0
+          maxLength: 100
+        validity:
+          type: string
+          format: date
+          description: Date, until which the document is valid<br>Required only in
+            FullDocument context
+      title: IdentificationDocumentFull
+    Income:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        employee:
+          $ref: "#/components/schemas/Employee"
+        entrepreneur:
+          $ref: "#/components/schemas/Entrepreneur"
+        type:
+          type: string
+          enum:
+            - ANNUITY
+            - CAREGIVER
+            - CLOSE_PERSON_CARE
+            - DISABLED_PENSIONER
+            - EMPLOYEE
+            - EMPLOYEE_ABROAD
+            - EMPLOYEE_ON_MATERNITY_LEAVE
+            - ENTREPRENEUR
+            - FREELANCE_PROFESSIONS
+            - HOUSEWIFE
+            - MATERNITY_LEAVE
+            - NOT_FILLED
+            - OTHER
+            - PARENT_HOLIDAY
+            - PART_TIME
+            - PENSIONER
+            - RENTIER
+            - SOLDIER_OF_BASIC_SERVICE
+            - STATE_EMPLOYEE
+            - STUDENT
+            - UNEMPLOYED
+            - WORK_AGREEMENT
+      title: Income
+    InstallmentProgram:
+      type: object
+      properties:
+        detail:
+          $ref: "#/components/schemas/Detail"
+        flags:
+          type: array
+          description: Installment program flags
+          items:
+            $ref: "#/components/schemas/InstallmentProgramFlag"
+        installment:
+          $ref: "#/components/schemas/Amount"
+        numberOfInstallments:
+          type: number
+          description: installment count
+        productCode:
+          type: string
+          description: Installment program product code
+        type:
+          type: string
+          description: Program type
+          enum:
+            - MINIMAL
+            - FAVOURITE
+            - OTHER
+      title: InstallmentProgram
+    InstallmentProgramDownPaymentsRequest:
+      type: object
+      required:
+        - price
+      properties:
+        price:
+          $ref: "#/components/schemas/Amount"
+        productSetCode:
+          type: string
+          description: Product set code, this will limit further calculations
+      title: InstallmentProgramDownPaymentsRequest
+    InstallmentProgramDownPaymentsResponse:
+      type: object
+      properties:
+        maximum:
+          $ref: "#/components/schemas/Amount"
+        minimum:
+          $ref: "#/components/schemas/Amount"
+        step:
+          $ref: "#/components/schemas/Amount"
+      title: InstallmentProgramDownPaymentsResponse
+    InstallmentProgramFlag:
+      type: object
+      properties:
+        benefit:
+          type: string
+        delayFirstInstallment:
+          type: integer
+          format: int32
+        type:
+          type: string
+          enum:
+            - BENEFIT
+            - CLOSEST
+            - DELAY_FIRST_INSTALLMENT
+            - FAVOURITE
+            - MINIMAL
+      title: InstallmentProgramFlag
+    InstallmentProgramsOffersRequest:
+      type: object
+      required:
+        - price
+      properties:
+        downPayment:
+          $ref: "#/components/schemas/Amount"
+        price:
+          $ref: "#/components/schemas/Amount"
+        productSetCode:
+          type: string
+          description: Product set code, this will limit further calculations
+      title: InstallmentProgramsOffersRequest
+    InstallmentProgramsRequest:
+      type: object
+      required:
+        - price
+        - productCode
+      properties:
+        downPayment:
+          $ref: "#/components/schemas/Amount"
+        price:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+      title: InstallmentProgramsRequest
+    InstallmentProgramsResponse:
+      type: object
+      properties:
+        installmentPrograms:
+          type: array
+          description: Array with installment programs offer
+          items:
+            $ref: "#/components/schemas/InstallmentProgram"
+      title: InstallmentProgramsResponse
+    InstallmentScheduleParameter:
+      type: object
+      required:
+        - financingParameters
+        - numberOfInstallment
+      properties:
+        financingParameters:
+          type: array
+          description: Parameters for creating installment schedule
+          items:
+            $ref: "#/components/schemas/FinancingParameter"
+        numberOfInstallment:
+          type: integer
+          format: int32
+          description: Number of installment
+      title: InstallmentScheduleParameter
+    InstallmentSettings:
+      type: object
+      properties:
+        flags:
+          type: array
+          description: Installment settings flags
+          items:
+            type: string
+            enum:
+              - BUYBACK
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferred number of installments (in months)
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+        wallet:
+          $ref: "#/components/schemas/Wallet"
+      title: InstallmentSettings
+    Issue:
+      type: object
+      properties:
+        attribute:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum:
+            - ERROR
+            - WARN
+            - INFO
+        ticketId:
+          type: string
+      title: Issue
+    IssueList:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Issue"
+      title: IssueList
+    KeyValue:
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+        value:
+          type: object
+      title: KeyValue
+    LiabilityBase:
+      type: object
+      required:
+        - financing
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/LiabilityFinancing"
+      title: LiabilityBase
+    LiabilityFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        consolidation:
+          $ref: "#/components/schemas/ConsolidationSettings"
+        type:
+          type: string
+          description: Liability financing type
+          enum:
+            - CONSOLIDATION
+      title: LiabilityFinancing
+    LoanWalletSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+        repaymentExamples:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepaymentExample"
+      title: LoanWalletSettings
+    MerchantOrder:
+      type: object
+      required:
+        - name
+        - totalPrice
+      properties:
+        businessIdentificationNumber:
+          type: string
+          description: Company identification number
+          minLength: 0
+          maxLength: 8
+        deliveryType:
+          type: string
+          description: REG_177
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: Items in order
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        logo:
+          $ref: "#/components/schemas/FileData"
+        name:
+          type: string
+          description: Merchant name
+          minLength: 0
+          maxLength: 60
+        number:
+          type: string
+          description: "Internal order number of the merchant (e-shop, POS shop). "
+          minLength: 0
+          maxLength: 100
+        reservationDate:
+          type: string
+          format: date-time
+          description: Date and time until order is reserved. After this date, e-shop does
+            not guarantee items availability (if application processing is
+            longer, it may endanger order fulfillment).
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        url:
+          type: string
+          description: URL of the merchant's web site (e-shop)
+      title: MerchantOrder
+    MerchantUrls:
+      type: object
+      properties:
+        approvedRedirect:
+          type: string
+          description: URL of the partner used for redirection of the customer back to
+            partner website (from HCO gateway) after application approval.
+          minLength: 0
+          maxLength: 1000
+        discontinuationRedirect:
+          type: string
+          description: URL of the partner used for return to application approval after.
+          minLength: 0
+          maxLength: 1000
+        notificationEndpoint:
+          type: string
+          description: URL of the partner used as a notification endpoint for obtaining
+            important updates about application (approval, rejection, storno,
+            etc.).
+          minLength: 0
+          maxLength: 1000
+        rejectedRedirect:
+          type: string
+          description: URL of the partner used for redirection of the customer back to
+            partner website (from HCO gateway) after application rejection.
+          minLength: 0
+          maxLength: 1000
+      title: MerchantUrls
+    NewShoppingWallet:
+      type: object
+      properties:
+        creditAmount:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Product code
+        tariff:
+          $ref: "#/components/schemas/ContractTariff"
+      title: NewShoppingWallet
+    OperatingLeaseItem:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        code:
+          type: string
+          description: Internal code
+          minLength: 0
+          maxLength: 100
+        goodsType:
+          type: string
+          description: Goods type - consumes only values from register GOODS_TYPE
+        image:
+          $ref: "#/components/schemas/FileData"
+        name:
+          type: string
+          description: Item name
+          minLength: 0
+          maxLength: 100
+        producer:
+          type: string
+          description: Producer
+          minLength: 0
+          maxLength: 50
+        quality:
+          type: string
+          description: Quality of goods - consumes only values from register GOODS_QUALITY
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        totalPriceWithoutVat:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          description: Type of operating lease item
+          enum:
+            - ACCESSORY
+            - LEASED_GOODS
+            - SHIPPING_FEE
+      title: OperatingLeaseItem
+    OperatingLeaseOrder:
+      type: object
+      required:
+        - items
+      properties:
+        deliveryType:
+          type: string
+          description: REG_177
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: Items in order
+          items:
+            $ref: "#/components/schemas/OperatingLeaseItem"
+        reservationDate:
+          type: string
+          format: date-time
+          description: Date and time until order is reserved
+        shippingCarrier:
+          type: string
+          description: Shipping carrier - consumes only values from register
+            SHIPPING_CARRIER
+      title: OperatingLeaseOrder
+    OperatingLeaseSettings:
+      type: object
+      required:
+        - installmentScheduleParameters
+        - productCode
+      properties:
+        installmentScheduleParameters:
+          type: array
+          description: Parameters for creating installment schedule
+          items:
+            $ref: "#/components/schemas/InstallmentScheduleParameter"
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        providedExternalServices:
+          type: array
+          description: Provided external services
+          items:
+            $ref: "#/components/schemas/ProvidedExternalService"
+      title: OperatingLeaseSettings
+    OrderBase:
+      type: object
+      required:
+        - financings
+        - totalPrice
+        - type
+      properties:
+        brokered:
+          $ref: "#/components/schemas/BrokeredOrder"
+        carLoan:
+          $ref: "#/components/schemas/CarLoanOrder"
+        financings:
+          type: array
+          description: Order financings
+          items:
+            $ref: "#/components/schemas/OrderFinancing"
+        number:
+          type: string
+          description: order number (internal for e-shop)
+          minLength: 1
+          maxLength: 100
+        operatingLease:
+          $ref: "#/components/schemas/OperatingLeaseOrder"
+        preferredDownPayment:
+          $ref: "#/components/schemas/Amount"
+        specificSymbol:
+          type: string
+          minLength: 0
+          maxLength: 10
+        standard:
+          $ref: "#/components/schemas/StandardOrder"
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          enum:
+            - BROKERED
+            - CAR_LOAN
+            - OPERATING_LEASE
+            - STANDARD
+        variableSymbol:
+          type: string
+          description: variable symbols (internal for e-shop)
+      title: OrderBase
+    OrderFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        consumerLoan:
+          $ref: "#/components/schemas/ConsumerLoanSettings"
+        goodsFinancing:
+          $ref: "#/components/schemas/GoodsFinancingSettings"
+        installment:
+          $ref: "#/components/schemas/InstallmentSettings"
+        operatingLease:
+          $ref: "#/components/schemas/OperatingLeaseSettings"
+        type:
+          type: string
+          description: Order financing type
+          enum:
+            - CONSUMER_LOAN
+            - GOODS_FINANCING
+            - INSTALLMENT
+            - OPERATING_LEASE
+      title: OrderFinancing
+    OrderItem:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Internal code (internal to e-shop). Used to better identify the
+            item for future changes
+          minLength: 0
+          maxLength: 100
+        ean:
+          type: string
+          description: EAN code
+          minLength: 0
+          maxLength: 32
+        image:
+          $ref: "#/components/schemas/FileData"
+        name:
+          type: string
+          description: Item name
+          minLength: 0
+          maxLength: 60
+        producer:
+          type: string
+          description: Producer
+          minLength: 0
+          maxLength: 50
+        quantity:
+          type: integer
+          format: int32
+          description: Item quantity. If empty, considered as 1
+          minimum: 0
+          maximum: 99999
+          exclusiveMinimum: false
+          exclusiveMaximum: false
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          description: item type
+          enum:
+            - PHYSICAL
+            - DISCOUNT
+            - SHIPPING_FEE
+            - SALES_TAX
+            - DIGITAL
+            - GIFT_CARD
+            - STORE_CREDIT
+            - FEE
+            - INSURANCE
+        unitPrice:
+          $ref: "#/components/schemas/Amount"
+      title: OrderItem
+    OriginationChannel:
+      type: object
+      required:
+        - type
+      properties:
+        online:
+          $ref: "#/components/schemas/MerchantUrls"
+        phone:
+          $ref: "#/components/schemas/PhoneSettings"
+        type:
+          type: string
+          description: Type of origination channel
+          enum:
+            - ONLINE
+            - IN_PERSON
+            - PHONE
+      title: OriginationChannel
+    PagingInfo:
+      type: object
+      properties:
+        itemsPerPage:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+          description: Current limit
+        nextPage:
+          type: string
+        offset:
+          type: integer
+          format: int32
+          description: Current offset
+        prevPage:
+          type: string
+      title: PagingInfo
+    Phone:
+      type: object
+      required:
+        - value
+      properties:
+        countryCode:
+          type: string
+        value:
+          type: string
+      title: Phone
+    PhoneSettings:
+      type: object
+      properties:
+        callRequest:
+          $ref: "#/components/schemas/CallRequest"
+        notificationEndpoint:
+          type: string
+          description: URL of the partner used as a notification endpoint for obtaining
+            important updates about application (approval, rejection, storno,
+            etc.).
+          minLength: 0
+          maxLength: 1000
+      title: PhoneSettings
+    PossibleCreditAmount:
+      type: object
+      properties:
+        fixed:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          enum:
+            - FIXED
+            - VARIABLE
+        variable:
+          $ref: "#/components/schemas/VariableAmount"
+      title: PossibleCreditAmount
+    PrimaryCompanyIncome:
+      type: object
+      properties:
+        financialData:
+          $ref: "#/components/schemas/FinancialDataCompany"
+      title: PrimaryCompanyIncome
+    PrimaryPersonalDocumentFull:
+      type: object
+      required:
+        - type
+      properties:
+        identityCard:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        name:
+          type: string
+          description: Name of primary document
+        residencePermit:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        temporaryResidencePermit:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        type:
+          type: string
+          description: Type of primary document
+          enum:
+            - IDENTITY_CARD
+            - RESIDENCE_PERMIT
+            - TEMPORARY_RESIDENCE_PERMIT
+            - UNIDENTIFIED
+      title: PrimaryPersonalDocumentFull
+    ProvidedExternalService:
+      type: object
+      required:
+        - serviceType
+      properties:
+        extendedGuarantee:
+          $ref: "#/components/schemas/ExtendedGuarantee"
+        serviceType:
+          type: string
+          description: Type of external service
+          enum:
+            - EXTENDED_GUARANTEE
+      title: ProvidedExternalService
+    RepaymentExample:
+      type: object
+      properties:
+        amountToPay:
+          $ref: "#/components/schemas/Amount"
+        flags:
+          type: array
+          items:
+            type: string
+            enum:
+              - FAVOURITE
+        installment:
+          $ref: "#/components/schemas/Amount"
+        maturityText:
+          type: string
+        numberOfInstallments:
+          type: integer
+          format: int32
+      title: RepaymentExample
+    RequiredDocumentDetail:
+      type: object
+      required:
+        - category
+      properties:
+        category:
+          $ref: "#/components/schemas/RequiredDocumentDetailCategory"
+      title: RequiredDocumentDetail
+    RequiredDocumentDetailCategory:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Required category type code
+          enum:
+            - BANK_ACCOUNT_STATEMENT
+            - CONSOLIDABLE_CONTRACT_DOCUMENTATION
+            - PRIMARY_DOCUMENT
+            - PROOF_OF_INCOME
+            - PROOF_OF_OTHER_INCOME
+            - SECONDARY_DOCUMENT
+            - TAX_RETURN
+        documentTypes:
+          type: array
+          description: Required category document types
+          items:
+            $ref: "#/components/schemas/RequiredDocumentDetailType"
+      title: RequiredDocumentDetailCategory
+    RequiredDocumentDetailType:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Required document type code
+          enum:
+            - ACADEMIC_CARD
+            - ACCEPTANCE_LETTER_OR_REPAYMENT_SCHEDULE
+            - BANK_ACCOUNT_STATEMENT
+            - BANK_ACCOUNT_STATEMENT_2
+            - BANK_ACCOUNT_STATEMENT_3
+            - BANK_ACCOUNT_STATEMENT_SALARY_INCLUDED
+            - BIRTH_CERTIFICATE
+            - BUSINESS_BANK_ACCOUNT_STATEMENT
+            - COMPANY_TAX_RETURN
+            - CONTRACT_EXCERPT
+            - DEBT_QUANTIFICATION
+            - DRIVING_LICENSE
+            - FOREIGN_IDENTITY_CARD
+            - GUN_LICENSE
+            - IDENTITY_CARD
+            - INKARTA_CD
+            - INSTALLMENT_SCHEDULE
+            - INSTALLMENT_SCHEDULE_AGREEMENT
+            - INSURANCE_CARD
+            - LAST_MONTH_BANK_ACCOUNT_STATEMENT
+            - LAST_MONTH_BANK_ACCOUNT_STATEMENT_OVERDRAFT
+            - LAST_MONTH_BANK_ACCOUNT_STATEMENT_SALARIES_INCLUDED
+            - LAST_MONTH_BANK_ACCOUNT_STATEMENT_SALARY_INCLUDED
+            - LAST_MONTH_CREDIT_CARD_STATEMENT
+            - LAST_MONTH_OVERDRAFT_ACCOUNT_STATEMENT
+            - OPEN_CARD
+            - PASSPORT
+            - PAYSLIP
+            - PENSION_ASSESSMENT
+            - POSTAL_BANK_DOCUMENTATION
+            - PROOF_OF_ASSISTANT_PAY
+            - PROOF_OF_DISABLED_PERSON_PAY
+            - PROOF_OF_FOSTER_PARENT_PAY
+            - PROOF_OF_INCOME
+            - PROOF_OF_MATERNITY_PAY
+            - RESIDENCE_PERMIT
+            - RETIREMENT_ASSESSMENT
+            - SURETY_DOCUMENTATION
+            - TAX_RETURN
+            - TAX_RETURN_AND_BANK_ACCOUNT_STATEMENT
+            - TEMPORARY_RESIDENCE_PERMIT
+      title: RequiredDocumentDetailType
+    SecondaryPersonalDocumentFull:
+      type: object
+      required:
+        - type
+      properties:
+        academicCard:
+          $ref: "#/components/schemas/AcademicIdentificationDocumentFull"
+        birthCertificate:
+          $ref: "#/components/schemas/BirthCertificateFull"
+        drivingLicense:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        foreignIdentityCard:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        gunLicense:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        insuranceCard:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        name:
+          type: string
+          description: Name of secondary document
+        passport:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        type:
+          type: string
+          description: Type of secondary document
+          enum:
+            - ACADEMIC_CARD
+            - BIRTH_CERTIFICATE
+            - DRIVING_LICENSE
+            - FOREIGN_IDENTITY_CARD
+            - GUN_LICENSE
+            - INSURANCE_CARD
+            - PASSPORT
+      title: SecondaryPersonalDocumentFull
+    ShoppingWallet:
+      type: object
+      properties:
+        newShoppingWallet:
+          $ref: "#/components/schemas/NewShoppingWallet"
+        type:
+          type: string
+          description: Shopping wallet type
+          enum:
+            - NEW_SHOPPING_WALLET
+            - EXISTING_SHOPPING_WALLET
+      title: ShoppingWallet
+    ShoppingWalletSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Product code, this indicates previous calculation result
+        productSetCode:
+          type: string
+          description: Code of product set
+      title: ShoppingWalletSettings
+    StandardOrder:
+      type: object
+      properties:
+        deliveryType:
+          type: string
+          description: REG_177
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: Items in order
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        reservationDate:
+          type: string
+          format: date-time
+          description: Date and time until order is reserved. After this date, e-shop does
+            not guarantee items availability (if application processing is
+            longer, it may endanger order fulfillment).
+      title: StandardOrder
+    VariableAmount:
+      type: object
+      properties:
+        maximum:
+          $ref: "#/components/schemas/Amount"
+        minimum:
+          $ref: "#/components/schemas/Amount"
+      title: VariableAmount
+    Wallet:
+      type: object
+      properties:
+        shoppingWallet:
+          $ref: "#/components/schemas/ShoppingWallet"
+        type:
+          type: string
+          description: Wallet type
+          enum:
+            - SHOPPING_WALLET
+            - LOAN_WALLET
+      title: Wallet
+    WalletBase:
+      type: object
+      required:
+        - financing
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/WalletFinancing"
+      title: WalletBase
+    WalletFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        shoppingWallet:
+          $ref: "#/components/schemas/ShoppingWalletSettings"
+        type:
+          type: string
+          description: Wallet financing type
+          enum:
+            - SHOPPING_WALLET
+      title: WalletFinancing
+    ScoringData:
+      type: object
+      required:
+        - customer
+      properties:
+        customer:
+          $ref: "#/components/schemas/PrecheckCustomer"
+    PrecheckCustomer:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - phone
+        - externalId
+      properties:
+        firstName:
+          type: string
+          example: John
+          description: Customer first (given) name. String values longer than 100
+            characters will be shortened to 100 characters.
+        lastName:
+          type: string
+          example: Newborn
+          description: Customer last (family) name. String values longer than 100
+            characters will be shortened to 100 characters.
+        email:
+          type: string
+          example: john.newborn@country.com
+          description: E-mail address of customer. MUST be valid email according to [RFC
+            2822](https://tools.ietf.org/html/rfc2822).
+        phone:
+          type: string
+          example: "+420777123456"
+          description: Mobile phone number with country code (including leading `+`).
+        externalId:
+          type: string
+          example: "1576849"
+          description: Unique customer's identifier in partner's system. Typically used
+            for linking request and response together.
+
+    PrecheckResult:
+      type: object
+      required:
+        - id
+        - recommendation
+        - customer
+        - potentialCreditAmount
+      properties:
+        id:
+          type: string
+          example: "1234"
+          description: Unique identificator of Precheck. Send this identificator in
+            ApplicationRequest to improve approval rate.
+        recommendation:
+          type: boolean
+          description: |-
+            A recommendation of whether the order should be passed to the HCO.
+
+                true = Application is likely going to be approved.
+            false = Application is likely going to be rejected.
+        message:
+          type: string
+          example: V HCO peněžence nemáte dostatečný limit.
+          description: Custom message for customer.
+        customer:
+          $ref: "#/components/schemas/PrecheckCustomer"
+        potentialCreditAmount:
+          $ref: "#/components/schemas/AmountOld"
+
+    MultiPrecheckRequest:
+      type: object
+      required:
+        - scoringData
+      properties:
+        scoringData:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScoringData"
+        notificationEndpoint:
+          type: string
+          example: https://www.youreshop.cz/multiPrecheck/results
+          description: URL of the partner used as a notification endpoint for providing
+            information about result of multi precheck. Must be valid URL
+            according to [RFC 3986](https://tools.ietf.org/html/rfc3986).
+            Maximum 1000 characters.
+
+    MultiPrecheckResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Unique identifier of multi precheck's batch.
+
+    BatchNotification:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          description: Unique identifier of multi precheck's batch.
+        status:
+          type: string
+          enum:
+            - SUCCESS
+            - PARTIAL_SUCCESS
+            - FAILURE
+          description: Result of the precheck's batch.
+
+    MultiPrecheckResult:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          description: Unique identifier of multi precheck's batch.
+        status:
+          type: string
+          enum:
+            - SUCCESS
+            - PARTIAL_SUCCESS
+            - FAILURE
+            - PROCESSING
+          description: Result of the precheck's batch.
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrecheckResult"
+          description: REQUIRED if precheck ended with `SUCCESS` or `PARTIAL_SUCCESS`
+
+    AmountOld:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          example: 133000
+          description: Amount in minor units (133000 represents 1330) [ISO
+            4217](https://en.wikipedia.org/wiki/ISO_4217)
+        currency:
+          type: string
+          example: CZK
+          description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
+            Only local currency is allowed (CZK in Czech Republic and EUR in
+            Slovakia).
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+        - severity
+      properties:
+        code:
+          type: string
+          example: BAD_REQUEST
+          description: Unique internal error code
+        message:
+          type: string
+          example: Bad request
+          description: Human readable error description (non-localized)
+        severity:
+          type: string
+          enum:
+            - ERROR
+            - WARN
+            - INFO
+        attribute:
+          type: string
+          example: customer.addresses[1].streetNumber
+          description: JSON path of request attribute that caused the error (if applicable)
+        ticketId:
+          type: string
+          example: UAT1:AMS:20160516-091658.450:45e4
+          description: Internal ticket ID, used for error backtracking
+
+    Errors:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+          description: Array with errors

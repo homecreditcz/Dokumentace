@@ -1,0 +1,46 @@
+image: node:22
+
+stages:
+  - build
+  # - deploy
+
+variables:
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .npm/
+
+# Build the site
+build:
+  stage: build
+  before_script:
+    - npm ci
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# once ready to deploy, uncomment this section
+# deploy:
+#   stage: deploy
+#   image: node:22
+#   dependencies:
+#     - build
+#   before_script:
+#     - npm install -g wrangler
+#   script:
+#     - wrangler pages deploy build --project-name=hc-docs --branch=main
+#   environment:
+#     name: production
+#     url: https://hc-docs.pages.dev
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "main"
+#       when: on_success
+

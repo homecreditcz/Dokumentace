@@ -1,0 +1,190 @@
+{
+  "homepage.title": {
+    "message": "Home Credit Developer Documentation",
+    "description": "Homepage title"
+  },
+  "homepage.tagline": {
+    "message": "Integrujte svůj e-commerce systém s Home Credit snadno a poskytněte svým zákazníkům bezproblémový platební zážitek.",
+    "description": "Homepage tagline"
+  },
+  "version.label": {
+    "message": "Aktuální",
+    "description": "The label for version current"
+  },
+  "title": {
+    "message": "HC Developer Dokumentace",
+    "description": "The title in the navbar"
+  },
+  "item.label.Docs": {
+    "message": "Dokumentace",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.API Reference": {
+    "message": "API Reference",
+    "description": "Navbar item with label API Reference"
+  },
+  "item.label.Widgets": {
+    "message": "Widgety",
+    "description": "Navbar item with label Widgets"
+  },
+  "item.label.Contact": {
+    "message": "Kontakt",
+    "description": "Navbar item with label Contact"
+  },
+  "sidebar.widgetsSidebar.category.widgets": {
+    "message": "Widgety",
+    "description": "The label for category widgets in sidebar widgetsSidebar"
+  },
+  "sidebar.docSidebar.category.documentation": {
+    "message": "Dokumentace",
+    "description": "The label for category documentation in sidebar docSidebar"
+  },
+  "sidebar.apiReference.category.api": {
+    "message": "API Reference",
+    "description": "The label for category api in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/home-credit-partner-api-order": {
+    "message": "Úvod",
+    "description": "The label for doc api/Reference/home-credit-partner-api-order in sidebar apiReference"
+  },
+  "sidebar.apiReference.category.Security": {
+    "message": "Zabezpečení",
+    "description": "The label for category Security in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/login-partner": {
+    "message": "Přihlášení partnera",
+    "description": "The label for doc api/Reference/login-partner in sidebar apiReference"
+  },
+  "sidebar.apiReference.category.Application resources": {
+    "message": "Zdroje žádosti",
+    "description": "The label for category Application resources in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/application-resources": {
+    "message": "Zdroje žádosti",
+    "description": "The label for doc api/Reference/application-resources in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/create-application": {
+    "message": "Vytvořit aplikaci",
+    "description": "The label for doc api/Reference/create-application in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/mark-order-as-shipped": {
+    "message": "Označit objednávku jako odeslanou",
+    "description": "The label for doc api/Reference/mark-order-as-shipped in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/mark-order-as-delivered": {
+    "message": "Označit objednávku jako doručenou",
+    "description": "The label for doc api/Reference/mark-order-as-delivered in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/cancel-application": {
+    "message": "Zrušit aplikaci",
+    "description": "The label for doc api/Reference/cancel-application in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/get-application": {
+    "message": "Získat aplikaci",
+    "description": "The label for doc api/Reference/get-application in sidebar apiReference"
+  },
+  "sidebar.apiReference.category.Health check": {
+    "message": "Kontrola stavu",
+    "description": "The label for category Health check in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/health-check": {
+    "message": "Kontrola stavu",
+    "description": "The label for doc api/Reference/health-check in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/api-status-check": {
+    "message": "Kontrola stavu API",
+    "description": "The label for doc api/Reference/api-status-check in sidebar apiReference"
+  },
+  "sidebar.apiReference.category.Scoring resources": {
+    "message": "Zdroje scoringu",
+    "description": "The label for category Scoring resources in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/scoring-resources": {
+    "message": "Zdroje scoringu",
+    "description": "The label for doc api/Reference/scoring-resources in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/run-precheck": {
+    "message": "Spustit předběžnou kontrolu",
+    "description": "The label for doc api/Reference/run-precheck in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/run-multi-precheck": {
+    "message": "Spustit multiPrecheck",
+    "description": "The label for doc api/Reference/run-multi-precheck in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/get-multi-precheck-result": {
+    "message": "Získat výsledek předběžné kontroly",
+    "description": "The label for doc api/Reference/get-multi-precheck-result in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/result-notification": {
+    "message": "Oznámení výsledku",
+    "description": "The label for doc api/Reference/result-notification in sidebar apiReference"
+  },
+  "sidebar.apiReference.category.Installments calculator resources": {
+    "message": "Zdroje splátkové kalkulačky",
+    "description": "The label for category Installments calculator resources in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/installments-calculator-resources": {
+    "message": "Zdroje splátkové kalkulačky",
+    "description": "The label for doc api/Reference/installments-calculator-resources in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/calculate-installment-programs-offer": {
+    "message": "Vypočítat nabídku splátkových programů",
+    "description": "The label for doc api/Reference/calculate-installment-programs-offer in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/calculate-installment-program-detail": {
+    "message": "Vypočítat podrobnosti splátkového programu",
+    "description": "The label for doc api/Reference/calculate-installment-program-detail in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/calculate-installment-programs-down-payments": {
+    "message": "Vypočítat akontace splátkových programů",
+    "description": "The label for doc api/Reference/calculate-installment-programs-down-payments in sidebar apiReference"
+  },
+  "sidebar.apiReference.category.JavaScript widget integration": {
+    "message": "Integrace JavaScriptového widgetu",
+    "description": "The label for category JavaScript widget integration in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/java-script-widget-integration": {
+    "message": "Integrace JavaScriptového widgetu",
+    "description": "The label for doc api/Reference/java-script-widget-integration in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/api-health-check": {
+    "message": "Kontrola stavu API",
+    "description": "The label for doc api/Reference/api-health-check in sidebar apiReference"
+  },
+  "sidebar.apiReference.category.Merchantsite resources": {
+    "message": "Zdroje obchodního webu",
+    "description": "The label for category Merchantsite resources in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/merchantsite-resources": {
+    "message": "Zdroje obchodního webu",
+    "description": "The label for doc api/Reference/merchantsite-resources in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/application-notification": {
+    "message": "Oznámení aplikace",
+    "description": "The label for doc api/Reference/application-notification in sidebar apiReference"
+  },
+  "sidebar.eshopApiReference.category.Security": {
+    "message": "Zabezpečení",
+    "description": "The label for category Security in sidebar eshopApiReference"
+  },
+  "sidebar.eshopApiReference.category.Application resources": {
+    "message": "Zdroje žádosti",
+    "description": "The label for category Application resources in sidebar eshopApiReference"
+  },
+  "sidebar.eshopApiReference.category.Health check": {
+    "message": "Kontrola stavu",
+    "description": "The label for category Health check in sidebar eshopApiReference"
+  },
+  "sidebar.eshopApiReference.category.Scoring resources": {
+    "message": "Zdroje bodování",
+    "description": "The label for category Scoring resources in sidebar eshopApiReference"
+  },
+  "sidebar.eshopApiReference.category.Installments calculator resources": {
+    "message": "Zdroje splátkové kalkulačky",
+    "description": "The label for category Installments calculator resources in sidebar eshopApiReference"
+  },
+  "sidebar.eshopApiReference.category.Merchantsite resources": {
+    "message": "Zdroje pro partnery",
+    "description": "The label for category Merchantsite resources in sidebar eshopApiReference"
+  }
+}

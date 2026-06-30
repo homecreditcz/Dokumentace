@@ -1,0 +1,56 @@
+---
+id: security
+title: "Zabezpečení"
+description: "Zabezpečení"
+custom_edit_url: null
+---
+
+
+
+Pro přístup k našemu API musí partner nejprve získat *přístupový token*; tento token je řetězec libovolné délky (30+ znaků) a musí být zahrnut v hlavičce HTTP u každého požadavku na API. Tato část popisuje způsob, jak získat platný přístupový token a použít jej pro přístup k chráněným zdrojům.
+
+- k získání přístupového tokenu použijte zdroj `/authentication/v1/partner` s příslušnými parametry (viz [dokumentace zdroje `/authentication/v1/partner`](./login-partner))
+
+- přístupový token by měl být přítomen v každém požadavku pomocí hlavičky požadavku `Authorization`, s typem `Bearer`. Pokud má přístupový token partnera hodnotu `secret_token`, měl by být specifikován následovně:
+
+`Authorization: Bearer secret_token`
+
+Skutečný příklad použití curl bude tedy vypadat takto:
+
+```
+curl -H &quot;Authorization: Bearer secret_token&quot; https://api.homecredit.cz/financing/v3/applications
+```
+
+- přístupový token má omezenou platnost (2 hodiny). Po uplynutí platnosti musí partner získat nový pomocí zdroje `/authentication/v1/partner`.
+
+- pokud partner nezadá přístupový token, obdrží chybu `401 Unauthorized` a následující tělo odpovědi:
+
+```
+{
+   &quot;error_description&quot;: &quot;The access token is missing&quot;,
+   &quot;error&quot;: &quot;invalid_request&quot;
+}
+```
+
+- pokud partner poskytne neplatný přístupový token, obdrží chybu `401 Unauthorized` a následující tělo odpovědi:
+
+```
+{
+    &quot;error_description&quot;:&quot;The access token is invalid or has expired&quot;,
+    &quot;error&quot;:&quot;invalid_token&quot;
+}
+```
+
+&gt; DŮLEŽITÁ POZNÁMKA: Partner musí svůj přístupový token a přihlašovací údaje uchovávat v bezpečí. Přihlašovací údaje ani přístupový token NESMÍ být nikdy vloženy na stránku klienta. Pokud partner plánuje integrovat volání API do toku zákazníků bez odeslání stránky na server, měl by implementovat koncový bod REST vázaný na relaci nákupního košíku partnera, který bude použit jako proxy pro volání HC API.
+
+&gt; NIKDY nepřenášejte přístupový token ani přihlašovací údaje přes prosté HTTP. Takové požadavky budou odmítnuty.
+
+
+
+```mdx-code-block
+import DocCardList from '@theme/DocCardList';
+import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
+
+<DocCardList items={useCurrentSidebarCategory().items}/>
+```
+      

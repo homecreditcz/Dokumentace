@@ -1,0 +1,66 @@
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="redGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E11931;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FC3A51;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="600" height="400" fill="url(#bgGrad3)"/>
+  
+  <!-- Server/Environment setup -->
+  <g transform="translate(80, 80)">
+    <!-- Server box -->
+    <rect x="0" y="0" width="180" height="140" rx="8" fill="white" stroke="#E11931" stroke-width="3"/>
+    <rect x="10" y="10" width="160" height="30" rx="4" fill="url(#redGrad3)"/>
+    <text x="20" y="30" font-family="Source Sans Pro, sans-serif" font-size="14" font-weight="600" fill="white">Development</text>
+    
+    <!-- Configuration items -->
+    <rect x="20" y="50" width="140" height="20" rx="2" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+    <text x="25" y="65" font-family="monospace" font-size="11" fill="#495057">API_KEY=***</text>
+    
+    <rect x="20" y="75" width="140" height="20" rx="2" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+    <text x="25" y="90" font-family="monospace" font-size="11" fill="#495057">BASE_URL=https://...</text>
+    
+    <rect x="20" y="100" width="140" height="20" rx="2" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+    <text x="25" y="115" font-family="monospace" font-size="11" fill="#495057">ENV=development</text>
+  </g>
+  
+  <!-- Production server -->
+  <g transform="translate(340, 80)">
+    <rect x="0" y="0" width="180" height="140" rx="8" fill="white" stroke="#E11931" stroke-width="3"/>
+    <rect x="10" y="10" width="160" height="30" rx="4" fill="url(#redGrad3)"/>
+    <text x="20" y="30" font-family="Source Sans Pro, sans-serif" font-size="14" font-weight="600" fill="white">Production</text>
+    
+    <rect x="20" y="50" width="140" height="20" rx="2" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+    <text x="25" y="65" font-family="monospace" font-size="11" fill="#495057">API_KEY=***</text>
+    
+    <rect x="20" y="75" width="140" height="20" rx="2" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+    <text x="25" y="90" font-family="monospace" font-size="11" fill="#495057">BASE_URL=https://...</text>
+    
+    <rect x="20" y="100" width="140" height="20" rx="2" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+    <text x="25" y="115" font-family="monospace" font-size="11" fill="#495057">ENV=production</text>
+  </g>
+  
+  <!-- Connection arrow - smaller -->
+  <g transform="translate(260, 150)">
+    <path d="M0 0 L80 0" stroke="#E11931" stroke-width="2" stroke-linecap="round" stroke-dasharray="4,4"/>
+    <path d="M72 -4 L80 0 L72 4" stroke="#E11931" stroke-width="2" stroke-linecap="round" fill="none"/>
+  </g>
+  
+  <!-- Security lock icon -->
+  <g transform="translate(250, 280)">
+    <circle cx="50" cy="30" r="25" fill="url(#redGrad3)"/>
+    <rect x="40" y="25" width="20" height="15" rx="2" fill="white"/>
+    <path d="M45 25 L45 20 Q45 15 50 15 Q55 15 55 20 L55 25" stroke="white" stroke-width="2" fill="none"/>
+  </g>
+  
+  <!-- Decorative elements -->
+  <circle cx="50" cy="350" r="30" fill="#E11931" opacity="0.1"/>
+  <circle cx="550" cy="50" r="25" fill="#FC3A51" opacity="0.1"/>
+</svg>

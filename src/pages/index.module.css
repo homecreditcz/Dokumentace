@@ -1,0 +1,246 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+.heroBanner {
+  padding: 8rem 0 6rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.gradientOrb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  animation: float 20s ease-in-out infinite;
+}
+
+.gradientOrb:first-child {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--ifm-color-primary) 0%, transparent 70%);
+  top: -200px;
+  left: -200px;
+  animation-delay: 0s;
+}
+
+.gradientOrb:last-child {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--ifm-color-primary-light) 0%, transparent 70%);
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 10s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.heroTitle {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.heroButtons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.heroButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 32px;
+  height: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #000000;
+  background-color: rgb(255, 223, 67);
+  border: 0;
+  border-radius: 25px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.heroButton:hover {
+  transform: translateY(-2px);
+  background-color: rgb(255, 235, 120);
+  color: #000000;
+  text-decoration: none;
+}
+
+.heroButton:hover::before {
+  left: 100%;
+}
+
+.heroButton:active {
+  transform: translateY(0);
+}
+
+.buttonIcon {
+  transition: transform 0.3s ease;
+}
+
+.heroButton:hover .buttonIcon {
+  transform: translateX(4px);
+}
+
+/* Integration steps section */
+.integrationSection {
+  padding: 4rem 0;
+  background: linear-gradient(to bottom, rgba(10, 10, 10, 0.03) 0%, transparent 100%);
+}
+
+[data-theme='dark'] .integrationSection {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+}
+
+.integrationHeading {
+  font-size: 2.25rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.integrationSubheading {
+  text-align: center;
+  font-size: 1.125rem;
+  color: var(--ifm-font-color-secondary);
+  max-width: 560px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.5;
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 4rem 1rem 3rem;
+    min-height: 60vh;
+  }
+
+  .heroTitle {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .heroButton {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .gradientOrb:first-child {
+    width: 300px;
+    height: 300px;
+  }
+
+  .gradientOrb:last-child {
+    width: 250px;
+    height: 250px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .heroTitle {
+    font-size: 2rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.1rem;
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .heroBanner {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+}
+
+[data-theme='dark'] .heroTitle {
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

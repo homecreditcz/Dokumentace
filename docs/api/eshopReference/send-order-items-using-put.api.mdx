@@ -1,0 +1,112 @@
+---
+id: send-order-items-using-put
+title: "Mark order as sent"
+description: "Requires <b>applications.order.ship_deliver</b> authority for authenticated user"
+sidebar_label: "Mark order as sent"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "put api-method"
+info_path: docs/api/eshopReference/hc-oneclick-api-installments
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Mark order as sent"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/financing/v1/applications/{uuid}/order/send"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Requires <b>applications.order.ship_deliver</b> authority for authenticated user
+
+When the whole order was shipped to the customer, use `/financing/v1/applications/{applicationId}/order/send` 
+resource where `{applicationId}` is the application ID you received in the response of `/financing/v1/applications` after its creation.
+
+| Financing type | Supported            |
+| ----------- | --------------- |
+| `INSTALLMENT`         | YES  |
+
+| Application state | Availability            |
+| ----------- | --------------- |
+| `PROCESSING`         | NO  |
+| `REJECTED`         | NO  |
+| `CANCELLED`         | NO  |
+| `READY`         | YES (* available only when `Application.stateReason = READY_TO_SHIP`)  |
+
+If the request was successfully processed, you receive HTTP status code 200 and object 
+of information about changed order plus basic information about respective application 
+(ID, state, substate) with at least following information in the response:
+
+- Order number
+- Order total price (including VAT)
+- Order items (array)
+  - Order item name
+  - Total price (all pieces, including VAT)
+  - Order item state
+- Order state
+- Application basic information
+  - ID
+  - Application state
+  - Application substate
+
+In other cases, you receive one of the following errors:
+
+| Status code | Code            | Explanation          |
+| ----------- | --------------- | -------------------- |
+| 400         | INVALID_REQUEST  | Request was not well formatted (malformed request syntax, size too large, etc.) |
+| 404         | OBJECT_NOT_FOUND  | The requested resource could not be found |
+| 422         | NOT_SUPPORTED | Resource is not supported for given financing type |
+| 422         | UNPROCESSABLE | The request was well-formed but was unable to be followed due to semantic errors |
+| 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable |
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"uuid","in":"path","description":"uuid","required":true,"schema":{"type":"string"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"object","required":["applicationInfo","items","number","state","totalPrice"],"properties":{"applicationInfo":{"type":"object","required":["id","state"],"properties":{"id":{"type":"string","description":"Unique identifier in HCO"},"state":{"type":"string","description":"Application state.","enum":["CANCELLED","PROCESSING","READY","REJECTED"]},"stateReason":{"type":"string","description":"Describes internal state of application, e.g. when state is PROCESSING - reason why application remains in processing state","enum":["CANCELLED_NOT_PAID","CANCELLED_RETURNED","CANCELLED_TO_RETURN","PROCESSING_ADDITIONAL_DATA","PROCESSING_ALT_OFFER","PROCESSING_APPROVED","PROCESSING_NEW","PROCESSING_PREAPPROVED","PROCESSING_REDIRECT_NEEDED","PROCESSING_REVIEW","PROCESSING_SIGNED","PROCESSING_VALIDATION_IN_PROGRESS","PROCESSING_VERIFICATION","READY_DELIVERED","READY_DELIVERING","READY_PAID","READY_SHIPPED","READY_TO_SHIP","REJECTED"]}},"title":"FinancingV1ApplicationBase"},"deliveryDate":{"type":"string","format":"date","description":"date and time of delivery"},"deliveryTrackingNumber":{"type":"string","description":"delivery tracking number"},"deliveryType":{"type":"string","description":"delivery type, for `DELIVERY_CARRIER` type can be further specified by DeliveryCarrier attribute.Typ doruceni. Dopravcem, osobni prevzeti, online doruceni atd.","enum":["DELIVERY_CARRIER","ONLINE","PERSONAL_BRANCH","PERSONAL_BRANCH_WITH_ASSISTANCE","PERSONAL_PARTNER"]},"items":{"type":"array","description":"order items","items":{"type":"object","required":["name","state","totalPrice"],"properties":{"code":{"type":"string","description":"internal code for item (internal to e-shop). Used to better identify the item for future changes","minLength":0,"maxLength":100},"deliveryDate":{"type":"string","format":"date","description":"date when item was delivered. Only when the whole order was NOT sent at once."},"deliveryTrackingNumber":{"type":"string","description":"Tracking number for the item. Only when the whole order was NOT sent at once."},"ean":{"type":"string","description":"EAN code","minLength":0,"maxLength":32},"image":{"type":"object","properties":{"content":{"type":"string","description":"File content (Base64 encoded, maximum size of encoded string is 500kB)"},"filename":{"type":"string","description":"file name"},"url":{"type":"string","description":"File URL"}},"title":"FinancingFile"},"name":{"type":"string","description":"item name"},"producer":{"type":"string"},"quantity":{"type":"integer","format":"int64","description":"Item quantity"},"sentDate":{"type":"string","format":"date","description":"date when item was sent. Only when the whole order was NOT sent at once."},"state":{"type":"string","enum":["CANCELLED","DELIVERED","PROCESSING","RETURNED","SENT"]},"totalPrice":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Amount in decimal format"},"currency":{"type":"string","description":"Amount currency. ISO 4217"}},"title":"FinancingV1Amount"},"type":{"type":"string","description":"item type","enum":["DIGITAL","DISCOUNT","FEE","GIFT_CARD","INSURANCE","PHYSICAL","SALES_TAX","SHIPPING_FEE","STORE_CREDIT"]},"unitPrice":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Amount in decimal format"},"currency":{"type":"string","description":"Amount currency. ISO 4217"}},"title":"FinancingV1Amount"}},"title":"FinancingV1OrderItem"}},"number":{"type":"string","description":"order number (internal for e-shop)"},"reservationDate":{"type":"string","format":"date-time","description":"Date and time until order is reserved. After this date, e-shop does not guarantee items availability (if application processing is longer, it may endanger order fullfillment)."},"sentDate":{"type":"string","format":"date","description":"date and time of order shipping"},"state":{"type":"string","description":"Order state","enum":["CANCELLED","DELIVERED","PROCESSING","RETURNED","SENT"]},"totalPrice":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Amount in decimal format"},"currency":{"type":"string","description":"Amount currency. ISO 4217"}},"title":"FinancingV1Amount"},"variableSymbols":{"type":"array","description":"variable symbols (internal for e-shop)","items":{"type":"string"}}},"title":"FinancingV1OrderExtended"}}}},"201":{"description":"Created"},"401":{"description":"Unauthorized"},"403":{"description":"Forbidden"},"404":{"description":"Not Found"}}}
+>
+  
+</StatusCodes>
+
+
+      

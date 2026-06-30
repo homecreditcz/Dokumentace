@@ -1,0 +1,337 @@
+---
+id: hc-oneclick-api-installments
+title: "HC - OneClick API - Installments"
+description: "Dokumentace API pro implementaci rozhraní Home Credit na eshopy."
+sidebar_label: Introduction
+sidebar_position: 0
+hide_title: true
+custom_edit_url: null
+---
+
+import ApiLogo from "@theme/ApiLogo";
+import Heading from "@theme/Heading";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+import Export from "@theme/ApiExplorer/Export";
+
+<span
+  className={"theme-doc-version-badge badge badge--secondary"}
+  children={"Version: 1.28.2"}
+>
+</span>
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"HC - OneClick API - Installments"}
+>
+</Heading>
+
+
+
+Dokumentace API pro implementaci rozhraní Home Credit na eshopy.
+
+Verze dokumentace: 1.28.2
+
+## Historie verzí
+
+| Verze | Vydání | Datum vydání | Novinky |
+|---------|---------|--------------|------|
+| 1.28.2 | CS133 | 8.10.2025 | nahrazení koncového bodu pro změnu stavu aplikace |
+
+## Důležité poznámky
+
+Seznam atributů, které se mění z povinných na nepovinné:
+
+- request.customer
+- request.customer.firstName
+- request.customer.lastName
+- request.customer.fullName
+- request.customer.email
+- request.customer.phone
+- request.customer.addresses
+- request.customer.addresses.city
+- request.customer.addresses.streetAddress
+- request.customer.addresses.streetNumber
+- request.customer.addresses.zip
+- request.customer.addresses.addressType
+- request.merchantUrls.notificationEndpoint
+
+V případě jakýchkoli dotazů se obraťte na naše integrační oddělení (integrace_eshop@homecredit.cz).
+
+> ⚠️ **DŮLEŽITÉ UPOZORNĚNÍ**: Volání prostředků ze Slovenska MUSÍ používat příslušné vyhrazené koncové body .sk. Např. `https://api.homecredit.sk/financning/v1/applications`
+## Začínáme
+
+Tento online dokument popisuje rozhraní API One-Click společnosti Home Credit (HC) - prostředek pro partnerské e-shopy, jehož prostřednictvím mohou svým zákazníkům nabídnout výhody jedné z platebních metod společnosti Home Credit.
+
+Cílem zde popsaných služeb je umožnit zákazníkům hladký průběh procesu online nákupu. Služby, které umožňují dosažení tohoto cíle, jsou rozděleny do následujících skupin:
+
+| Skupina služeb | Účel |
+| --- | --- |
+| [Bezpečnost](./security) | Bezpečnostní pravidla a zásady |
+| [Zdroje žádosti](./application-resources) | Zdroje umožňující zpracování *aplikace* během celého jejího životního cyklu |
+| [Zdroje splátkové kalkulačky](./installments-calculator-resources) | Zdroje, které umožňují partnerským e-shopům implementovat na svých webových stránkách splátkovou kalkulačku |
+| [Merchantsite zdroje](./merchantsite-resources) | Zdroje, které by měl partner vyvinout a vystavit, aby jej HC mohl asynchronně informovat o důležitých změnách týkajících se jednotlivých *aplikací a objednávek* |
+| [Kontrola stavu](./health-check) | Popis použití kontroly stavu |
+
+### Základní implementace
+
+
+Základním a minimálním způsobem implementace rozhraní HCO API je alespoň implementace:
+
+1. [Login](./login-partner)
+    - Partner musí být autorizován, aby měl přístup k většině zdrojů
+2. [Vytvořit aplikaci](./create-using-post-3)
+    - Partner zavolá tento zdroj, aby zahájil proces schvalování úvěru vytvořením `žádosti`. samotná `žádost` a její ID jsou nezbytné pro úspěšné dokončení procesu.
+3. Zpracovatelé přesměrování.
+    - Speciální adresy URL pro zákazníky, které zobrazují úspěšnost nebo zamítnutí platby (více informací [zde](#parameters-added-to-return-urls)).
+4. [Oznámení o aplikaci](./application-notification)
+    - Tento koncový bod musí být vystaven na vaší straně, aby back-end HC mohl asynchronně upozorňovat na důležité změny týkající se konkrétních aplikací.
+5. [Označit položky objednávky jako odeslané/doručené](./deliver-using-put)
+    - Společnost Home Credit nezahájí proces finanční kompenzace, pokud není `objednávka` označena jako `odeslaná` nebo `doručená` .
+
+![Minimální implementační diagram](/img/sequence_diagram.png)
+
+![Stavový diagram aplikace/objednávky](/img/state_diagram.png)
+
+Je nutné vyplnit všechny atributy označené v žádosti jako "povinné". Vyplnění nepovinných parametrů povede k lepší míře schválení žádosti. Partner by měl vždy zvážit vyplnění co největšího počtu atributů.
+
+### Parametry přidané do návratových adres URL
+
+- Při přesměrování zákazníka z front-endu Home Creditu zpět do e-shopu (na jednu z uvedených URL adres - `approvedRedirectUrl`, `rejectedRedirectUrl`) jsou přidány některé potenciálně užitečné informace o výsledku zákazníka ve front-endu Home Creditu:
+- `orderNumber` (string) - interní číslo objednávky e-shopu poskytnuté v rámci volání API aplikace Create
+- `withdrawal` (boolean) - True, pokud je nákup zákazníka financován přímo z jeho již existujícího revolvingového úvěru; false, pokud se vytváří nová smlouva
+- `downPayment` (number) - Hodnota zálohy, obvykle nastavená na 0
+- `stateReason` (enum) - Podstata žádosti
+- `applicationId` (string) - Identifikátor žádosti HCO
+- `checkSum` (string) - hashovaná zpráva
+- e.g. ```http://youreshop.cz?orderNumber=0606104036&stateReason=PROCESSING_SIGNED&downPayment=100000&checkSum=443E150D3406F6A8DC62C1DB224AFDD84FA9907071BB1AD9B2C7701031793662191501B26AADF3A31361341EA176C80B23D8A9A5E5B5219538289945FE0C20A7&applicationId=01-11b00a1ef1&withdrawal=false```
+
+### Integrace widgetu Javascript
+
+Abyste mohli používat javascriptový widget Home Credit jako splátkovou kalkulačku, musí být back-end vašeho e-shopu správně nakonfigurován. Jak to udělat, je aktuálně popsáno v [našem on-line úložišti](/docs/documentation/widgets/install) (aktuálně v češtině).
+
+## Zásady dokumentace
+
+- atributy v objektu request/response jsou nepovinné, pokud není uvedeno jinak (příznak `required` pod názvem atributu)
+
+- povinný atribut v nepovinném objektu znamená, že pokud je uveden nepovinný objekt, musí obsahovat povinný atribut.
+
+- všechny hodnoty v atributech request/response jsou pouze příklady, s výjimkou výčtových hodnot - ty jsou jedinými možnými hodnotami pro daný atribut.
+
+- dokumentace dodržuje [sémantické verzování](https://semver.org/spec/v2.0.0.html), které rozlišuje mezi *major*, *minor* a *patch* verzemi.
+
+### Pojmenovací konvence
+
+- pro všechna jména objektů a atributů používáme camelCase
+
+- pro hodnoty enumů používáme CAPITAL_UNDERSCORE
+
+- v názvech zdrojů používáme množné číslo
+
+## Zásady rozhraní API REST pro Home Credit
+
+### Omezení požadavků
+
+
+Mějte prosím na paměti následující omezení týkající se požadavků:
+
+
+- Maximální velikost požadavku je **10 MB**.
+
+
+- Maximální velikost přijímaného souboru je **500 kB**.
+
+
+- Zde je seznam podporovaných souborů:
+
+
+| Typ MIME | Příklad(y) |
+| --- | --- |
+| application/pdf | *.pdf |
+| application/vnd.openxmlformats-officedocument.spreadsheetml.sheet | *.xlsx |
+| application/vnd.openxmlformats-officedocument.wordprocessingml.document | *.docx |
+| application/vnd.openxmlformats-officedocument.presentationml.presentation | *.pptx |
+| application/vnd.ms-excel | *.xls, *.xlt, *.xla |
+| aplikace/msword | *.doc, *.dot |
+| aplikace/vnd.ms-powerpoint | *.ppt, *.pot, *.pps, *.ppa |
+| plain/text | *.csv, *.txt |
+| image/jpeg | *.jpg, *.jpeg |
+| image/png | *.png |
+| image/gif | *.gif |
+
+
+### Omezení volání API
+
+
+Když partner dosáhne limitu volání API (partner volá API vícekrát, než je jeho kvóta), obdrží chybu HTTP 429. K informování partnera o limitech používáme následující hlavičky odpovědi:
+
+
+- `X-Rate-Limit-Limit` - Počet povolených požadavků v aktuálním období
+
+
+- `X-Rate-Limit-Remaining` - Počet zbývajících požadavků v aktuálním období
+
+
+- `X-Rate-Limit-Reset` - Počet zbývajících sekund v aktuálním období
+
+
+### Verzování
+
+V adrese URL používáme verzi rozhraní API (např. `https://api.homecredit.cz/financing/v1/applications`). *Drobné* změny a *opravy* (viz níže), které neporušují zpětnou kompatibilitu, NEzvyšují verzi API, např. k nim MŮŽE dojít bez předchozího upozornění a vaše aplikace by na ně měla být připravena.
+
+### Kódování odpovědí
+
+Pokud není uvedeno jinak, jsou všechny odpovědi odesílány jako `Content-Type: application/json; charset=utf-8`
+
+### Stavové kódy HTTP
+
+
+V celém rozhraní API používáme následující stavové kódy, s výjimkou toku OAuth, kdy jsou kódy odpovědí předepsány v RFC
+
+
+- 200 `OK` - požadavek byl úspěšný
+
+
+- 201 `Created` - požadavek byl úspěšný a prostředek byl vytvořen
+
+
+- 202 `Accepted` - požadavek byl přijat ke zpracování, ale zpracování nebylo dokončeno
+
+
+- 204 `No Content` - požadavek partnera jsme přijali, ale není co vrátit (např. odpověď je prázdná)
+
+
+- 400 `Bad Request` - syntaktická chyba, např. v požadavku chybí požadované parametry/atributy nebo hodnoty parametrů jsou nesprávného typu
+
+
+- 401 `Unauthorized` - partner není autorizován
+
+
+- 403 `Forbidden` - přístup odepřen (např. uživatel/aplikace nemá právo používat daný prostředek)
+
+
+- 404 `Not Found` - prostředek nebyl nalezen
+
+
+- 405 `Method Not Allowed` - zadaná metoda není pro prostředek povolena
+
+
+- 422 `Unprocessable Entity` - obchodní (sémantické) chyby. Požadavek je dobře formulovaný, ale nelze jej zpracovat (např. datum splatnosti je již minulostí). Chyby jsou uvedeny v těle odpovědi (viz níže)
+
+
+- 429 `Too Many Requests` (Příliš mnoho požadavků) - partner překročil limit rychlosti (viz část [API calls limit](#api-calls-limits) výše)
+
+
+- 500 `Internal Server Error` - něco se pokazilo na naší straně
+
+
+- 503 `Service Unavailable` - došlo k plánovanému výpadku služby
+
+
+### Zpracování chyb
+
+
+Kromě stavových kódů HTTP, které jsou hlavním ukazatelem toho, že se něco pokazilo, používáme také objekt `errors` pro hlášení podrobnějších informací o chybách.
+
+
+Příklad objektu Errors:
+
+
+```javascript
+
+{
+    ...
+
+    errors: [
+        {
+            "code": "ERR_100",
+            "message": "Invalid contract number",
+            "severity": "ERROR",
+            "attribute": "partyAccount.accountNumber",          // nepovinné
+            "ticketId": "UAT1:AMS:20160516-091658.450:45e4" // nepovinné
+        },
+        {
+            "code": 352,
+            "message": "Insufficiend funds for payment order realization",
+            "severity": "WARN"
+        },
+        {
+            "code": 523,
+            "message": "This order will trigger currency exchange operation",
+            "severity": "INFO"
+        }
+    ]
+}
+
+```
+
+
+Atributy objektu Error
+
+| Název atributu | Popis |
+| --- | --- |
+| code | jedinečný kód chyby
+| message | lidsky čitelný popis chyby (nelokalizovaný) |
+| severity | závažnost chyby (viz níže) |
+| attribute | json cesta k atributu požadavku, který chybu způsobil (nepovinné) |
+| ticketId | interní ID tiketu, které se používá pro zpětné vyhledávání chyb |
+
+
+Existují 3 úrovně závažnosti chyby:
+
+
+- `ERROR` - kritická chyba, nelze pokračovat v provádění. MUSÍ být označena také příslušným stavovým kódem HTTP (např. `422 Unprocessable Entity`)
+
+
+- `WARN` - nekritická chyba, provádění může pokračovat, ale doporučuje se další interakce s uživatelem (pro pokračování požadavku MUSÍ partner tento chybový kód uvést v atributu `override` požadavku). To MŮŽE být indikováno také příslušným stavovým kódem HTTP.
+
+
+- `INFO` - pouze informace, provádění může pokračovat bez interakce uživatele.
+
+
+#### Přehled chyb
+
+
+| Stavový kód | Kód | Vysvětlení | Zpráva|
+| --- | --- | --- | --- |
+| 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) | (*Možné různé zprávy*) např. nepodporovaná kombinace stavu aplikace a stavu objednávky |
+| 404 | OBJECT_NOT_FOUND | Požadovaný prostředek nebyl nalezen | (*Možné různé zprávy*), např. Zadaný objekt nebyl nalezen |
+| 422 | NOT_ALLOWED | Operace není povolena (interní důvod) | (*Možné různé zprávy*), např. Není povoleno (jiný důvod) |
+| 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva | (*Možné různé zprávy*), např. Nepodařilo se analyzovat zadaný JSON |
+
+### Formáty
+
+- **datum** a **čas** používají formátování [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), např:
+  - datum je reprezentováno jako `YYYY-mm-dd`. V případě potřeby se přidává časové pásmo (místní).
+  - čas je reprezentován jako `Thh:mm:ss`. V případě potřeby se přidá časové pásmo. Čas s libovolným počtem číslic představujících milisekundy je také akceptován (pokud jsou splněna kritéria formátu [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)), ale vždy je vrácen čas bez milisekund.
+  - den v týdnu je reprezentován číslem 1..7, přičemž 1 je pondělí
+  - týden č. 1 je týden, v němž je první čtvrtek v roce
+
+- **telefonní čísla** používají mezinárodní formát začínající znakem '+' a obsahující kód země (příklad platného čísla: `+420739111222`)
+
+- **formát čísel** formát čísel je definován [standardem JSON](http://www.json.org), např. desetinná místa jsou oddělena znakem `.`
+
+- **formát peněz** používá formátování [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) (v menších jednotkách, např.: 12590 v menších jednotkách představuje 125,90 Kč/EUR)
+
+
+<div
+  style={{"display":"flex","flexDirection":"column","marginBottom":"var(--ifm-paragraph-margin-bottom)"}}
+>
+  <h3
+    style={{"marginBottom":"0.25rem"}}
+  >
+    Contact
+  </h3><span>
+    Home Credit Support: [support@homecredit.cz](mailto:support@homecredit.cz)
+  </span>
+</div><div
+  style={{"marginBottom":"var(--ifm-paragraph-margin-bottom)"}}
+>
+  <h3
+    style={{"marginBottom":"0.25rem"}}
+  >
+    License
+  </h3>
+</div>
+      

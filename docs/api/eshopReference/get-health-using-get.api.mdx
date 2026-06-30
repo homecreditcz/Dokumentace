@@ -1,0 +1,79 @@
+---
+id: get-health-using-get
+title: "API health check"
+description: "If the API back-end services is up and running, you receive HTTP status code 204. In other cases, you receive one of the following errors:"
+sidebar_label: "API health check"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: docs/api/eshopReference/hc-oneclick-api-installments
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"API health check"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/financing/v1/health"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+If the API back-end services is up and running, you receive HTTP status code 204. In other cases, you receive one of the following errors:
+
+| Status code | Code            |
+| ----------- | --------------- |
+| 500         | SERVICE_FAILED  |
+| 504         | SERVICE_TIMEOUT |
+
+> Note: resource requires valid access_token in the HTTP header of the request
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"timeout","in":"query","description":"timeout","required":false,"schema":{"type":"integer","format":"int64","default":2000}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"object","properties":{"errors":{"type":"array","items":{"type":"object","properties":{"attribute":{"type":"string"},"code":{"type":"string"},"message":{"type":"string"},"severity":{"type":"string","enum":["ERROR","WARN","INFO"]},"ticketId":{"type":"string"}},"title":"Issue"}}},"title":"IssueList"}}}},"401":{"description":"Unauthorized"},"403":{"description":"Forbidden"},"404":{"description":"Not Found"}}}
+>
+  
+</StatusCodes>
+
+
+      

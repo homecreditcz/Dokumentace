@@ -1,0 +1,5169 @@
+openapi: 3.0.0
+info:
+  title: HC - OneClick API - Installments
+  version: 1.28.2
+  x-sidebar-label: API Versioning
+  description: |
+    Dokumentace API pro implementaci rozhraní Home Credit na eshopy.
+
+    Verze dokumentace: 1.28.2
+
+    ## Historie verzí
+
+    | Verze | Vydání | Datum vydání | Novinky |
+    |---------|---------|--------------|------|
+    | 1.28.2 | CS133 | 8.10.2025 | nahrazení koncového bodu pro změnu stavu aplikace |
+
+    ## Důležité poznámky
+
+    Seznam atributů, které se mění z povinných na nepovinné:
+
+    - request.customer
+    - request.customer.firstName
+    - request.customer.lastName
+    - request.customer.fullName
+    - request.customer.email
+    - request.customer.phone
+    - request.customer.addresses
+    - request.customer.addresses.city
+    - request.customer.addresses.streetAddress
+    - request.customer.addresses.streetNumber
+    - request.customer.addresses.zip
+    - request.customer.addresses.addressType
+    - request.merchantUrls.notificationEndpoint
+
+    V případě jakýchkoli dotazů se obraťte na naše integrační oddělení (integrace_eshop@homecredit.cz).
+
+    > ⚠️ **DŮLEŽITÉ UPOZORNĚNÍ**: Volání prostředků ze Slovenska MUSÍ používat příslušné vyhrazené koncové body .sk. Např. `https://api.homecredit.sk/financning/v1/applications`
+    ## Začínáme
+
+    Tento online dokument popisuje rozhraní API One-Click společnosti Home Credit (HC) - prostředek pro partnerské e-shopy, jehož prostřednictvím mohou svým zákazníkům nabídnout výhody jedné z platebních metod společnosti Home Credit.
+
+    Cílem zde popsaných služeb je umožnit zákazníkům hladký průběh procesu online nákupu. Služby, které umožňují dosažení tohoto cíle, jsou rozděleny do následujících skupin:
+
+    | Skupina služeb | Účel |
+    | --- | --- |
+    | [Bezpečnost](./security) | Bezpečnostní pravidla a zásady |
+    | [Zdroje žádosti](./application-resources) | Zdroje umožňující zpracování *aplikace* během celého jejího životního cyklu |
+    | [Zdroje splátkové kalkulačky](./installments-calculator-resources) | Zdroje, které umožňují partnerským e-shopům implementovat na svých webových stránkách splátkovou kalkulačku |
+    | [Merchantsite zdroje](./merchantsite-resources) | Zdroje, které by měl partner vyvinout a vystavit, aby jej HC mohl asynchronně informovat o důležitých změnách týkajících se jednotlivých *aplikací a objednávek* |
+    | [Kontrola stavu](./health-check) | Popis použití kontroly stavu |
+
+    ### Základní implementace
+
+
+    Základním a minimálním způsobem implementace rozhraní HCO API je alespoň implementace:
+
+    1. [Login](./login-partner)
+        - Partner musí být autorizován, aby měl přístup k většině zdrojů
+    2. [Vytvořit aplikaci](./create-using-post-3)
+        - Partner zavolá tento zdroj, aby zahájil proces schvalování úvěru vytvořením `žádosti`. samotná `žádost` a její ID jsou nezbytné pro úspěšné dokončení procesu.
+    3. Zpracovatelé přesměrování.
+        - Speciální adresy URL pro zákazníky, které zobrazují úspěšnost nebo zamítnutí platby (více informací [zde](#parameters-added-to-return-urls)).
+    4. [Oznámení o aplikaci](./application-notification)
+        - Tento koncový bod musí být vystaven na vaší straně, aby back-end HC mohl asynchronně upozorňovat na důležité změny týkající se konkrétních aplikací.
+    5. [Označit položky objednávky jako odeslané/doručené](./deliver-using-put)
+        - Společnost Home Credit nezahájí proces finanční kompenzace, pokud není `objednávka` označena jako `odeslaná` nebo `doručená` .
+
+    ![Minimální implementační diagram](/img/sequence_diagram.png)
+
+    ![Stavový diagram aplikace/objednávky](/img/state_diagram.png)
+
+    Je nutné vyplnit všechny atributy označené v žádosti jako "povinné". Vyplnění nepovinných parametrů povede k lepší míře schválení žádosti. Partner by měl vždy zvážit vyplnění co největšího počtu atributů.
+
+    ### Parametry přidané do návratových adres URL
+
+    - Při přesměrování zákazníka z front-endu Home Creditu zpět do e-shopu (na jednu z uvedených URL adres - `approvedRedirectUrl`, `rejectedRedirectUrl`) jsou přidány některé potenciálně užitečné informace o výsledku zákazníka ve front-endu Home Creditu:
+    - `orderNumber` (string) - interní číslo objednávky e-shopu poskytnuté v rámci volání API aplikace Create
+    - `withdrawal` (boolean) - True, pokud je nákup zákazníka financován přímo z jeho již existujícího revolvingového úvěru; false, pokud se vytváří nová smlouva
+    - `downPayment` (number) - Hodnota zálohy, obvykle nastavená na 0
+    - `stateReason` (enum) - Podstata žádosti
+    - `applicationId` (string) - Identifikátor žádosti HCO
+    - `checkSum` (string) - hashovaná zpráva
+    - e.g. ```http://youreshop.cz?orderNumber=0606104036&stateReason=PROCESSING_SIGNED&downPayment=100000&checkSum=443E150D3406F6A8DC62C1DB224AFDD84FA9907071BB1AD9B2C7701031793662191501B26AADF3A31361341EA176C80B23D8A9A5E5B5219538289945FE0C20A7&applicationId=01-11b00a1ef1&withdrawal=false```
+
+    ### Integrace widgetu Javascript
+
+    Abyste mohli používat javascriptový widget Home Credit jako splátkovou kalkulačku, musí být back-end vašeho e-shopu správně nakonfigurován. Jak to udělat, je aktuálně popsáno v [našem on-line úložišti](/docs/documentation/widgets/install) (aktuálně v češtině).
+
+    ## Zásady dokumentace
+
+    - atributy v objektu request/response jsou nepovinné, pokud není uvedeno jinak (příznak `required` pod názvem atributu)
+
+    - povinný atribut v nepovinném objektu znamená, že pokud je uveden nepovinný objekt, musí obsahovat povinný atribut.
+
+    - všechny hodnoty v atributech request/response jsou pouze příklady, s výjimkou výčtových hodnot - ty jsou jedinými možnými hodnotami pro daný atribut.
+
+    - dokumentace dodržuje [sémantické verzování](https://semver.org/spec/v2.0.0.html), které rozlišuje mezi *major*, *minor* a *patch* verzemi.
+
+    ### Pojmenovací konvence
+
+    - pro všechna jména objektů a atributů používáme camelCase
+
+    - pro hodnoty enumů používáme CAPITAL_UNDERSCORE
+
+    - v názvech zdrojů používáme množné číslo
+
+    ## Zásady rozhraní API REST pro Home Credit
+
+    ### Omezení požadavků
+
+
+    Mějte prosím na paměti následující omezení týkající se požadavků:
+
+
+    - Maximální velikost požadavku je **10 MB**.
+
+
+    - Maximální velikost přijímaného souboru je **500 kB**.
+
+
+    - Zde je seznam podporovaných souborů:
+
+
+    | Typ MIME | Příklad(y) |
+    | --- | --- |
+    | application/pdf | *.pdf |
+    | application/vnd.openxmlformats-officedocument.spreadsheetml.sheet | *.xlsx |
+    | application/vnd.openxmlformats-officedocument.wordprocessingml.document | *.docx |
+    | application/vnd.openxmlformats-officedocument.presentationml.presentation | *.pptx |
+    | application/vnd.ms-excel | *.xls, *.xlt, *.xla |
+    | aplikace/msword | *.doc, *.dot |
+    | aplikace/vnd.ms-powerpoint | *.ppt, *.pot, *.pps, *.ppa |
+    | plain/text | *.csv, *.txt |
+    | image/jpeg | *.jpg, *.jpeg |
+    | image/png | *.png |
+    | image/gif | *.gif |
+
+
+    ### Omezení volání API
+
+
+    Když partner dosáhne limitu volání API (partner volá API vícekrát, než je jeho kvóta), obdrží chybu HTTP 429. K informování partnera o limitech používáme následující hlavičky odpovědi:
+
+
+    - `X-Rate-Limit-Limit` - Počet povolených požadavků v aktuálním období
+
+
+    - `X-Rate-Limit-Remaining` - Počet zbývajících požadavků v aktuálním období
+
+
+    - `X-Rate-Limit-Reset` - Počet zbývajících sekund v aktuálním období
+
+
+    ### Verzování
+
+    V adrese URL používáme verzi rozhraní API (např. `https://api.homecredit.cz/financing/v1/applications`). *Drobné* změny a *opravy* (viz níže), které neporušují zpětnou kompatibilitu, NEzvyšují verzi API, např. k nim MŮŽE dojít bez předchozího upozornění a vaše aplikace by na ně měla být připravena.
+
+    ### Kódování odpovědí
+
+    Pokud není uvedeno jinak, jsou všechny odpovědi odesílány jako `Content-Type: application/json; charset=utf-8`
+
+    ### Stavové kódy HTTP
+
+
+    V celém rozhraní API používáme následující stavové kódy, s výjimkou toku OAuth, kdy jsou kódy odpovědí předepsány v RFC
+
+
+    - 200 `OK` - požadavek byl úspěšný
+
+
+    - 201 `Created` - požadavek byl úspěšný a prostředek byl vytvořen
+
+
+    - 202 `Accepted` - požadavek byl přijat ke zpracování, ale zpracování nebylo dokončeno
+
+
+    - 204 `No Content` - požadavek partnera jsme přijali, ale není co vrátit (např. odpověď je prázdná)
+
+
+    - 400 `Bad Request` - syntaktická chyba, např. v požadavku chybí požadované parametry/atributy nebo hodnoty parametrů jsou nesprávného typu
+
+
+    - 401 `Unauthorized` - partner není autorizován
+
+
+    - 403 `Forbidden` - přístup odepřen (např. uživatel/aplikace nemá právo používat daný prostředek)
+
+
+    - 404 `Not Found` - prostředek nebyl nalezen
+
+
+    - 405 `Method Not Allowed` - zadaná metoda není pro prostředek povolena
+
+
+    - 422 `Unprocessable Entity` - obchodní (sémantické) chyby. Požadavek je dobře formulovaný, ale nelze jej zpracovat (např. datum splatnosti je již minulostí). Chyby jsou uvedeny v těle odpovědi (viz níže)
+
+
+    - 429 `Too Many Requests` (Příliš mnoho požadavků) - partner překročil limit rychlosti (viz část [API calls limit](#api-calls-limits) výše)
+
+
+    - 500 `Internal Server Error` - něco se pokazilo na naší straně
+
+
+    - 503 `Service Unavailable` - došlo k plánovanému výpadku služby
+
+
+    ### Zpracování chyb
+
+
+    Kromě stavových kódů HTTP, které jsou hlavním ukazatelem toho, že se něco pokazilo, používáme také objekt `errors` pro hlášení podrobnějších informací o chybách.
+
+
+    Příklad objektu Errors:
+
+
+    ```javascript
+
+    {
+        ...
+
+        errors: [
+            {
+                "code": "ERR_100",
+                "message": "Invalid contract number",
+                "severity": "ERROR",
+                "attribute": "partyAccount.accountNumber",          // nepovinné
+                "ticketId": "UAT1:AMS:20160516-091658.450:45e4" // nepovinné
+            },
+            {
+                "code": 352,
+                "message": "Insufficiend funds for payment order realization",
+                "severity": "WARN"
+            },
+            {
+                "code": 523,
+                "message": "This order will trigger currency exchange operation",
+                "severity": "INFO"
+            }
+        ]
+    }
+
+    ```
+
+
+    Atributy objektu Error
+
+    | Název atributu | Popis |
+    | --- | --- |
+    | code | jedinečný kód chyby
+    | message | lidsky čitelný popis chyby (nelokalizovaný) |
+    | severity | závažnost chyby (viz níže) |
+    | attribute | json cesta k atributu požadavku, který chybu způsobil (nepovinné) |
+    | ticketId | interní ID tiketu, které se používá pro zpětné vyhledávání chyb |
+
+
+    Existují 3 úrovně závažnosti chyby:
+
+
+    - `ERROR` - kritická chyba, nelze pokračovat v provádění. MUSÍ být označena také příslušným stavovým kódem HTTP (např. `422 Unprocessable Entity`)
+
+
+    - `WARN` - nekritická chyba, provádění může pokračovat, ale doporučuje se další interakce s uživatelem (pro pokračování požadavku MUSÍ partner tento chybový kód uvést v atributu `override` požadavku). To MŮŽE být indikováno také příslušným stavovým kódem HTTP.
+
+
+    - `INFO` - pouze informace, provádění může pokračovat bez interakce uživatele.
+
+
+    #### Přehled chyb
+
+
+    | Stavový kód | Kód | Vysvětlení | Zpráva|
+    | --- | --- | --- | --- |
+    | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) | (*Možné různé zprávy*) např. nepodporovaná kombinace stavu aplikace a stavu objednávky |
+    | 404 | OBJECT_NOT_FOUND | Požadovaný prostředek nebyl nalezen | (*Možné různé zprávy*), např. Zadaný objekt nebyl nalezen |
+    | 422 | NOT_ALLOWED | Operace není povolena (interní důvod) | (*Možné různé zprávy*), např. Není povoleno (jiný důvod) |
+    | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva | (*Možné různé zprávy*), např. Nepodařilo se analyzovat zadaný JSON |
+
+    ### Formáty
+
+    - **datum** a **čas** používají formátování [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), např:
+      - datum je reprezentováno jako `YYYY-mm-dd`. V případě potřeby se přidává časové pásmo (místní).
+      - čas je reprezentován jako `Thh:mm:ss`. V případě potřeby se přidá časové pásmo. Čas s libovolným počtem číslic představujících milisekundy je také akceptován (pokud jsou splněna kritéria formátu [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)), ale vždy je vrácen čas bez milisekund.
+      - den v týdnu je reprezentován číslem 1..7, přičemž 1 je pondělí
+      - týden č. 1 je týden, v němž je první čtvrtek v roce
+
+    - **telefonní čísla** používají mezinárodní formát začínající znakem '+' a obsahující kód země (příklad platného čísla: `+420739111222`)
+
+    - **formát čísel** formát čísel je definován [standardem JSON](http://www.json.org), např. desetinná místa jsou oddělena znakem `.`
+
+    - **formát peněz** používá formátování [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) (v menších jednotkách, např.: 12590 v menších jednotkách představuje 125,90 Kč/EUR)
+  contact:
+    name: Home Credit Support
+    email: support@homecredit.cz
+  license:
+    name: Proprietary
+  tags:
+    - name: financing-v1
+      description: Řídicí jednotka aplikace
+paths:
+  /authentication/v1/partner:
+    post:
+      responses:
+        "200":
+          description: Vydán přístupový token partnera
+          headers: {}
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: Přístupový token
+                  expiresIn:
+                    type: number
+                    description: Zbývající doba platnosti tokenu (v sekundách)
+                  tokentype:
+                    type: string
+                    description: typ tokenu. Vždy "bearer".
+                required:
+                  - accessToken
+                  - tokentype
+              examples:
+                response:
+                  value:
+                    accessToken: TokenForPartnerTokenForPartnerTokenForPartnerTokenForPartner
+                    expiresIn: 7200
+                    tokentype: bearer
+        "400":
+          description: Nepodařilo se ověřit partnera
+          headers: {}
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          description: Jedinečný interní kód chyby
+                        message:
+                          type: string
+                          description: Popis chyby čitelný pro člověka (nelokalizovaný)
+                        severity:
+                          type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                        attribute:
+                          type: string
+                          description: JSON cesta k atributu požadavku, který chybu způsobil (nepovinné)
+                        ticketId:
+                          type: string
+                          description: Interní ID tiketu, používané pro zpětné sledování chyb
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Pole s chybami
+                required:
+                  - errors
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: BAD_REQUEST
+                        message: Bad request
+                        severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
+      summary: Přihlášení partnera
+      operationId: Login partner
+      description: Partner se ověří a získá přístupový token.
+      tags:
+        - Security
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Uživatelské jméno partnera
+                password:
+                  type: string
+                  description: Tajné heslo partnera
+              required:
+                - username
+                - password
+              example:
+                username: eShop
+                password: eShopSecretPassword
+  /financing/v1/applications:
+    post:
+      tags:
+        - Application resources
+      summary: Vytvořit žádost
+      description: |
+        Vyžaduje oprávnění <b>applications.create</b> pro autentizovaného uživatele
+
+        Elementární tok začíná v okamžiku, kdy chce zákazník využít některou z platebních metod Home Creditu pro financování svého nákupu v partnerském e-shopu.
+
+        | Typ financování | Podporováno |
+        | ----------- | --------------- |
+        | `INSTALLMENT` | ANO |
+
+        Použijte správně zdroj `/financing/v1/applications`
+
+        vyplněnou žádostí, která obsahuje alespoň následující údaje
+
+
+        - Údaje o zákazníkovi není nutné zasílat, nicméně jejich zaslání je velmi
+        doporučeno - zjednoduší to klientovi proces podání žádosti
+          - Jméno (jméno a příjmení nebo celé jméno)
+          - E-mail
+          - Číslo mobilního telefonu
+          - Adresa (pole)
+            - Město
+            - Ulice
+            - Číslo ulice
+            - PSČ
+            - Typ adresy
+
+        - Údaje o objednávce
+          - Číslo
+          - Celková cena (včetně DPH)
+          - Položky objednávky (pole, je vyžadována alespoň jedna položka)
+            - Kód
+            - Název položky objednávky
+            - Celková cena (všechny kusy včetně DPH)
+
+        - Typ financování (vždy `INSTALACE`)
+
+        - Údaje o typu financování
+          - *Nastavení splátky - preferovaná výše splátky
+          - *Nastavení splátek - preferovaná výše zálohy
+          - *Nastavení splátky - preferovaný kód produktu programu
+
+        - Další informace nezbytné pro pokračování a dokončení procesu
+          - Vaše adresa URL, na kterou má být zákazník přesměrován po schválení žádosti
+          - Vaše adresa URL, kam by měl být zákazník přesměrován po zamítnutí žádosti
+          - Adresa URL koncového bodu oznámení, na který chcete, abychom zasílali oznámení o konkrétních aktualizacích aplikace (v případě, že partner používá notifikátor)
+
+        > * = Musí být správně vyplněno v případě, že zákazník již použil
+        splátkovou kalkulačku vloženou na vašich webových stránkách a zvolil
+        preferovaný splátkový program. Více informací o možnosti vložení splátkové
+        kalkulačky na vaše webové stránky naleznete v části Zdroje splátkové
+        kalkulačky. V opačném případě ponechte prázdné.
+
+
+        Pokud byl požadavek úspěšně zpracován, obdržíte v odpovědi stavový kód
+        HTTP 201 a objekt aplikace s minimálně následujícími informacemi:
+
+
+        - Unikátní ID aplikace
+
+        - Stav aplikace
+
+        - Podstav aplikace
+
+        - Adresa URL přesměrování brány, kam máte zákazníka po zpracování odpovědi
+        přesměrovat
+
+
+        > Můžete také obdržet informaci o původně požadované **platbě dolů** - to
+
+        může být později zákazníkem změněna v průběhu procesu finalizace
+        financování
+
+        žádosti. V takových případech doporučujeme zkontrolovat konečnou
+        **dodatečnou platbu**
+
+        schváleného úvěru (po schválení žádosti) prostřednictvím
+        `/financování/v1/žádosti/{Id žádosti}`.
+
+
+        Pokud byla žádost **rozpoznána jako duplicita**
+
+
+        - a dříve vytvořená `Žádost` je zrušena (`Žádost.stav = ZRUŠENÁ`a
+
+        `Application.stateReason = CANCELLED_NOT_PAID`), je vytvořena nová
+        `Application`, vy
+
+        obdržíte stavový kód HTTP 201 a objekt `Application` s výše uvedenými
+        informacemi (minimálně) v odpovědi
+
+        - a dříve vytvořená `Application` je stále nová (tj. bez zaznamenané akce
+        klienta), žádná `Application` není vytvořena, obdržíte stavový kód HTTP
+        200 a objekt `Application` vytvořený při prvním souvisejícím úspěšném
+        volání zdroje.
+
+        - a dříve vytvořená `Aplikace` již není zrušena ani nová, obdržíte stavový
+        kód HTTP 422 s kódem chyby `DUPLICATE_ORDER_NUMBER`.
+
+
+        V případě chyby obdržíte jeden z následujících výsledků:
+
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 422 | UNPROCESSABLE | Požadavek byl dobře zformulován, ale nebylo možné jej následovat kvůli sémantickým chybám |
+        | 422 | DUPLICATE_ORDER_NUMBER | Vytvoření žádosti s duplicitním číslem objednávky není povoleno |
+        | 500 | INTERNAL_SERVER_ERROR | Nastala neočekávaná podmínka a není vhodná žádná konkrétnější zpráva |
+
+      operationId: createUsingPOST_3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinancingV1ApplicationRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1Application"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  /financing/v1/applications/{uuid}:
+    get:
+      tags:
+        - Application resources
+      summary: Podrobnosti o žádosti
+      description: |
+        Vyžaduje oprávnění <b>applications.overview</b> pro autentizovaného uživatele
+
+        Pokud potřebujete zjistit aktuální informace o konkrétní *aplikaci* -
+        především její stav
+
+        a další podrobnosti - použijte zdroj
+        `/financing/v1/applications/{applicationId}`, kde `{applicationId}`
+
+        je ID aplikace, které jste obdrželi v odpovědi na
+        `/financing/v1/applications` po jejím vytvoření
+
+
+        | Typ financování | Podporováno |
+        | ----------- | --------------- |
+        | `INSTALLMENT` | YES |
+
+
+        Pokud byl požadavek úspěšně zpracován, obdržíte v odpovědi stavový kód
+        HTTP 200 a objekt aplikace s minimálně následujícími informacemi:
+
+
+        - Jedinečné ID aplikace
+
+        - Typ aplikace
+
+        - Stav aplikace
+
+        - Podstav aplikace
+
+        - Adresa URL přesměrování brány
+
+
+        > Můžete také obdržet informaci o aktuální **dodatečné platbě**, která je
+        užitečná, když
+
+        potřebujete zjistit, zda byl zákazníkovi schválen úvěr s jinou zálohou
+
+        než bylo původně nastaveno ve vaší vestavěné splátkové kalkulačce.
+
+
+        V ostatních případech obdržíte jednu z následujících chyb:
+
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 404 | APPLICATION_NOT_FOUND | Požadovaný prostředek nebyl nalezen |
+        | 422 | NOT_SUPPORTED | Zdroj není pro daný typ financování podporován |
+        | 422 | UNPROCESSABLE | Požadavek byl správně formulován, ale nebylo možné jej splnit kvůli sémantickým chybám |
+        | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva |
+
+      operationId: getUsingGET_7
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1Application"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  /financing/v1/applications/{uuid}/cancel:
+    put:
+      tags:
+        - Application resources
+      summary: Zrušit žádost
+      description: |
+        Vyžaduje oprávnění <b>applications.cancel</b> pro autentizovaného uživatele
+
+        Pokud je potřeba zcela zrušit objednávku zákazníka, je nutné zrušit
+        příslušnou objednávku
+
+        *aplikaci*. K tomuto účelu použijte
+        `/financing/v1/applications/{applicationId}/cancel`
+
+        zdroj, kde `{applicationId}` je ID *aplikace*, které jste obdrželi v
+        odpovědi na příkaz
+
+        `/financing/v1/applications` po jejím vytvoření.
+
+
+        | Typ financování | Podporováno |
+        | ----------- | --------------- |
+        | `INSTALLMENT` | YES |
+
+
+
+        | Stav žádosti | Dostupnost |
+        | ----------- | --------------- |
+        | `ODMÍTNUTO` | ANO |
+        | `ZRUŠENO` | ANO |
+        | `PROCESSING` | ANO |
+        | `PŘIPRAVENO` | ANO |
+
+
+        Pokud byla žádost úspěšně zpracována, ale žádost již byla zaplacena
+
+        (`Application.stateReason = READY_PAID`), obdržíte stavový kód HTTP **202
+        ACCEPTED**
+
+        což znamená, že byl zahájen proces zrušení *žádosti*. Mělo by to být
+
+        dokončen po provedení několika ručních úkonů v back office.
+
+
+        V ostatních případech, kdy je žádost úspěšně zpracována, obdržíte stavový
+        kód HTTP **200 OK**.
+
+
+        V odpovědi také obdržíte minimálně následující informace o (brzy) zrušené
+        žádosti:
+
+
+        - Jedinečné ID žádosti
+
+        - Typ žádosti
+
+        - Stav žádosti
+
+        - Podstav žádosti
+
+
+        V ostatních případech se zobrazí jedna z následujících chyb:
+
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 404 | OBJECT_NOT_FOUND | Požadovaný prostředek nebyl nalezen |
+        | 422 | NOT_SUPPORTED | Zdroj není pro daný typ financování podporován |
+        | 422 | UNPROCESSABLE | Požadavek byl správně formulován, ale nebylo možné jej splnit kvůli sémantickým chybám |
+        | 422 | APPLICATION_REJECTED | Při pokusu o zrušení již `REJECTED` `Aplikace`, což není povoleno |
+        | 500 | INTERNAL_SERVER_ERROR | Nastala neočekávaná podmínka a není vhodná žádná konkrétnější zpráva |
+
+      operationId: cancelUsingPUT
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinancingV1ApplicationCancelRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1Application"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  /financing/v1/applications/{uuid}/order:
+    put:
+      tags:
+        - Application resources
+      summary: Změnit objednávku žádosti
+      description: | 
+        Vyžaduje oprávnění <b>applications.order.edit</b> pro autentizovaného uživatele
+
+        Pokud dojde k nějakým změnám v rámci pořadí, které mohou mít důležitý
+        dopad na
+
+        na proces splácení po jeho podání, použijte
+        `/financing/v1/applications/{applicationId}/order`
+
+        abychom mohli vše správně upravit. `{applicationId}` je ID žádosti
+
+        které jste obdrželi v odpovědi `/financing/v1/applications` po jejím
+        vytvoření.
+
+
+        | Typ financování | Podporováno |
+        | ----------- | --------------- |
+        | `INSTALLMENT` | YES |
+
+
+        | Stav žádosti | Dostupnost |
+        | ----------- | --------------- |
+        | `ODMÍTNUTO` | NE |
+        | `ZRUŠENO` | NE |
+        | `PROCESSING` | ANO |
+        | `READY` | ANO* (viz poznámka o dostupnosti níže) |
+
+
+        Použijte zdroj `/financing/v1/applications/{applicationId}/order` se
+        správně vyplněnými údaji
+
+        požadavkem, který obsahuje (pouze) změněná data (prostředek umožňuje
+        částečné vložení).
+
+
+        > **POZNÁMKA K DOSTUPNOSTI**: Platný objekt požadavku obsahuje pouze číslo
+        objednávky (`order.number`)
+
+        a/nebo jednu položku v poli `order.variableSymbols[]`. Podporovaný
+        `stateReason` stavu `state READY`
+
+        jsou `READY_TO_SHIP`, `READY_SHIPPED`, `READY_DELIVERING` (`state
+        PROCESSING` je podporován bez omezení).
+
+
+        Pokud byl požadavek úspěšně zpracován, zobrazí se stavový kód HTTP 200 a
+
+        objekt informace o změněné objednávce a základní informace o příslušné
+        objednávce
+
+        žádosti (ID, stav, podstav) s minimálně následujícími informacemi v
+        odpovědi:
+
+
+        - Číslo objednávky
+
+        - Celková cena objednávky (včetně DPH)
+
+        - Položky objednávky (pole)
+          - Název položky objednávky
+          - Celková cena (všechny kusy včetně DPH)
+          - Stav položky objednávky
+        - Stav objednávky
+
+        - Základní informace o aplikaci
+          - ID
+          - Stav aplikace
+          - Podstata aplikace
+
+        V ostatních případech se zobrazí jedna z následujících chyb:
+
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 404 | OBJECT_NOT_FOUND | Požadovaný prostředek nebyl nalezen |
+        | 422 | NOT_SUPPORTED | Zdroj není pro daný typ financování podporován |
+        | 422 | UNPROCESSABLE | Požadavek byl správně formulován, ale nebylo možné jej splnit kvůli sémantickým chybám |
+        | 422 | APPLICATION_REJECTED | Při pokusu o zrušení již `REJECTED` `Aplikace`, což není povoleno |
+        | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva |
+
+      operationId: changeApplicationOrderUsingPUT
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinancingV1OrderChangeRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1OrderExtended"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  /financing/v1/applications/{uuid}/order/deliver:
+    put:
+      tags:
+        - Application resources
+      summary: Označit objednávku jako doručenou
+      description: |
+        Vyžaduje oprávnění <b>applications.order.ship_deliver</b> pro autentizovaného uživatele
+
+        Pokud byla celá objednávka doručena zákazníkovi, použijte
+        `/financing/v1/applications/{applicationId}/order/deliver`
+
+        kde `{applicationId}` je ID aplikace, které jste obdrželi v odpovědi
+        `/financing/v1/applications` po jejím vytvoření.
+
+
+        | Typ financování | Podporováno |
+        | ----------- | --------------- |
+        | `INSTALLMENT` | YES |
+
+
+        | Stav žádosti | Dostupnost |
+        | ----------- | --------------- |
+        | `PROCESSING` | NE |
+        | `ODMÍTNUTO` | NE |
+        | `ZRUŠENO` | NE |
+        | `READY` | ANO* (viz poznámka k dostupnosti níže) |
+
+
+        > POZNÁMKA K DOSTUPNOSTI: Požadavek je platný, když
+        `Application.stateReason = READY_TO_SHIP`.
+
+        Požadavek je platný také po přechodu `Aplikace` na `stavDůvod =
+        READY_DELIVERED`
+
+        nebo `stateReason = READY_PAID` (tj. opakované platné požadavky vracejí
+        stavový kód HTTP 200 OK, pokud se v době přechodu na stavový kód
+
+        `Application.stateReason = CANCELLED_RETURNED`)
+
+
+        Pokud byl požadavek úspěšně zpracován, obdržíte stavový kód HTTP 200 a
+        objekt
+
+        informací o změněné objednávce a základní informace o příslušné aplikaci
+
+        (ID, stav, podstav) s minimálně následujícími informacemi v odpovědi:
+
+
+        - Číslo objednávky
+
+        - Celková cena objednávky (včetně DPH)
+
+        - Položky objednávky (pole)
+          - Název položky objednávky
+          - Celková cena (všechny kusy včetně DPH)
+          - Stav položky objednávky
+        - Stav objednávky
+
+        - Základní informace o aplikaci
+          - ID
+          - Stav aplikace
+          - Podstata aplikace
+
+        V ostatních případech se zobrazí jedna z následujících chyb:
+
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 404 | OBJECT_NOT_FOUND | Požadovaný prostředek nebyl nalezen |
+        | 422 | NOT_SUPPORTED | Zdroj není pro daný typ financování podporován |
+        | 422 | UNPROCESSABLE | Požadavek byl správně formulován, ale nebylo možné jej splnit kvůli sémantickým chybám |
+        | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodné zaslat konkrétnější zprávu |
+
+      operationId: deliverUsingPUT
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1OrderExtended"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  /financing/v1/applications/{uuid}/order/send:
+    put:
+      tags:
+        - Application resources
+      summary: Označit objednávku jako odeslanou
+      description: |
+        Vyžaduje oprávnění <b>applications.order.ship_deliver</b> pro autentizovaného uživatele
+
+        Pokud byla celá objednávka odeslána zákazníkovi, použijte
+        `/financing/v1/applications/{applicationId}/order/send`
+
+        kde `{applicationId}` je ID aplikace, které jste obdrželi v odpovědi
+        `/financing/v1/applications` po jejím vytvoření.
+
+
+        | Typ financování | Podporováno |
+        | ----------- | --------------- |
+        | `INSTALLMENT` | YES |
+
+
+        | Stav žádosti | Dostupnost |
+        | ----------- | --------------- |
+        | `PROCESSING` | NE |
+        | `ODMÍTNUTO` | NE |
+        | `ZRUŠENO` | NE |
+        | `READY` | YES (* dostupné pouze v případě, že `Application.stateReason = READY_TO_SHIP`) |
+
+
+        Pokud byl požadavek úspěšně zpracován, obdržíte stavový kód HTTP 200 a
+        objekt
+
+        informací o změněné objednávce a základní informace o příslušné aplikaci
+
+        (ID, stav, podstav) s minimálně následujícími informacemi v odpovědi:
+
+
+        - Číslo objednávky
+
+        - Celková cena objednávky (včetně DPH)
+
+        - Položky objednávky (pole)
+          - Název položky objednávky
+          - Celková cena (všechny kusy včetně DPH)
+          - Stav položky objednávky
+        - Stav objednávky
+
+        - Základní informace o aplikaci
+          - ID
+          - Stav aplikace
+          - Podstata aplikace
+
+        V ostatních případech se zobrazí jedna z následujících chyb:
+
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 404 | OBJECT_NOT_FOUND | Požadovaný prostředek nebyl nalezen |
+        | 422 | NOT_SUPPORTED | Zdroj není pro daný typ financování podporován |
+        | 422 | UNPROCESSABLE | Požadavek byl správně formulován, ale nebylo možné jej splnit kvůli sémantickým chybám |
+        | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva |
+
+      operationId: sendOrderItemsUsingPUT
+      parameters:
+        - name: uuid
+          in: path
+          description: uuid
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1OrderExtended"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  /financing/v1/health:
+    get:
+      tags:
+        - Health check
+      summary: Kontrola stavu API
+      description: |
+        Pokud jsou služby back-endu API v provozu, obdržíte stavový kód HTTP 204.
+        V ostatních případech obdržíte jednu z následujících chyb:
+
+        | Stavový kód | Kód
+        | ----------- | --------------- |
+        | 500 | SERVICE_FAILED |
+        | 504 | SERVICE_TIMEOUT |
+
+
+        > Poznámka: zdroj vyžaduje platný access_token v hlavičce HTTP požadavku
+      operationId: getHealthUsingGET
+      parameters:
+        - name: timeout
+          in: query
+          description: timeout
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 2000
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/IssueList"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      deprecated: false
+  /financing/v1/installmentPrograms:
+    post:
+      tags:
+        - Installments calculator resources
+      summary: Splátkové programy
+      operationId: calculateInstallmentProgramUsingPOST
+      description: |
+        Když chce zákazník zjistit podrobnosti o jednom z dříve nabízených
+        splátkových programů, použijte zdroj `/financing/v1/installmentPrograms`
+        s řádně vyplněným požadavkem, který obsahuje alespoň následující údaje:
+
+
+        - Kód produktu daného splátkového programu
+        - Cena nákupu zákazníka
+
+        Pokud byl požadavek úspěšně zpracován, zobrazí se stav HTTP
+        kód 200 a objekt s informacemi o zadané splátce
+        programu s minimálně následujícími informacemi v odpovědi:
+
+
+        - Typ splátkového programu
+        - Výše splátky
+        - Počet splátek
+        - Podrobnosti o splátkovém programu
+
+
+        V ostatních případech se zobrazí jedna z následujících chyb:
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 422 | UNPROCESSABLE | Požadavek byl dobře zformulován, ale nebylo možné jej následovat kvůli sémantickým chybám |
+        | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva |
+
+        Podrobné informace o programu pro výpočet splátek. Vrátí splátkový
+        program, který nejvíce odpovídá zadanému vstupu.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstallmentProgramsRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/InstallmentProgram"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      deprecated: false
+  /financing/v1/installmentProgramsDownPayments:
+    post:
+      tags:
+        - Installments calculator resources
+      summary: Splátkové programy - zálohy
+      description: |
+        Když chce zákazník zaplatit nákup prostřednictvím úvěru a také
+        chce zvolit vlastní nastavení akontace v rámci nabízených splátek
+        programů, použijte zdroj `/financing/v1/installmentProgramsDownPayments`
+        s řádně vyplněným požadavkem, který obsahuje alespoň následující údaje:
+
+        - Kód produktové sady (správný kód produktové sady byste měli znát z
+        dokumentu
+
+        Obchodního zástupce Home Creditu nebo z jiného podobného zdroje)
+
+        - Cena nákupu zákazníka
+
+
+        Pokud byl požadavek úspěšně zpracován, obdržíte stavový kód HTTP
+        200 a objekt informací o nastavení dostupných zálohových plateb
+        s minimálně následujícími informacemi v odpovědi:
+
+
+        - Minimální výše zálohy
+        - Maximální výše zálohové platby
+        - Krok mezi danou minimální a maximální výší zálohy
+
+
+        V ostatních případech se zobrazí jedna z následujících chyb:
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 422 | UNPROCESSABLE | Požadavek byl dobře zformulován, ale nebylo možné jej následovat kvůli sémantickým chybám |
+        | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva |
+
+        Výpočet splátek splátkových programů podle zadaného vstupu
+      operationId: calculateInstallmentProgramDownPaymentsUsingPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstallmentProgramDownPaymentsRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/InstallmentProgramDownPaymentsResponse"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      deprecated: false
+  /financing/v1/installmentProgramsOffers:
+    post:
+      tags:
+        - Installments calculator resources
+      summary: Nabídky splátkových programů
+      description: |
+        Když chce zákazník zaplatit nákup prostřednictvím úvěru a vy chcete
+        mu zobrazit nabídku dostupných splátkových programů,
+        použijte zdroj `/financing/v1/installmentProgramsOffers` se správně
+        nastavenými nabídkami vyplněným požadavkem, který obsahuje alespoň následující údaje:
+
+
+        - Kód produktové sady (správný kód produktové sady byste měli znát ze
+        seznamu produktů)
+
+        Obchodního zástupce Home Creditu nebo jiného podobného zdroje;
+
+        pokud kód produktové sady neuvedete, bude použita vaše výchozí produktová
+        sada)
+
+        - Cena nákupu zákazníka
+
+
+        Pokud byl požadavek úspěšně zpracován, obdržíte stavový kód HTTP 200
+        a pole objektů dostupných splátkových programů s minimálně
+        následujícími informacemi v odpovědi:
+
+
+        - Splátkový program (pole)
+          - Kód produktu splátkového programu
+          - Typ splátkového programu (v případě nabídky pouze jednoho splátkového programu) v odpovědi je to typ `FAVOURITE`)
+          - Výše splátky
+          - Počet splátek
+
+        V ostatních případech se zobrazí jedna z následujících chyb:
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 422 | UNPROCESSABLE | Požadavek byl dobře zformulován, ale nebylo možné jej následovat kvůli sémantickým chybám |
+        | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva |
+
+        Výpočet nabídky splátkových programů podle zadaného vstupu
+
+        | funkce | podporováno zdrojem |
+        | ------- | --------------------- |
+        | stránkování | ne |
+        | třídění | ne |
+        | filtrování | ne |
+      operationId: calculateInstallmentProgramsUsingPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstallmentProgramsOffersRequest"
+        description: request
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/InstallmentProgramsResponse"
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      deprecated: false
+  /financing/v1/orders:
+    get:
+      tags:
+        - Application resources
+      summary: Objednávky
+      description: |
+        Vyžaduje oprávnění <b>applications.overview</b> pro autentizovaného uživatele
+
+        Pokud potřebujete zjistit aktuální informace o konkrétní zakázce -
+        především její stav
+
+        a další podrobnosti - použijte zdroj
+        `/financing/v1/orders{?applicationId}`, kde `{applicationId}` je
+        `{applicationId}`
+
+        je ID aplikace, které jste obdrželi v odpovědi
+        `/financing/v1/applications` po jejím vytvoření.
+
+
+        | Typ financování | Podporováno |
+        | ----------- | --------------- |
+        | `INSTALLMENT` | YES |
+
+
+        | Stav žádosti | Dostupnost |
+        | ----------- | --------------- |
+        | `PROCESSING` | ANO |
+        | `ODMÍTNUTO` | ANO |
+        | `ZRUŠENO` | ANO |
+        | `PŘIPRAVENO` | ANO |
+
+
+        Pokud byl požadavek úspěšně zpracován, obdržíte stavový kód HTTP 200 a
+        objekt
+
+        informací o zadané zakázce a základní informace o příslušné aplikaci
+
+        (ID, stav, podstav) s minimálně následujícími informacemi v odpovědi:
+
+
+        - Číslo objednávky
+
+        - Celková cena objednávky (včetně DPH)
+
+        - Položky objednávky (pole)
+          - Název položky objednávky
+          - Celková cena (všechny kusy včetně DPH)
+          - Stav položky objednávky
+        - Stav objednávky
+
+        - Základní informace o aplikaci
+          - ID
+          - Stav aplikace
+          - Podstata aplikace
+
+        V ostatních případech se zobrazí jedna z následujících chyb:
+
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 404 | OBJECT_NOT_FOUND | Požadovaný prostředek nebyl nalezen |
+        | 422 | UNPROCESSABLE | Požadavek byl správně formulován, ale nebylo možné jej splnit kvůli sémantickým chybám |
+        | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva |
+      operationId: getUsingGET_9
+      parameters:
+        - name: applicationId
+          in: query
+          description: applicationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/FinancingV1OrderExtended"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+      security:
+        - Basic: []
+      deprecated: false
+  /financing/v1/{application.merchantUrls.notificationEndpoint}:
+    post:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+              example:
+                status: OK
+        "400":
+          description: Bad Request
+          headers: {}
+      summary: Notifikace aplikace
+      operationId: Application notification
+      description: |
+        Informovat partnera o změnách v aplikaci.
+
+        Tento prostředek používáme v případě potřeby informovat o důležitých
+        změnách v rámci konkrétní aplikace. Konkrétně v následujících situacích:
+
+
+        | Spouštěč | Odpovídající Application.stateReason | Očekávaná reakce |
+        | ------- | ------------------------------------- | ----------------- |
+        | Žádost byla schválena (schvalovací proces probíhá správně) | PROCESSING_APPROVED | Nezrušit předčasně objednávku zákazníka |
+        | Žádost byla zamítnuta | REJECTED | Pravděpodobně byste měli zrušit příslušnou objednávku a uvolnit rezervované zboží |
+        | Žádost byla zrušena (před dodáním) | CANCELLED_NOT_PAID | Pravděpodobně byste měli zrušit příslušnou objednávku a uvolnit rezervované zboží |
+        | Objednávka k odeslání (zavazujeme se financovat objednávku zákazníka) | READY_TO_SHIP | Odeslání objednávky zákazníkovi |
+        | Žádost bude vyplacena | READY_PAID | Počkejte, až s vámi zpracujeme finanční vyrovnání |
+
+
+        Do žádosti vyplníme minimálně následující informace:
+
+        - Unikátní ID žádosti
+        - Stav žádosti
+        - Podstav žádosti
+        - Zálohová platba
+        - Časové razítko oznámení
+        - Hashovaná zpráva (kontrolní součet)
+
+
+        > UŽITEČNÁ POZNÁMKA: Pokud se vám zdá, že nám trvá neobvykle dlouho, než
+        vám pošleme konkrétní oznámení, neváhejte použít zdroj
+        `/financing/v1/applications/{applicationId}` (kde `{applicationId}` je ID
+        aplikace, které jste obdrželi v odpovědi na `/financing/v1/applications`
+        po jejím vytvoření) a přímo zjistit informace, které hledáte.
+      tags:
+        - Merchantsite resources
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Primární identifikátor aplikace
+                state:
+                  type: string
+                  enum:
+                    - PROCESSING
+                    - READY
+                    - REJECTED
+                    - CANCELED
+                  description: Stav aplikace
+                stateReason:
+                  enum:
+                    - PROCESSING_REDIRECT_NEEDED
+                    - PROCESSING_PREAPPROVED
+                    - PROCESSING_APPROVED
+                    - PROCESSING_REVIEW
+                    - PROCESSING_ALT_OFFER
+                    - PROCESSING_SIGNED
+                    - READY_TO_SHIP
+                    - READY_SHIPPED
+                    - READY_DELIVERING
+                    - READY_DELIVERED
+                    - READY_PAID
+                    - REJECTED
+                    - CANCELLED_NOT_PAID
+                    - CANCELLED_RETURNED
+                orderNumber:
+                  type: string
+                  description: Číslo objednávky (interní pro e-shop)
+                notificationDate:
+                  type: string
+                  description: Čas vytvoření notifikace (používá formátování [ISO
+                    8601](https://en.wikipedia.org/wiki/ISO_8601) formatting)
+                orderState:
+                  type: string
+                  enum:
+                    - IN_PROCESS
+                    - TO_SHIP
+                    - SHIPPED
+                    - CHECKING_DELIVERY
+                    - DELIVERED
+                    - PAID
+                    - CANCELLED
+                    - TERMINATED
+                  description: Stav objednávky
+                downPayment:
+                  type: object
+                  properties:
+                    amount:
+                      type: number
+                      description: Částka v menších jednotkách (150000 představuje 1 500) [ISO
+                        4217](https://en.wikipedia.org/wiki/ISO_4217)
+                    currency:
+                      type: string
+                      description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
+                        Pouze místní měna je povolena (CZK v České republice
+                        a EUR na Slovensku).
+                  required:
+                    - amount
+                    - currency
+                  description: Aktuální záloha nastavená zákazníkem
+                sendDate:
+                  type: string
+                  description: Čas vytvoření notifikace (používá formátování [ISO
+                    8601](https://en.wikipedia.org/wiki/ISO_8601))
+                sequenceNumber:
+                  type: number
+                  description: Číslo pořadí oznámení
+                checkSum:
+                  type: string
+                  description: Kontrolní součet zprávy - výsledek HMAC se SHA512 (používá se tajný klíč)
+              required:
+                - id
+                - state
+                - stateReason
+                - orderNumber
+                - notificationDate
+                - orderState
+                - downPayment
+                - sentDate
+                - checkSum
+                - sequenceNumber
+              example:
+                id: 01-11200a0ee1
+                state: PROCESSING
+                stateReason: PROCESSING_APPROVED
+                orderNumber: AA234
+                notificationDate: 2017-07-15T00:00:00+02:00
+                orderState: PROCESSING
+                downPayment:
+                  value: 300000
+                  currency: CZK
+                sequenceNumber: 1
+                sentDate: 2017-07-16T00:00:00+02:00
+                checksum: 443E150D3406F6A8DC62C1DB224AFDD84FA9907071BB1AD9B2C7701031793662191501B26AADF3A31361341EA176C80B23D8A9A5E5B5219538289945FE0C20A7
+  /financing/v1/scorings/precheck/extended:
+    post:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/PrecheckResult"
+              examples:
+                response:
+                  value:
+                    recommendation: false
+                    message: V HCO peněžence nemáte dostatečný limit.
+                    id: "1234"
+                    customer:
+                      firstName: John
+                      lastName: Newborn
+                      email: john.newborn@country.com
+                      phone: "+420777123456"
+                      externalId: "1576849"
+                    potentialCreditAmount:
+                      amount: 133000
+                      currency: CZK
+        "400":
+          description: Error in processing request
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Errors"
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: BAD_REQUEST
+                        message: Bad request
+                        severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
+      summary: Precheck
+      operationId: Run precheck
+      description: |
+        Jednoduchá operace pro předběžné hodnocení zákazníků. Vrátí možnou výši
+        úvěru zákazníka může získat. Nejlépe se hodí pro identifikaci klientů, kteří budou
+        pravděpodobně odmítnuti.
+
+        Vezměte v úvahu, že kladné doporučení nemůže zákazníkovi zaručit schválení
+        jako výsledek je založen pouze na několika základních informacích o zákazníkovi.
+
+        Zdroj musí být volán s platným přístupovým tokenem (viz část
+        [Zabezpečení](./security))
+
+        z vašeho serveru. Pokud jej plánujete integrovat do klientského toku, měli
+        byste implementovat koncový bod REST navázaný na relaci nákupního košíku, který bude použit jako proxy pro
+        volání HC API 
+
+        **NIKDY nevkládejte přístupový token přímo na stranu klienta**
+
+        Vysvětlení možných chybových kódů:
+
+        | Stavový kód | Kód | Vysvětlení|
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 500 | FAILURE | Interní selhání |
+      tags:
+          - Scoring resources
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              $ref: "#/components/schemas/ScoringData"
+            example:
+              customer:
+                firstName: John
+                lastName: Newborn
+                email: john.newborn@country.com
+                phone: "+420777123456"
+                externalId: "1576849"
+  /financing/v1/scorings/precheck/extended/batches:
+    post:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/MultiPrecheckResponse"
+              examples:
+                response:
+                  value:
+                    id: ""
+        "400":
+          description: Error in processing request
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Errors"
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: BAD_REQUEST
+                        message: Bad request
+                        severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
+      summary: MultiPrecheck
+      operationId: Run multiPrecheck
+      description: |
+        Multi Precheck je základní Precheck spuštěný na mnoha klientech. Obvykle se používá mimo businness
+        hodin. Operace je asynchronní, partner získá pouze jedinečný identifikátor
+        dávky výsledek je k dispozici ve zdroji Multi precheck result (viz [Výsledek MultiPrecheck](#výsledek-multiprecheck))
+
+        Prostředek musí být volán s platným přístupovým tokenem (viz část
+        [Zabezpečení](./security)) z vašeho serveru. Pokud jej plánujete začlenit do klientského toku, měli byste implementovat koncový bod REST
+        navázaný na relaci nákupního košíku, který bude použit jako proxy pro
+        volání rozhraní HC API -
+
+        **NIKDY nevkládejte přístupový token přímo na stranu klienta**
+
+        Vysvětlení možných chybových kódů:
+
+        | Stavový kód | Kód | Vysvětlení|
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 500 | FAILURE | Interní selhání |
+      tags:
+        - Scoring resources
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              $ref: "#/components/schemas/MultiPrecheckRequest"
+            example:
+              scoringData:
+                - customer:
+                    firstName: John
+                    lastName: Newborn
+                    email: john.newborn@country.com
+                    phone: "+420777123456"
+                    externalId: "1576849"
+              notificationEndpoint: https://www.youreshop.cz/multiPrecheck/results
+  /financing/v1/scorings/precheck/extended/batches/{batchId}:
+    get:
+      responses:
+        "200":
+          description: Actual application data
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/MultiPrecheckResult"
+              examples:
+                response:
+                  value:
+                    id: ""
+                    status: SUCCESS
+                    data:
+                      - recommendation: false
+                        message: V HCO peněžence nemáte dostatečný limit.
+                        id: "1234"
+                        customer:
+                          firstName: John
+                          lastName: Newborn
+                          email: john.newborn@country.com
+                          phone: "+420777123456"
+                          externalId: "1576849"
+                        potentialCreditAmount:
+                          amount: 133000
+                          currency: CZK
+      summary: Výsledek MultiPrecheck
+      operationId: Get multi precheck result
+      description: |
+        Získání výsledku dokončené multipreskripční kontroly.
+
+        V ostatních případech se zobrazí jedna z následujících chyb:
+
+        | Stavový kód | Kód | Vysvětlení |
+        | ----------- | --------------- | -------------------- |
+        | 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 404 | APPLICATION_NOT_FOUND | Požadovaný prostředek nebyl nalezen |
+        | 422 | NOT_SUPPORTED | Zdroj není pro daný typ financování podporován |
+        | 422 | UNPROCESSABLE | Požadavek byl správně formulován, ale nebylo možné jej splnit kvůli sémantickým chybám |
+        | 500 | INTERNAL_SERVER_ERROR | Nastal neočekávaný stav a není vhodná žádná konkrétnější zpráva |
+      tags:
+        - Scoring resources
+      parameters:
+        - name: batchId
+          in: path
+          description: ""
+          required: true
+          example: 11200a0ee1
+          schema:
+            type: string
+  /{multiPrecheckRequest.notificationEndpoint}:
+    post:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: OK
+              examples:
+                response:
+                  value:
+                    status: OK
+        "400":
+          description: Bad Request
+          headers: {}
+      summary: Notifikace o výsledku MultiPrecheck
+      operationId: Result notification
+      description: |
+        Zdroj oznámení, který musí být poskytnut partnerem, a je uvedeno uri
+        během inicializace multi precheck. Oznámení neobsahuje výsledek
+        zákazníků, pouze informaci, že výsledky jsou nyní k dispozici.
+      tags:
+        - Scoring resources
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              $ref: "#/components/schemas/BatchNotification"
+            example:
+              id: ""
+              status: SUCCESS
+servers:
+  - url: https://api.homecredit.cz
+tags:
+  - name: Security
+    x-displayName: Bezpečnost
+    description: >-
+      Pro přístup k našemu API musí partner nejprve získat *přístupový token*;
+      tento token je řetězec libovolné délky (30+ znaků) a musí být uveden v
+      hlavičce HTTP každého požadavku na API. Tato část popisuje způsob, jak
+      získat platný přístupový token a použít jej k přístupu k chráněným
+      prostředkům.
+
+
+      - pro získání přístupového tokenu použijte prostředek
+      `/authentication/v1/partner` s příslušnými parametry (viz dokumentace
+      prostředku [`/authentication/v1/partner`](./login-partner))
+
+
+      - přístupový token by měl být přítomen v každém požadavku pomocí hlavičky
+      požadavku `Authorization` s typem `Bearer`. Pokud má přístupový token
+      partnera hodnotu `secret_token`, měl by být uveden následujícím způsobem:
+
+
+      `Authorization: Nosič secret_token`: Autorizace: Autorizace: Nosič
+      secret_token`
+
+
+      Reálný příklad pomocí curl bude tedy vypadat takto:
+
+
+      ```
+
+      curl -H "Authorization: Bearer secret_token"
+      https://api.homecredit.cz/financing/v1/applications
+
+      ```
+
+
+      - přístupový token má omezenou časovou platnost (2 hodiny). Po jeho
+      vypršení musí partner získat nový pomocí zdroje
+      `/authentication/v1/partner`.
+
+
+      - pokud partner nezadá přístupový token, obdrží chybu `401 Unauthorized` a
+      následující tělo odpovědi:
+
+
+      ```
+
+      {
+         "error_description": "The access token is missing",
+         "error": "invalid_request"
+      }
+
+      ```
+
+
+      - pokud partner zadá neplatný přístupový token, obdrží chybu `401
+      Unauthorized` a následující tělo odpovědi:
+
+
+      ```
+
+      {
+          "error_description":"The access token is invalid or has expired",
+          "error":"invalid_token"
+      }
+
+      ```
+
+
+      > DŮLEŽITÉ UPOZORNĚNÍ: Partner musí uchovávat svůj přístupový token a
+      přihlašovací údaje v bezpečí. Přihlašovací údaje ani přístupový token by
+      NIKDY neměly být vkládány do klientské stránky. Pokud partner plánuje
+      integrovat volání API do zákaznického toku bez odeslání stránky na server,
+      měl by implementovat koncový bod REST vázaný na relaci nákupního košíku
+      partnera, který bude použit jako proxy pro volání HC API.
+
+
+      > NIKDY nepřenášejte přístupový token ani přihlašovací údaje
+      prostřednictvím prostého protokolu HTTP. Takové požadavky budou odmítnuty.
+  - name: Application resources
+    x-displayName: Zdroje žádosti
+    description: >
+      Služby, které umožňují zpracování *aplikace* během a **objednávky** během celého jejich životního cyklu.
+  - name: Health check
+    x-displayName: Kontrola stavu
+    description: >
+      Aktuální stav rozhraní API snadno zjistíte pomocí zdroje [API state check
+      resource](./get-health-using-get).
+  - name: Scoring resources
+    x-displayName: Zdroje bodování
+    description: >
+      Služby, které umožňují partnerským e-shopům zjistit pravděpodobnost *schválení žádosti*.
+  - name: Installments calculator resources
+    x-displayName: Zdroje splátkové kalkulačky
+    description: >
+      Když chcete poskytnout zákazníkovi (který chce zaplatit za nákup úvěrem)
+      možnost vybrat si z dostupných splátkových programů, když je ještě na
+      vašem webových stránkách, je třeba zavést "splátkovou kalkulačku".
+
+
+      Pro integraci splátkové kalkulačky do svých webových stránek zvolte jeden
+      z následujících přístupů:
+
+      - A) Implementace vlastní splátkové kalkulačky s vaší FE ve vašem designu,
+      která využívá určené zdroje API ([popsáno
+      níže](#implementing-own-installments-calculator)).
+
+      - B) Integrace javascriptového widgetu společnosti Home Credit (popsaného
+      v [zvláštní kapitole](../Reference/java-script-widget-integration)), který:
+        - poskytuje grafické uživatelské rozhraní a funkce front-endu
+        - zpracovává všechny potřebné výpočty
+        - poskytuje potřebné údaje back-endu e-shopu, aby je bylo možné snadno použít v rámci [požadavku na vytvoření *aplikace*](./create-using-post-3)
+
+      > POZNÁMKA: Implementace splátkové kalkulačky je volitelná. Zákazníci
+      mohou vždy používat splátkovou kalkulačku zabudovanou ve front-endu Home
+      Creditu.
+
+
+      ## Implementace vlastní splátkové kalkulačky
+
+      K implementaci vlastní splátkové kalkulačky (s vlastním návrhem grafického
+      uživatelského rozhraní) budete potřebovat následující zdroje:
+
+      - `/financing/v1/installmentProgramsOffers` - pro zjištění dostupných
+      nabídek splátkových programů a jejich podrobností
+
+      - `/financing/v1/installmentPrograms` - pro zjištění podrobností vybraného
+      splátkového programu
+
+      - `/financing/v1/installmentProgramsDownPayments` - zjištění možností
+      akontace v rámci dostupných nabídek splátkových programů
+  - name: Merchantsite resources
+    x-displayName: Zdroje pro partnery
+    description: >
+      Služby, které by měly být vyvinuty a vystaveny partnerskými e-shopy, aby
+      umožnily
+
+      HC asynchronně informovat tyto partnerské e-shopy o důležitých změnách
+
+      týkající se konkrétních *aplikací* a *objednávek*
+
+
+      > **UPOZORNĚNÍ:** Tato sada API NENÍ vystavena ze strany HC. Místo toho by
+      ji měl vyvinout partner a přijímat níže specifikovaná volání.
+components:
+  schemas:
+    AcademicIdentificationDocumentFull:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - number
+        - type
+      properties:
+        firstName:
+          type: string
+          description: Křestní jméno na akademické kartě
+        issuer:
+          type: string
+          description: Vydavatel dokladu
+        lastName:
+          type: string
+          description: Příjmení akademické karty
+        number:
+          type: string
+          description: Číslo identifikačního dokladu
+          minLength: 0
+          maxLength: 100
+        type:
+          type: string
+          description: Typ akademické karty
+          enum:
+            - ALIVE
+            - ISIC
+            - ISIC_SCHOLAR
+            - ITIC
+            - IYTC
+        validity:
+          type: string
+          format: date
+          description: Datum, do kterého je dokument platný<br>Vyžadováno pouze v kontextu
+            FullDocument
+      title: AcademicIdentificationDocumentFull
+    AccountIban:
+      type: object
+      required:
+        - iban
+      properties:
+        iban:
+          type: string
+      title: AccountIban
+    AccountNational:
+      type: object
+      required:
+        - accountNumber
+        - bankCode
+      properties:
+        accountNumber:
+          type: string
+          description: Číslo účtu. U tuzemských účtů bude uvedeno v národním formátu.
+        bankCode:
+          type: string
+          description: U tuzemských účtů kód banky v národním formátu
+        prefix:
+          type: string
+          description: Předčíslí účtu. U tuzemských účtů bude uvedeno v národním formátu.
+      title: ÚčetNárodní
+    Address:
+      type: object
+      required:
+        - city
+        - flags
+        - streetAddress
+        - streetNumber
+        - zip
+      properties:
+        city:
+          type: string
+          description: city
+          minLength: 0
+          maxLength: 40
+        country:
+          type: string
+          minLength: 0
+          maxLength: 30
+        flags:
+          type: array
+          description: typ adresy. V každém kontextu jsou povoleny pouze některé typy.
+          items:
+            type: string
+            enum:
+              - BILLING
+              - CONTACT
+              - DELIVERY
+              - PERMANENT
+        streetAddress:
+          type: string
+          description: ulice/městská část
+          minLength: 0
+          maxLength: 50
+          pattern: "[0-9a-zA-Zá-žÁ-Ž/\\-  '.]*"
+        streetNumber:
+          type: string
+          description: číslo ulice
+          minLength: 0
+          maxLength: 10
+        zip:
+          type: string
+          description: poštovní směrovací číslo
+      title: Adresa
+    AddressBase:
+      type: object
+      required:
+        - city
+        - streetAddress
+        - streetNumber
+        - zip
+      properties:
+        city:
+          type: string
+          description: city
+          minLength: 0
+          maxLength: 40
+        country:
+          type: string
+          minLength: 0
+          maxLength: 30
+        streetAddress:
+          type: string
+          description: ulice/městská část
+          minLength: 0
+          maxLength: 50
+          pattern: "[0-9a-zA-Zá-žÁ-Ž/\\-  '.]*"
+        streetNumber:
+          type: string
+          description: číslo ulice
+          minLength: 0
+          maxLength: 10
+        zip:
+          type: string
+          description: poštovní směrovací číslo
+      title: AddressBase
+    Amount:
+      type: object
+      required:
+        - currency
+        - value
+      properties:
+        currency:
+          type: string
+        value:
+          type: number
+      title: Částka
+    ApplicationContact:
+      type: object
+      required:
+        - contactType
+      properties:
+        contactType:
+          type: string
+          enum:
+            - EMAIL
+            - FAX
+            - MOBILE
+            - PHONE
+            - WEB
+        email:
+          $ref: "#/components/schemas/Email"
+        mobile:
+          $ref: "#/components/schemas/Phone"
+        phone:
+          $ref: "#/components/schemas/Phone"
+      title: AplikaceKontakt
+    BankAccount:
+      type: object
+      properties:
+        iban:
+          $ref: "#/components/schemas/AccountIban"
+        national:
+          $ref: "#/components/schemas/AccountNational"
+        type:
+          type: string
+          enum:
+            - IBAN
+            - NATIONAL
+      title: BankAccount
+    BirthCertificateFull:
+      type: object
+      required:
+        - number
+      properties:
+        issuer:
+          type: string
+          description: Vydavatel dokladu
+        number:
+          type: string
+          description: Číslo identifikačního dokladu
+          minLength: 0
+          maxLength: 100
+      title: BirthCertificateFull
+    BrokeredOrder:
+      type: object
+      required:
+        - merchantOrders
+      properties:
+        merchantOrders:
+          type: array
+          description: Objednávky obchodníků
+          items:
+            $ref: "#/components/schemas/MerchantOrder"
+      title: BrokeredOrder
+    CalculationDetail:
+      type: object
+      properties:
+        amountToPay:
+          $ref: "#/components/schemas/Amount"
+        annualInterestRate:
+          type: number
+          description: |-
+            Roční úroková sazba
+            např. 0,17
+        annualPercentageRate:
+          type: number
+          description: |-
+            RPSN
+            např. 0,23
+        installment:
+          $ref: "#/components/schemas/Amount"
+        installmentDay:
+          type: number
+          description: |-
+            Datum splátky (den v měsíci)
+            např. 20
+        installmentFirstDate:
+          type: string
+          example: yyyy-MM-dd['T'HH:mm:ss[xxx]]
+          description: |-
+            Datum první splátky
+            např. 2017-05-20
+        installmentLastDate:
+          type: string
+          example: yyyy-MM-dd['T'HH:mm:ss[xxx]]
+          description: |-
+            Datum poslední splátky
+            např. 2018-03-20
+        legalLine:
+          type: string
+          description: >-
+            Výklad textu nabídky
+
+            např.
+
+            "Uvedené hodnoty jsou spočítány k datu poskytnutí 18.1.2017, datu 1.
+            splátky 20.1.2017 a se splatností všech dalších splátek k 20. dni v
+            měsíci počítaje 20.1.2017. Nejedná se o veřejnou nabídku. Platí při
+            splnění podmínek Home Credit...."
+        maturityTextForm:
+          type: string
+          description: |-
+            Textové znázornění zralosti
+            např. 3 roky a 8 měsíců
+        maximalAnnualPercentageRate:
+          type: number
+          description: Maximální RPSN pro daný segment výrobků
+        numberOfInstallments:
+          type: integer
+          format: int32
+          description: Počet splátek
+        predictedProvisionDate:
+          type: string
+          example: yyyy-MM-dd['T'HH:mm:ss[xxx]]
+          description: |-
+            Předpokládané datum poskytnutí
+            např. 2017-05-20
+      title: CalculationDetail
+    CallDate:
+      type: object
+      required:
+        - date
+      properties:
+        date:
+          type: string
+          format: date-time
+          description: Datum zabalené výzvy
+      title: CallDate
+    CallRequest:
+      type: object
+      required:
+        - type
+      properties:
+        dates:
+          type: array
+          description: Požadavek na preferované termíny
+          items:
+            $ref: "#/components/schemas/CallDate"
+        type:
+          type: string
+          description: Typ požadavku na volání
+          enum:
+            - DATES
+      title: CallRequest
+    Cancellation:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - ANOTHER_APPLICATION_IN_PROGRESS
+            - DIFFERENT_REGISTER_DATA
+            - INCONSISTENT_VERIFICATION_DATA
+            - MISMATCH_REPRESENTATIVE
+            - MISSING_OFFER
+            - PARAMETERS_CHANGED
+            - UNDEFINED
+            - UNSUPPORTED_CLIENT_SEGMENT
+            - UNSUPPORTED_PROCESS
+            - VERIFICATION_INVALID
+            - WITHDRAWAL_FROM_CONTRACT
+      title: Zrušení
+    CarLoanOrder:
+      type: object
+      required:
+        - requiredDocuments
+      properties:
+        requiredDocuments:
+          type: array
+          description: Požadované dokumenty
+          items:
+            $ref: "#/components/schemas/RequiredDocumentDetail"
+      title: CarLoanOrder
+    CashBase:
+      type: object
+      required:
+        - financing
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/CashFinancing"
+      title: CashBase
+    CashFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        cashLoan:
+          $ref: "#/components/schemas/CashLoanSettings"
+        loanWallet:
+          $ref: "#/components/schemas/LoanWalletSettings"
+        type:
+          type: string
+          description: Typ financování v hotovosti
+          enum:
+            - CASH_LOAN
+            - LOAN_WALLET
+      title: CashFinancing
+    CashLoanSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredNumberOfInstallments:
+          type: integer
+          format: int64
+          description: Preferovaný počet splátek
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+      title: CashLoanSettings
+    ClientExtraData:
+      type: object
+      properties:
+        cartItemsRemoved:
+          type: integer
+          format: int64
+          description: Celkový počet odstraněných položek z nákupního košíku během
+            aktuálního nákupu
+        cashlessTransactionsNumber:
+          type: integer
+          format: int64
+          description: Historický počet bezhotovostních transakcí provedených zákazníky v
+            e-shopu partnera
+        cashlessTransactionsSum:
+          $ref: "#/components/schemas/Amount"
+        earliestTransactionDate:
+          type: string
+          example: yyyy-MM-dd
+          description: datum nejstarší transakce v partnerském e-shopu
+        itemsViewed:
+          type: integer
+          format: int64
+          description: Počet zobrazených stránek s produkty
+        latestTransactionDate:
+          type: string
+          example: yyyy-MM-dd
+          description: datum nejnovější transakce v partnerském e-shopu.
+        pageReviewsTime:
+          type: integer
+          format: int64
+          description: Celkový čas strávený na webových stránkách partnerů v sekcích
+            recenzí a komentářů (v sekundách)
+        pageTotalTime:
+          type: integer
+          format: int64
+          description: Celkový čas strávený na webových stránkách partnerů (v sekundách)
+        transactionsNumber:
+          type: integer
+          format: int64
+          description: Historický počet hotovostních transakcí zákazníků provedených v
+            e-shopu partnera
+        transactionsSum:
+          $ref: "#/components/schemas/Amount"
+      title: ClientExtraData
+    CompanyAdditionalData:
+      type: object
+      properties:
+        offshoreUnits:
+          type: boolean
+        publicOrganizationStructure:
+          type: boolean
+        silentPartner:
+          type: boolean
+      title: CompanyAdditionalData
+    CompanyIncome:
+      type: object
+      properties:
+        primary:
+          $ref: "#/components/schemas/PrimaryCompanyIncome"
+      title: SpolečnostPříjmy
+    ConsolidationSettings:
+      type: object
+      properties:
+        installment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+      title: ConsolidationSettings
+    ConsumerLoanSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferovaný počet splátek (v měsících)
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+      title: ConsumerLoanSettings
+    ContractDuration:
+      type: object
+      properties:
+        employedFrom:
+          type: string
+          format: date
+        fixedTerm:
+          $ref: "#/components/schemas/ContractDurationFixedTerm"
+        type:
+          type: string
+          enum:
+            - FIXED_TERM
+            - PERMANENT
+      title: ContractDuration
+    ContractDurationFixedTerm:
+      type: object
+      properties:
+        employedTo:
+          type: string
+          format: date
+      title: ContractDurationFixedTerm
+    ContractTariff:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          enum:
+            - STANDARD
+            - BASIC
+            - PLUS
+        fee:
+          $ref: "#/components/schemas/Amount"
+      title: SmlouvaTarif
+    Detail:
+      type: object
+      properties:
+        annualInterestRate:
+          type: number
+          description: |-
+            Roční úroková sazba
+            např. 0,17
+        installmentDay:
+          type: number
+          description: |-
+            Datum splátky (den v měsíci)
+            např. 20
+        installmentFirstDate:
+          type: string
+          format: date
+          description: |-
+            Datum první splátky
+            např. 2017-05-20
+        installmentLastDate:
+          type: string
+          format: date
+          description: |-
+            Datum poslední splátky
+            např. 2018-03-20
+        legalline:
+          type: string
+          description: >-
+            Výklad textu nabídky
+
+            např.
+
+            "Uvedené hodnoty jsou spočítány k datu poskytnutí 18.1.2017, datu 1.
+            splátky 20.1.2017 a se splatností všech dalších splátek k 20. dni v
+            měsíci počítaje 20.1.2017. Nejedná se o veřejnou nabídku. Platí při
+            splnění podmínek Home Credit...."
+        paidBack:
+          $ref: "#/components/schemas/Amount"
+        predictedProvisionDate:
+          type: string
+          format: date
+          description: |-
+            Předpokládané datum poskytnutí
+            např. 2017-05-20
+        rpsn:
+          type: number
+          description: |-
+            RPSN
+            např. 0,23
+      title: Detail
+    Email:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: string
+      title: E-mail
+    Employee:
+      type: object
+      properties:
+        businessArea:
+          type: string
+          enum:
+            - AGRICULTURE
+            - ARMS
+            - AUTOMOTIVE
+            - BEAUTY_SERVICES
+            - CONSTRUCTION_INDUSTRY
+            - CRYPTOCURRENCY_OR_PRECIOUS_METAL_TRADING
+            - CULTURE
+            - EDUCATION_OR_SCIENCE_AND_RESEARCH
+            - FINANCIAL_SERVICES
+            - GAMBLING_OR_MONEY_EXCHANGE
+            - HEALTH_CARE_AND_PHARMACY
+            - HOSPITALITY
+            - IT
+            - LEGAL_SERVICES_OR_REAL_ESTATE_OR_FINANCIAL_ADVISER
+            - MINING_INDUSTRY
+            - OTHER_MANUFACTURE_AND_INDUSTRY
+            - OTHER_TRADE_AND_SERVICES
+            - RETAIL_SALES
+            - STATE_ADMINISTRATION
+            - TAXI
+            - TRANSPORT_AND_LOGISTICS
+            - USED_GOODS_SALE
+        positionType:
+          type: string
+          enum:
+            - REGULAR_EMPLOYEE
+            - TOP_MANAGEMENT
+        contractDuration:
+          $ref: "#/components/schemas/ContractDuration"
+        employer:
+          $ref: "#/components/schemas/Employer"
+      title: Zaměstnanci
+    Employer:
+      type: object
+      properties:
+        addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddressBase"
+        businessIdentificationNumber:
+          type: string
+          minLength: 0
+          maxLength: 100
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+      title: Zaměstnavatel
+    Entrepreneur:
+      type: object
+      properties:
+        activeFrom:
+          type: string
+          format: date
+        addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddressBase"
+        businessArea:
+          type: string
+          enum:
+            - AGRICULTURE
+            - ARMS
+            - AUTOMOTIVE
+            - BEAUTY_SERVICES
+            - CONSTRUCTION_INDUSTRY
+            - CRYPTOCURRENCY_OR_PRECIOUS_METAL_TRADING
+            - CULTURE
+            - EDUCATION_OR_SCIENCE_AND_RESEARCH
+            - FINANCIAL_SERVICES
+            - GAMBLING_OR_MONEY_EXCHANGE
+            - HEALTH_CARE_AND_PHARMACY
+            - HOSPITALITY
+            - IT
+            - LEGAL_SERVICES_OR_REAL_ESTATE_OR_FINANCIAL_ADVISER
+            - MINING_INDUSTRY
+            - OTHER_MANUFACTURE_AND_INDUSTRY
+            - OTHER_TRADE_AND_SERVICES
+            - RETAIL_SALES
+            - STATE_ADMINISTRATION
+            - TAXI
+            - TRANSPORT_AND_LOGISTICS
+            - USED_GOODS_SALE
+        businessIdentificationNumber:
+          type: string
+          minLength: 0
+          maxLength: 100
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+      title: Podnikatel
+    ExtendedGuarantee:
+      type: object
+      required:
+        - amount
+        - serviceVariantCode
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        serviceVariantCode:
+          type: string
+          description: Varianta kódu služby
+      title: Rozšířená záruka
+    FileData:
+      type: object
+      properties:
+        content:
+          type: string
+          description: Obsah souboru (zakódováno Base64, maximální velikost zakódovaného
+            řetězce je 500 kB)
+        filename:
+          type: string
+          description: název souboru
+        url:
+          type: string
+          description: Adresa URL souboru
+      title: FileData
+    FinancedSubjectBase:
+      type: object
+      required:
+        - type
+      properties:
+        cash:
+          $ref: "#/components/schemas/CashBase"
+        liability:
+          $ref: "#/components/schemas/LiabilityBase"
+        order:
+          $ref: "#/components/schemas/OrderBase"
+        type:
+          type: string
+          description: Typ financovaného subjektu
+          enum:
+            - CASH
+            - ORDER
+            - LIABILITY
+            - WALLET
+        wallet:
+          $ref: "#/components/schemas/WalletBase"
+      title: FinancedSubjectBase
+    FinancialDataCompany:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        incomeStatement:
+          $ref: "#/components/schemas/Amount"
+        taxBase:
+          $ref: "#/components/schemas/Amount"
+        turnover:
+          $ref: "#/components/schemas/FinancialTurnover"
+      title: FinancialDataFirma
+    FinancialTurnover:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        period:
+          type: string
+          enum:
+            - QUARTERLY
+      title: Finanční obrat
+    FinancingApplicationBase:
+      type: object
+      required:
+        - id
+        - status
+        - workflowSteps
+      properties:
+        id:
+          type: string
+          description: Jedinečný identifikátor v HCO
+        status:
+          type: string
+          description: Stav žádosti
+          enum:
+            - CREATED
+            - VERIFICATION
+            - PRESCORED
+            - APPROVED
+            - REJECTED
+            - ALTERNATIVE
+            - CONFIRMED
+            - CANCELLED
+        workflowSteps:
+          type: array
+          description: Sbírka akcí procesu žádosti, které jsou k dispozici pro aktuální
+            stav žádosti
+          items:
+            $ref: "#/components/schemas/FinancingWorkflowStep"
+      title: FinancingApplicationBase
+    FinancingCalculateOffersResult:
+      type: object
+      properties:
+        consolidation:
+          $ref: "#/components/schemas/FinancingProductOffer"
+        loanWallet:
+          $ref: "#/components/schemas/FinancingLoanWalletOffer"
+        type:
+          type: string
+          enum:
+            - CONSOLIDATION
+            - LOAN_WALLET
+      title: FinancingCalculateOffersResult
+    FinancingCash:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/FinancingCashFinancing"
+        status:
+          type: string
+          description: Stav
+          enum:
+            - TO_PAY
+            - IN_PROCESS
+            - CANCELED
+            - PAID
+      title: FinancováníV hotovosti
+    FinancingCashBase:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/FinancingCashFinancing"
+      title: FinancingCashBase
+    FinancingCashCalculateOffers:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/CashFinancing"
+      title: FinancingCashCalculateOffers
+    FinancingCashFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        cashLoan:
+          $ref: "#/components/schemas/FinancingSettings"
+        loanWallet:
+          $ref: "#/components/schemas/FinancingLoanWalletSettings"
+        type:
+          type: string
+          description: Typ financování v hotovosti
+          enum:
+            - CASH_LOAN
+            - LOAN_WALLET
+      title: FinancováníCashFinancování
+    FinancingConsolidationSettings:
+      type: object
+      properties:
+        installment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+      title: FinancováníKonsolidaceNastavení
+    FinancingFile:
+      type: object
+      properties:
+        content:
+          type: string
+          description: Obsah souboru (zakódováno Base64, maximální velikost zakódovaného
+            řetězce je 500 kB)
+        filename:
+          type: string
+          description: název souboru
+        url:
+          type: string
+          description: Adresa URL souboru
+      title: FinancováníFile
+    FinancingFinancedSubjectAbstract:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: Typ financovaného subjektu
+          enum:
+            - CASH
+            - LIABILITY
+            - ORDER
+            - WALLET
+      title: FinancingFinancedSubjectAbstract
+    FinancingFinancedSubjectCalculateOffers:
+      type: object
+      required:
+        - type
+      properties:
+        cash:
+          $ref: "#/components/schemas/FinancingCashCalculateOffers"
+        liability:
+          $ref: "#/components/schemas/FinancingLiabilityCalculateOffers"
+        type:
+          type: string
+          description: Typ financovaného subjektu
+          enum:
+            - CASH
+            - ORDER
+            - LIABILITY
+            - WALLET
+      title: FinancingFinancedSubjectCalculateOffers
+    FinancingInstallmentSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferovaný počet splátek (v měsících)
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+      title: FinancingInstallmentSettings
+    FinancingLiabilityBase:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/FinancingLiabilityFinancing"
+      title: FinancováníZákladna závazků
+    FinancingLiabilityCalculate:
+      type: object
+      required:
+        - type
+      properties:
+        consolidation:
+          $ref: "#/components/schemas/FinancingLiabilityCalculateSettings"
+        type:
+          type: string
+          enum:
+            - CONSOLIDATION
+      title: FinancováníZávazkyVypočítat
+    FinancingLiabilityCalculateOffers:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/FinancingLiabilityCalculate"
+      title: FinancováníZávazkyKalkulovatNabídky
+    FinancingLiabilityCalculateSettings:
+      type: object
+      properties:
+        productCode:
+          type: string
+        productSetCode:
+          type: string
+      title: FinancingLiabilityCalculateSettings
+    FinancingLiabilityFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        consolidation:
+          $ref: "#/components/schemas/FinancingConsolidationSettings"
+        type:
+          type: string
+          description: Typ financování závazků
+          enum:
+            - CONSOLIDATION
+      title: FinancováníZávazkyFinancování
+    FinancingLoanWalletOffer:
+      type: object
+      properties:
+        calculation:
+          $ref: "#/components/schemas/CalculationDetail"
+        creditAmount:
+          $ref: "#/components/schemas/PossibleCreditAmount"
+        flags:
+          type: array
+          items:
+            type: string
+            enum:
+              - FAVOURITE
+        productCode:
+          type: string
+        repaymentExamples:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancingRepaymentExample"
+      title: FinancováníPůjčkaPeněženkaNabídka
+    FinancingLoanWalletSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+        repaymentExamples:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancingRepaymentExample"
+      title: FinancingLoanWalletSettings
+    FinancingMerchantOrder:
+      type: object
+      required:
+        - name
+      properties:
+        businessId:
+          type: string
+          description: Identifikační číslo společnosti
+          minLength: 0
+          maxLength: 8
+          pattern: \d*
+        items:
+          type: array
+          description: Informace o jednotlivých položkách objednávky obchodníka
+          items:
+            $ref: "#/components/schemas/FinancingOrderItem"
+        logo:
+          $ref: "#/components/schemas/FinancingFile"
+        name:
+          type: string
+          description: Název obchodníka
+          minLength: 0
+          maxLength: 60
+        number:
+          type: string
+          description: Interní číslo objednávky obchodníka (e-shop, POS obchod).
+          minLength: 0
+          maxLength: 100
+        url:
+          type: string
+          description: Adresa URL webové stránky obchodníka (e-shopu)
+          minLength: 0
+          maxLength: 1000
+      title: FinancingMerchantOrder
+    FinancingOrderItem:
+      type: object
+      required:
+        - name
+        - totalPrice
+      properties:
+        code:
+          type: string
+          description: Interní kód položky (interní pro e-shop). Slouží k lepší
+            identifikaci položky pro budoucí změny
+          minLength: 0
+          maxLength: 100
+        ean:
+          type: string
+          description: EAN kód
+          minLength: 0
+          maxLength: 32
+        image:
+          $ref: "#/components/schemas/FinancingFile"
+        name:
+          type: string
+          description: Název položky
+        producer:
+          type: string
+          description: Výrobce
+        quantity:
+          type: integer
+          format: int64
+          description: Množství položky. Pokud je prázdný, považuje se za 1
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          description: typ položky
+          enum:
+            - DIGITAL
+            - DISCOUNT
+            - FEE
+            - GIFT_CARD
+            - INSURANCE
+            - PHYSICAL
+            - SALES_TAX
+            - SHIPPING_FEE
+            - STORE_CREDIT
+        unitPrice:
+          $ref: "#/components/schemas/Amount"
+      title: FinancingOrderItem
+    FinancingOrderItemBase:
+      type: object
+      required:
+        - name
+      properties:
+        code:
+          type: string
+          description: Interní kód položky (interní pro e-shop). Slouží k lepší
+            identifikaci položky pro budoucí změny
+          minLength: 0
+          maxLength: 100
+        ean:
+          type: string
+          description: EAN kód
+          minLength: 0
+          maxLength: 32
+        name:
+          type: string
+          description: Název položky
+        quantity:
+          type: integer
+          format: int64
+          description: Množství položky. Pokud je prázdný, považuje se za 1
+      title: FinancingOrderItemBase
+    FinancingParameter:
+      type: object
+      required:
+        - type
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        amountWithoutVat:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          description: Typ financování
+          enum:
+            - BASE
+            - EARLY_REPAYMENT_FEE
+            - EARNING
+            - EXCESSIVE_WEAR_FEE
+            - REDEMPTION_VALUE
+            - RESIDUAL_VALUE
+      title: FinancingParameter
+    FinancingProductOffer:
+      type: object
+      properties:
+        calculation:
+          $ref: "#/components/schemas/CalculationDetail"
+        creditAmount:
+          $ref: "#/components/schemas/PossibleCreditAmount"
+        flags:
+          type: array
+          items:
+            type: string
+            enum:
+              - FAVOURITE
+        productCode:
+          type: string
+      title: FinancováníProduktNabídka
+    FinancingRedirectUrl:
+      type: object
+      properties:
+        gatewayRedirectUrl:
+          type: string
+          description: Adresa URL přesměrování brány. Přesměrování uživatele na tuto
+            adresu URL pro dokončení této aplikace.
+      title: FinancingRedirectUrl
+    FinancingRepaymentExample:
+      type: object
+      properties:
+        amountToPay:
+          $ref: "#/components/schemas/Amount"
+        flags:
+          type: array
+          items:
+            type: string
+            enum:
+              - FAVOURITE
+        installment:
+          $ref: "#/components/schemas/Amount"
+        maturityTextForm:
+          type: string
+        numberOfInstallments:
+          type: integer
+          format: int32
+      title: FinancingRepaymentExample
+    FinancingSettings:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+      title: FinancingSettings
+    FinancingV1AdditionalDataRequest:
+      type: object
+      properties:
+        idCard:
+          type: string
+          description: Číslo průkazu totožnosti
+        idCardExpiryDate:
+          type: string
+          format: date
+          description: Datum ukončení platnosti průkazu totožnosti
+        idCardScan:
+          $ref: "#/components/schemas/FinancingV1IdCardScan"
+        personalId:
+          type: string
+          description: Osobní identifikační číslo (formát XXXXXXYYYY nebo XXXXXX/[Y]YYY)
+      title: FinancingV1AdditionalDataRequest
+    FinancingV1Address:
+      type: object
+      properties:
+        addressType:
+          type: string
+          description: typ adresy. V každém kontextu jsou povoleny pouze některé typy.
+          enum:
+            - PERMANENT
+            - CONTACT
+            - DELIVERY
+            - BILLING
+        city:
+          type: string
+          description: city
+        name:
+          type: string
+          description: jméno na adrese
+        streetAddress:
+          type: string
+          description: ulice/městská část
+        streetNumber:
+          type: string
+          description: číslo ulice
+        zip:
+          type: string
+          description: poštovní směrovací číslo
+      title: FinancingV1Address
+    FinancingV1Amount:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          description: Částka v desetinném formátu
+        currency:
+          type: string
+          description: Měna částky. ISO 4217
+      title: FinancingV1Amount
+    FinancingV1Application:
+      type: object
+      required:
+        - id
+        - state
+      properties:
+        customer:
+          $ref: "#/components/schemas/FinancingV1CustomerBase"
+        gatewayRedirectUrl:
+          type: string
+          description: Adresa URL přesměrování brány. Přesměrování uživatele na tuto
+            adresu URL, pokud je stav PROCESOVÁNÍ a stavDůvod je
+            PROCESOVÁNÍ_DOPLŇUJÍCÍ_ÚDAJE nebo PROCESOVÁNÍ_VYLEPŠENÍ nebo
+            PROCESOVÁNÍ_PŘESMĚROVÁNÍ_POTŘEBNÉ.
+        id:
+          type: string
+          description: Jedinečný identifikátor v HCO
+        order:
+          $ref: "#/components/schemas/FinancingV1Order"
+        settingsConsumerLoan:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        settingsGoodsFinancing:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        settingsInstallment:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        state:
+          type: string
+          description: Stav aplikace.
+          enum:
+            - CANCELLED
+            - PROCESSING
+            - READY
+            - REJECTED
+        stateReason:
+          type: string
+          description: Popisuje vnitřní stav aplikace, např. když je stav PROCESSING -
+            důvod, proč aplikace zůstává ve stavu zpracování
+          enum:
+            - CANCELLED_NOT_PAID
+            - CANCELLED_RETURNED
+            - CANCELLED_TO_RETURN
+            - PROCESSING_ADDITIONAL_DATA
+            - PROCESSING_ALT_OFFER
+            - PROCESSING_APPROVED
+            - PROCESSING_NEW
+            - PROCESSING_PREAPPROVED
+            - PROCESSING_REDIRECT_NEEDED
+            - PROCESSING_REVIEW
+            - PROCESSING_SIGNED
+            - PROCESSING_VALIDATION_IN_PROGRESS
+            - PROCESSING_VERIFICATION
+            - READY_DELIVERED
+            - READY_DELIVERING
+            - READY_PAID
+            - READY_SHIPPED
+            - READY_TO_SHIP
+            - REJECTED
+        type:
+          type: string
+          description: Typ financování
+          enum:
+            - CONSUMER_LOAN
+            - GOODS_FINANCING
+            - INSTALLMENT
+            - OPERATING_LEASE
+      title: FinancingV1Application
+    FinancingV1ApplicationBase:
+      type: object
+      required:
+        - id
+        - state
+      properties:
+        id:
+          type: string
+          description: Jedinečný identifikátor v HCO
+        state:
+          type: string
+          description: Stav aplikace.
+          enum:
+            - CANCELLED
+            - PROCESSING
+            - READY
+            - REJECTED
+        stateReason:
+          type: string
+          description: Popisuje vnitřní stav aplikace, např. když je stav PROCESSING -
+            důvod, proč aplikace zůstává ve stavu zpracování
+          enum:
+            - CANCELLED_NOT_PAID
+            - CANCELLED_RETURNED
+            - CANCELLED_TO_RETURN
+            - PROCESSING_ADDITIONAL_DATA
+            - PROCESSING_ALT_OFFER
+            - PROCESSING_APPROVED
+            - PROCESSING_NEW
+            - PROCESSING_PREAPPROVED
+            - PROCESSING_REDIRECT_NEEDED
+            - PROCESSING_REVIEW
+            - PROCESSING_SIGNED
+            - PROCESSING_VALIDATION_IN_PROGRESS
+            - PROCESSING_VERIFICATION
+            - READY_DELIVERED
+            - READY_DELIVERING
+            - READY_PAID
+            - READY_SHIPPED
+            - READY_TO_SHIP
+            - REJECTED
+      title: FinancingV1ApplicationBase
+    FinancingV1ApplicationCancelRequest:
+      type: object
+      properties:
+        customReason:
+          type: string
+          description: Specifikace důvodu APPLICATION_CANCELLED_OTHER
+        reason:
+          type: string
+          description: Důvod zrušení. Pokud není nastaven, považuje se za
+            APPLICATION_CANCELLED_OTHER.
+          enum:
+            - APPLICATION_CANCELLED_CARRIER_CHANGED
+            - APPLICATION_CANCELLED_CART_CONTENT_CHANGED
+            - APPLICATION_CANCELLED_BY_CUSTOMER
+            - APPLICATION_CANCELLED_BY_ERP
+            - APPLICATION_CANCELLED_EXPIRED
+            - APPLICATION_CANCELLED_UNFINISHED
+            - APPLICATION_CANCELLED_BY_ESHOP_RULES
+            - APPLICATION_CANCELLED_OTHER
+      title: FinancingV1ApplicationCancelRequest
+    FinancingV1ApplicationRequest:
+      type: object
+      required:
+        - merchantUrls
+        - order
+        - type
+      properties:
+        customer:
+          $ref: "#/components/schemas/FinancingV1ApplicationRequestCustomer"
+        merchantUrls:
+          $ref: "#/components/schemas/FinancingV1MerchantUrls"
+        order:
+          $ref: "#/components/schemas/FinancingV1ApplicationRequestOrder"
+        precheckIds:
+          type: array
+          description: Pole všech identifikátorů předkontroly souvisejících s touto
+            aplikací. Viz operace precheck a její odezva (PrecheckResults).
+          items:
+            type: string
+        settingsConsumerLoan:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        settingsGoodsFinancing:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        settingsInstallment:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        type:
+          type: string
+          description: Typ financování
+          enum:
+            - CONSUMER_LOAN
+            - GOODS_FINANCING
+            - INSTALLMENT
+      title: FinancingV1ApplicationRequest
+    FinancingV1ApplicationRequestCustomer:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: adresy. Povoleny jsou pouze typy `PERMANENT` a `CONTACT`.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        email:
+          type: string
+          description: E-mailová adresa zákazníka
+        extraData:
+          $ref: "#/components/schemas/FinancingV1CustomerExtraData"
+        fingerprintComponents:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeyValue"
+        firstName:
+          type: string
+          description: Křestní jméno (jméno) zákazníka
+        fullName:
+          type: string
+          description: Celé jméno zákazníka včetně akademických titulů a pozdravu.
+        ipAddress:
+          type: string
+          description: IPv4 nebo IPv6 adresa zákazníka
+        lastName:
+          type: string
+          description: Příjmení zákazníka
+        phone:
+          type: string
+          description: Telefonní číslo s předvolbou země (včetně počátečního `+`)
+        tin:
+          type: string
+          description: daňové identifikační číslo (ICO)
+      title: FinancingV1ApplicationRequestCustomer
+    FinancingV1ApplicationRequestOrder:
+      type: object
+      required:
+        - items
+        - number
+        - totalPrice
+      properties:
+        deliveryType:
+          type: string
+          description: typ doručení, u typu `DELIVERY_CARRIER` lze dále specifikovat
+            atributem DeliveryCarrier.Typ doruceni. Dopravcem, osobni prevzeti,
+            online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: objednat položky
+          items:
+            $ref: "#/components/schemas/FinancingV1ApplicationRequestOrderItem"
+        number:
+          type: string
+          description: číslo objednávky (interní pro e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Datum a čas do objednání je rezervován. Po tomto datu e-shop
+            negarantuje dostupnost zboží (pokud je zpracování žádosti delší,
+            může to ohrozit vyřízení objednávky).
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variabilní symboly (interní pro e-shop)
+          items:
+            type: string
+      title: FinancingV1ApplicationRequestOrder
+    FinancingV1ApplicationRequestOrderItem:
+      type: object
+      required:
+        - name
+        - totalPrice
+      properties:
+        code:
+          type: string
+          description: interní kód položky (interní pro e-shop). Slouží k lepší
+            identifikaci položky pro budoucí změny
+          minLength: 0
+          maxLength: 100
+        ean:
+          type: string
+          description: EAN kód
+          minLength: 0
+          maxLength: 32
+        image:
+          $ref: "#/components/schemas/FinancingFile"
+        name:
+          type: string
+          description: název položky
+        producer:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+          description: Množství položky
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        type:
+          type: string
+          description: typ položky
+          enum:
+            - DIGITAL
+            - DISCOUNT
+            - FEE
+            - GIFT_CARD
+            - INSURANCE
+            - PHYSICAL
+            - SALES_TAX
+            - SHIPPING_FEE
+            - STORE_CREDIT
+        unitPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+      title: FinancingV1ApplicationRequestOrderItem
+    FinancingV1CustomerBase:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: adresy. Povoleny jsou pouze typy `PERMANENT` a `CONTACT`.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        email:
+          type: string
+          description: E-mailová adresa zákazníka
+        firstName:
+          type: string
+          description: Křestní jméno (jméno) zákazníka
+        fullName:
+          type: string
+          description: Celé jméno zákazníka včetně akademických titulů a pozdravu.
+        lastName:
+          type: string
+          description: Příjmení zákazníka
+        phone:
+          type: string
+          description: Telefonní číslo s předvolbou země (včetně počátečního `+`)
+        tin:
+          type: string
+          description: daňové identifikační číslo (ICO)
+      title: FinancingV1CustomerBase
+    FinancingV1CustomerExtraData:
+      type: object
+      properties:
+        cartItemsRemoved:
+          type: integer
+          format: int64
+          description: Celkový počet odstraněných položek z nákupního košíku během
+            aktuálního nákupu
+        cashlessTransactionsNumber:
+          type: integer
+          format: int64
+          description: Historický počet bezhotovostních transakcí provedených zákazníky v
+            e-shopu partnera
+        cashlessTransactionsSum:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        earliestTransactionDate:
+          type: string
+          format: date
+          description: datum nejstarší transakce v partnerském e-shopu
+        itemsViewed:
+          type: integer
+          format: int64
+          description: Počet zobrazených stránek s produkty
+        latestTransactionDate:
+          type: string
+          format: date
+          description: datum nejnovější transakce v partnerském e-shopu.
+        pageReviewsTime:
+          type: integer
+          format: int64
+          description: Celkový čas strávený na webových stránkách partnerů v sekcích
+            recenzí a komentářů (v sekundách)
+        pageTotalTime:
+          type: integer
+          format: int64
+          description: Celkový čas strávený na webových stránkách partnerů (v sekundách)
+        transactionsNumber:
+          type: integer
+          format: int64
+          description: Historický počet hotovostních transakcí zákazníků provedených v
+            e-shopu partnera
+        transactionsSum:
+          $ref: "#/components/schemas/FinancingV1Amount"
+      title: FinancingV1CustomerExtraData
+    FinancingV1DeliveryCarrier:
+      type: object
+      properties:
+        carrierCustom:
+          type: string
+          description: pro dopravce, kteří nebyli nalezeni ve výčtu ID zákazníka, zadejte
+            hodnotu jako text
+        carrierId:
+          type: string
+          enum:
+            - CZ_POST_HAND
+            - CZ_POST_OFFICE
+            - CZ_POST_OTHER
+            - PPL
+            - DPD
+            - GEIS
+            - IN_TIME
+            - TOP_TRANS
+            - GEBRUDER_WEISS
+            - LOCAL_COURIER
+            - TNT
+            - GLS
+            - HDS_COMFORT
+            - HDS_STANDARD
+      title: FinancováníV1DodáníPřepravce
+    FinancingV1Document:
+      type: object
+      required:
+        - file
+        - type
+      properties:
+        description:
+          type: string
+          description: Popis souboru
+        extraData:
+          $ref: "#/components/schemas/FinancingV1DocumentExtraData"
+        file:
+          $ref: "#/components/schemas/FinancingFile"
+        type:
+          type: string
+          description: Typ dokumentu
+          enum:
+            - INVOICE
+            - PROFORMA_INVOICE
+            - CREDIT_NOTE
+            - OTHER
+      title: FinancingV1Document
+    FinancingV1DocumentExtraData:
+      type: object
+      properties:
+        variableSymbol:
+          type: string
+          description: variabilní symbol (interní pro e-shop)
+      title: FinancingV1DocumentExtraData
+    FinancingV1FinancingSettings:
+      type: object
+      properties:
+        preferredDownPayment:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        preferredInstallment:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferovaný počet splátek (v měsících)
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady produktů, který omezí další výpočty
+      title: FinancingV1FinancingSettings
+    FinancingV1IdCardScan:
+      type: object
+      properties:
+        back:
+          $ref: "#/components/schemas/FinancingFile"
+        front:
+          $ref: "#/components/schemas/FinancingFile"
+      title: FinancingV1IdCardScan
+    FinancingV1Limit:
+      type: object
+      required:
+        - availableLimit
+        - totalLimit
+      properties:
+        availableLimit:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        totalLimit:
+          $ref: "#/components/schemas/FinancingV1Amount"
+      title: FinancováníV1Limit
+    FinancingV1MerchantUrls:
+      type: object
+      required:
+        - approvedRedirect
+        - rejectedRedirect
+      properties:
+        approvedRedirect:
+          type: string
+          description: Adresa URL partnera používaná pro přesměrování zákazníka zpět na
+            partnerské webové stránky (z brány HCO) po schválení žádosti.
+        notificationEndpoint:
+          type: string
+          description: Adresa URL partnera používaná jako koncový bod oznámení pro
+            získávání důležitých aktualizací o žádosti (schválení, zamítnutí,
+            storno atd.).
+        rejectedRedirect:
+          type: string
+          description: Adresa URL partnera použitá pro přesměrování zákazníka zpět na
+            webové stránky partnera (z brány HCO) po zamítnutí žádosti.
+      title: FinancováníV1MerchantUrls
+    FinancingV1Order:
+      type: object
+      required:
+        - items
+        - number
+        - state
+        - totalPrice
+      properties:
+        deliveryDate:
+          type: string
+          format: date
+          description: datum a čas doručení
+        deliveryTrackingNumber:
+          type: string
+          description: sledovací číslo dodávky
+        deliveryType:
+          type: string
+          description: typ doručení, pro typ `DELIVERY_CARRIER` lze dále specifikovat
+            atributem DeliveryCarrier.Typ doruceni. Dopravcem, osobni prevzeti,
+            online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: objednat položky
+          items:
+            $ref: "#/components/schemas/FinancingV1OrderItem"
+        number:
+          type: string
+          description: číslo objednávky (interní pro e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Datum a čas do objednání je rezervován. Po tomto datu e-shop
+            negarantuje dostupnost zboží (pokud je zpracování žádosti delší,
+            může to ohrozit vyřízení objednávky).
+        sentDate:
+          type: string
+          format: date
+          description: datum a čas odeslání objednávky
+        state:
+          type: string
+          description: Stav objednávky
+          enum:
+            - CANCELLED
+            - DELIVERED
+            - PROCESSING
+            - RETURNED
+            - SENT
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variabilní symboly (interní pro e-shop)
+          items:
+            type: string
+      title: FinancingV1Order
+    FinancingV1OrderChange:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: Adresy. Povoleny jsou pouze typy `BILLING` a `DELIVERY`.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        deliveryCarrier:
+          $ref: "#/components/schemas/FinancingV1DeliveryCarrier"
+        deliveryType:
+          type: string
+          description: typ doručení, pro typ `DELIVERY_CARRIER` lze dále specifikovat
+            atributem DeliveryCarrier.Typ doruceni. Dopravcem, osobni prevzeti,
+            online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        documents:
+          type: array
+          description: přiložené dokumenty (faktury atd.)
+          items:
+            $ref: "#/components/schemas/FinancingV1Document"
+        items:
+          type: array
+          description: objednat položky
+          items:
+            $ref: "#/components/schemas/FinancingV1ApplicationRequestOrderItem"
+        number:
+          type: string
+          description: číslo objednávky (interní pro e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Datum a čas do objednání je rezervován. Po tomto datu e-shop
+            negarantuje dostupnost zboží (pokud je zpracování žádosti delší,
+            může to ohrozit vyřízení objednávky).
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variabilní symboly (interní pro e-shop)
+          items:
+            type: string
+      title: FinancingV1OrderChange
+    FinancingV1OrderChangeRequest:
+      type: object
+      required:
+        - order
+      properties:
+        order:
+          $ref: "#/components/schemas/FinancingV1OrderChange"
+        reason:
+          type: string
+          description: Důvod změny
+      title: FinancingV1OrderChangeRequest
+    FinancingV1OrderExtended:
+      type: object
+      required:
+        - applicationInfo
+        - items
+        - number
+        - state
+        - totalPrice
+      properties:
+        applicationInfo:
+          $ref: "#/components/schemas/FinancingV1ApplicationBase"
+        deliveryDate:
+          type: string
+          format: date
+          description: datum a čas doručení
+        deliveryTrackingNumber:
+          type: string
+          description: sledovací číslo dodávky
+        deliveryType:
+          type: string
+          description: typ doručení, pro typ `DELIVERY_CARRIER` lze dále specifikovat
+            atributem DeliveryCarrier.Typ doruceni. Dopravcem, osobni prevzeti,
+            online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: objednat položky
+          items:
+            $ref: "#/components/schemas/FinancingV1OrderItem"
+        number:
+          type: string
+          description: číslo objednávky (interní pro e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Datum a čas do objednání je rezervován. Po tomto datu e-shop
+            negarantuje dostupnost zboží (pokud je zpracování žádosti delší,
+            může to ohrozit vyřízení objednávky).
+        sentDate:
+          type: string
+          format: date
+          description: datum a čas odeslání objednávky
+        state:
+          type: string
+          description: Stav objednávky
+          enum:
+            - CANCELLED
+            - DELIVERED
+            - PROCESSING
+            - RETURNED
+            - SENT
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variabilní symboly (interní pro e-shop)
+          items:
+            type: string
+      title: FinancingV1OrderExtended
+    FinancingV1OrderItem:
+      type: object
+      required:
+        - name
+        - state
+        - totalPrice
+      properties:
+        code:
+          type: string
+          description: interní kód položky (interní pro e-shop). Slouží k lepší
+            identifikaci položky pro budoucí změny
+          minLength: 0
+          maxLength: 100
+        deliveryDate:
+          type: string
+          format: date
+          description: datum dodání položky. Pouze v případě, že celá objednávka NEBYLA
+            odeslána najednou.
+        deliveryTrackingNumber:
+          type: string
+          description: Sledovací číslo položky. Pouze v případě, že celá objednávka NEBYLA
+            odeslána najednou.
+        ean:
+          type: string
+          description: EAN kód
+          minLength: 0
+          maxLength: 32
+        image:
+          $ref: "#/components/schemas/FinancingFile"
+        name:
+          type: string
+          description: název položky
+        producer:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+          description: Množství položky
+        sentDate:
+          type: string
+          format: date
+          description: datum odeslání položky. Pouze v případě, že celá objednávka NEBYLA
+            odeslána najednou.
+        state:
+          type: string
+          enum:
+            - CANCELLED
+            - DELIVERED
+            - PROCESSING
+            - RETURNED
+            - SENT
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        type:
+          type: string
+          description: typ položky
+          enum:
+            - DIGITAL
+            - DISCOUNT
+            - FEE
+            - GIFT_CARD
+            - INSURANCE
+            - PHYSICAL
+            - SALES_TAX
+            - SHIPPING_FEE
+            - STORE_CREDIT
+        unitPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+      title: FinancingV1OrderItem
+    FinancingV1PrecheckRequest:
+      type: object
+      properties:
+        agreementPersonalDataProcessing:
+          type: boolean
+          description: příznak označující již schválené zpracování osobních údajů
+        customer:
+          $ref: "#/components/schemas/FinancingV1PrecheckRequestCustomer"
+        order:
+          $ref: "#/components/schemas/FinancingV1PrecheckRequestOrder"
+        settingsInstallment:
+          $ref: "#/components/schemas/FinancingV1FinancingSettings"
+        type:
+          type: string
+          description: Typ financování
+          enum:
+            - CONSUMER_LOAN
+            - GOODS_FINANCING
+            - INSTALLMENT
+            - OPERATING_LEASE
+      title: FinancingV1PrecheckRequest
+    FinancingV1PrecheckRequestCustomer:
+      type: object
+      properties:
+        additionalData:
+          $ref: "#/components/schemas/FinancingV1AdditionalDataRequest"
+        addresses:
+          type: array
+          description: adresy. Povoleny jsou pouze typy `PERMANENT` a `CONTACT`.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        email:
+          type: string
+          description: E-mailová adresa zákazníka
+        extraData:
+          $ref: "#/components/schemas/FinancingV1CustomerExtraData"
+        fingerprintComponents:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeyValue"
+        firstName:
+          type: string
+          description: Křestní jméno (jméno) zákazníka
+        fullName:
+          type: string
+          description: Celé jméno zákazníka včetně akademických titulů a pozdravu.
+        ipAddress:
+          type: string
+          description: IPv4 nebo IPv6 adresa zákazníka
+        lastName:
+          type: string
+          description: Příjmení zákazníka
+        phone:
+          type: string
+          description: Telefonní číslo s předvolbou země (včetně počátečního `+`)
+        tin:
+          type: string
+          description: daňové identifikační číslo (ICO)
+      title: FinancingV1PrecheckRequestCustomer
+    FinancingV1PrecheckRequestOrder:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: adresy. Povoleny jsou pouze typy `BILLING` a `DELIVERY`.
+          items:
+            $ref: "#/components/schemas/FinancingV1Address"
+        deliveryCarrier:
+          $ref: "#/components/schemas/FinancingV1DeliveryCarrier"
+        deliveryType:
+          type: string
+          description: typ doručení, pro typ `DELIVERY_CARRIER` lze dále specifikovat
+            atributem DeliveryCarrier.Typ doruceni. Dopravcem, osobni prevzeti,
+            online doruceni atd.
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        documents:
+          type: array
+          description: přiložené dokumenty (faktury atd.)
+          items:
+            $ref: "#/components/schemas/FinancingV1Document"
+        items:
+          type: array
+          description: objednat položky
+          items:
+            $ref: "#/components/schemas/FinancingV1ApplicationRequestOrderItem"
+        number:
+          type: string
+          description: číslo objednávky (interní pro e-shop)
+        reservationDate:
+          type: string
+          format: date-time
+          description: Datum a čas do objednání je rezervován. Po tomto datu e-shop
+            negarantuje dostupnost zboží (pokud je zpracování žádosti delší,
+            může to ohrozit vyřízení objednávky).
+        totalPrice:
+          $ref: "#/components/schemas/FinancingV1Amount"
+        variableSymbols:
+          type: array
+          description: variabilní symboly (interní pro e-shop)
+          items:
+            type: string
+      title: FinancingV1PrecheckRequestOrder
+    FinancingV1PrecheckResponse:
+      type: object
+      required:
+        - id
+        - results
+      properties:
+        id:
+          type: string
+        limits:
+          $ref: "#/components/schemas/FinancingV1Limit"
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancingV1PrecheckResult"
+      title: FinancingV1PrecheckResponse
+    FinancingV1PrecheckResult:
+      type: object
+      required:
+        - code
+        - customerDueDateCategory
+        - customerType
+        - probabilityOfApproval
+        - recommendation
+        - revolvingUsability
+        - type
+      properties:
+        additionalActions:
+          type: array
+          items:
+            type: string
+        additionalData:
+          type: array
+          items:
+            type: string
+        code:
+          type: string
+          enum:
+            - OK
+            - UNKNOWN
+            - ADDITIONAL_DATA_SECURITY
+            - ADDITIONAL_DATA_LIMIT
+            - INSUFFICIENT_LIMIT
+            - INSUFFICIENT_LIMIT_OPPORTUNITY
+            - DETAILS_NOT_MATCHING
+            - REVOLVING_REQUIRED
+            - NOT_AVAILABLE
+        completeness:
+          type: number
+        customerDueDateCategory:
+          type: string
+          enum:
+            - CATEGORY_CLASSIC
+            - CATEGORY_EXTENDED
+        customerOrdersCountLimit:
+          type: integer
+          format: int64
+          description: Maximální počet objednávek, které může zákazník provést.
+            Nenastavuje se, pokud není stanoven žádný limit.
+        customerOrdersCountRemaining:
+          type: integer
+          format: int64
+          description: Počet zbývajících objednávek, které může zákazník provést.
+            Nenastavuje se, pokud není stanoven žádný limit.
+        customerType:
+          type: string
+          enum:
+            - UNKNOWN
+            - FIRST_ORDER
+            - FULL
+            - BLOCKED
+        message:
+          type: string
+        probabilityOfApproval:
+          type: number
+          format: float
+        recommendation:
+          type: boolean
+        revolvingCode:
+          type: string
+          enum:
+            - OK
+            - ADDITIONAL_DATA_SECURITY
+            - ADDITIONAL_ACTION
+            - NEW_REVOLVING
+            - NOT_AVAILABLE
+        revolvingUsability:
+          type: boolean
+        type:
+          type: string
+          enum:
+            - DEFERRED_PAYMENT
+            - INSTALLMENT
+            - SUBSCRIPTION
+            - TRY_AND_PAY
+      title: FinancingV1PrecheckResult
+    FinancingV1ScoringPrecheckRequest:
+      type: object
+      required:
+        - customer
+      properties:
+        customer:
+          $ref: "#/components/schemas/FinancingV1ApplicationRequestCustomer"
+      title: FinancingV1ScoringPrecheckRequest
+    FinancingV1ScoringPrecheckResponse:
+      type: object
+      required:
+        - id
+        - recommendation
+      properties:
+        id:
+          type: string
+          description: Jedinečný identifikátor Precheck. Tento identifikátor odešlete v
+            žádosti ApplicationRequest, abyste dosáhli vyšší míry schválení.
+        message:
+          type: string
+          description: Vlastní zpráva pro zákazníka.
+        recommendation:
+          type: boolean
+          description: Doporučení, zda by měl být příkaz předán HCO. true = Žádost bude
+            pravděpodobně schválena. false = Žádost bude pravděpodobně
+            zamítnuta.
+      title: FinancingV1ScoringPrecheckResponse
+    FinancingWorkflowStep:
+      type: object
+      properties:
+        cancellation:
+          $ref: "#/components/schemas/Cancellation"
+        code:
+          type: string
+          description: Kód pracovního postupu
+          enum:
+            - CANCELLATION
+            - DELIVERY
+            - REDIRECT
+        mandatory:
+          type: boolean
+          description: Je tento krok povinný
+        priority:
+          type: integer
+          format: int64
+          description: Priorita pracovního postupu
+        redirect:
+          $ref: "#/components/schemas/FinancingRedirectUrl"
+      title: FinancováníPracovní postupKrok
+    GoodsFinancingSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferovaný počet splátek (v měsících)
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+      title: GoodsFinancingSettings
+    IdentificationDocumentFull:
+      type: object
+      required:
+        - number
+      properties:
+        issuer:
+          type: string
+          description: Vydavatel dokladu
+        number:
+          type: string
+          description: Číslo identifikačního dokladu
+          minLength: 0
+          maxLength: 100
+        validity:
+          type: string
+          format: date
+          description: Datum, do kterého je dokument platný<br>Vyžadováno pouze v kontextu
+            FullDocument
+      title: IdentificationDocumentFull
+    Income:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        employee:
+          $ref: "#/components/schemas/Employee"
+        entrepreneur:
+          $ref: "#/components/schemas/Entrepreneur"
+        type:
+          type: string
+          enum:
+            - ANNUITY
+            - CAREGIVER
+            - CLOSE_PERSON_CARE
+            - DISABLED_PENSIONER
+            - EMPLOYEE
+            - EMPLOYEE_ABROAD
+            - EMPLOYEE_ON_MATERNITY_LEAVE
+            - ENTREPRENEUR
+            - FREELANCE_PROFESSIONS
+            - HOUSEWIFE
+            - MATERNITY_LEAVE
+            - NOT_FILLED
+            - OTHER
+            - PARENT_HOLIDAY
+            - PART_TIME
+            - PENSIONER
+            - RENTIER
+            - SOLDIER_OF_BASIC_SERVICE
+            - STATE_EMPLOYEE
+            - STUDENT
+            - UNEMPLOYED
+            - WORK_AGREEMENT
+      title: Příjmy
+    InstallmentProgram:
+      type: object
+      properties:
+        detail:
+          $ref: "#/components/schemas/Detail"
+        flags:
+          type: array
+          description: Příznaky splátkového programu
+          items:
+            $ref: "#/components/schemas/InstallmentProgramFlag"
+        installment:
+          $ref: "#/components/schemas/Amount"
+        numberOfInstallments:
+          type: number
+          description: počet splátek
+        productCode:
+          type: string
+          description: Kód produktu splátkového programu
+        type:
+          type: string
+          description: Typ programu
+          enum:
+            - MINIMAL
+            - FAVOURITE
+            - OTHER
+      title: Splátkový program
+    InstallmentProgramDownPaymentsRequest:
+      type: object
+      required:
+        - price
+      properties:
+        price:
+          $ref: "#/components/schemas/Amount"
+        productSetCode:
+          type: string
+          description: Kód sady produktů, který omezí další výpočty
+      title: InstallmentProgramDownPaymentsRequest
+    InstallmentProgramDownPaymentsResponse:
+      type: object
+      properties:
+        maximum:
+          $ref: "#/components/schemas/Amount"
+        minimum:
+          $ref: "#/components/schemas/Amount"
+        step:
+          $ref: "#/components/schemas/Amount"
+      title: InstallmentProgramDownPaymentsResponse
+    InstallmentProgramFlag:
+      type: object
+      properties:
+        benefit:
+          type: string
+        delayFirstInstallment:
+          type: integer
+          format: int32
+        type:
+          type: string
+          enum:
+            - BENEFIT
+            - CLOSEST
+            - DELAY_FIRST_INSTALLMENT
+            - FAVOURITE
+            - MINIMAL
+      title: InstallmentProgramFlag
+    InstallmentProgramsOffersRequest:
+      type: object
+      required:
+        - price
+      properties:
+        downPayment:
+          $ref: "#/components/schemas/Amount"
+        price:
+          $ref: "#/components/schemas/Amount"
+        productSetCode:
+          type: string
+          description: Kód sady produktů, který omezí další výpočty
+      title: Splátkové programyNabídkyŽádosti
+    InstallmentProgramsRequest:
+      type: object
+      required:
+        - price
+        - productCode
+      properties:
+        downPayment:
+          $ref: "#/components/schemas/Amount"
+        price:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+      title: InstallmentProgramsRequest
+    InstallmentProgramsResponse:
+      type: object
+      properties:
+        installmentPrograms:
+          type: array
+          description: Array se splátkovými programy nabízí
+          items:
+            $ref: "#/components/schemas/InstallmentProgram"
+      title: Splátkové programyOdpověď
+    InstallmentScheduleParameter:
+      type: object
+      required:
+        - financingParameters
+        - numberOfInstallment
+      properties:
+        financingParameters:
+          type: array
+          description: Parametry pro vytvoření splátkového kalendáře
+          items:
+            $ref: "#/components/schemas/FinancingParameter"
+        numberOfInstallment:
+          type: integer
+          format: int32
+          description: Počet splátek
+      title: InstallmentScheduleParameter
+    InstallmentSettings:
+      type: object
+      properties:
+        flags:
+          type: array
+          description: Příznaky nastavení splátek
+          items:
+            type: string
+            enum:
+              - BUYBACK
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        preferredMonths:
+          type: integer
+          format: int64
+          description: Preferovaný počet splátek (v měsících)
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+        wallet:
+          $ref: "#/components/schemas/Wallet"
+      title: InstallmentSettings
+    Issue:
+      type: object
+      properties:
+        attribute:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum:
+            - ERROR
+            - WARN
+            - INFO
+        ticketId:
+          type: string
+      title: Vydání
+    IssueList:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Issue"
+      title: IssueList
+    KeyValue:
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+        value:
+          type: object
+      title: KeyValue
+    LiabilityBase:
+      type: object
+      required:
+        - financing
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/LiabilityFinancing"
+      title: LiabilityBase
+    LiabilityFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        consolidation:
+          $ref: "#/components/schemas/ConsolidationSettings"
+        type:
+          type: string
+          description: Typ financování závazků
+          enum:
+            - CONSOLIDATION
+      title: OdpovědnostFinancování
+    LoanWalletSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+        repaymentExamples:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepaymentExample"
+      title: LoanWalletSettings
+    MerchantOrder:
+      type: object
+      required:
+        - name
+        - totalPrice
+      properties:
+        businessIdentificationNumber:
+          type: string
+          description: Identifikační číslo společnosti
+          minLength: 0
+          maxLength: 8
+        deliveryType:
+          type: string
+          description: REG_177
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: Položky v pořadí
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        logo:
+          $ref: "#/components/schemas/FileData"
+        name:
+          type: string
+          description: Název obchodníka
+          minLength: 0
+          maxLength: 60
+        number:
+          type: string
+          description: Interní číslo objednávky obchodníka (e-shop, POS obchod).
+          minLength: 0
+          maxLength: 100
+        reservationDate:
+          type: string
+          format: date-time
+          description: Datum a čas do objednání je rezervován. Po tomto datu e-shop
+            negarantuje dostupnost zboží (pokud se zpracování žádosti protáhne,
+            může to ohrozit vyřízení objednávky).
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        url:
+          type: string
+          description: Adresa URL webové stránky obchodníka (e-shopu)
+      title: MerchantOrder
+    MerchantUrls:
+      type: object
+      properties:
+        approvedRedirect:
+          type: string
+          description: Adresa URL partnera používaná pro přesměrování zákazníka zpět na
+            partnerské webové stránky (z brány HCO) po schválení žádosti.
+          minLength: 0
+          maxLength: 1000
+        discontinuationRedirect:
+          type: string
+          description: Adresa URL partnera použitá pro návrat ke schválení žádosti po.
+          minLength: 0
+          maxLength: 1000
+        notificationEndpoint:
+          type: string
+          description: Adresa URL partnera používaná jako koncový bod oznámení pro
+            získávání důležitých aktualizací o žádosti (schválení, zamítnutí,
+            storno atd.).
+          minLength: 0
+          maxLength: 1000
+        rejectedRedirect:
+          type: string
+          description: Adresa URL partnera použitá pro přesměrování zákazníka zpět na
+            webové stránky partnera (z brány HCO) po zamítnutí žádosti.
+          minLength: 0
+          maxLength: 1000
+      title: MerchantUrls
+    NewShoppingWallet:
+      type: object
+      properties:
+        creditAmount:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Kód produktu
+        tariff:
+          $ref: "#/components/schemas/ContractTariff"
+      title: NewShoppingWallet
+    OperatingLeaseItem:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        code:
+          type: string
+          description: Interní kód
+          minLength: 0
+          maxLength: 100
+        goodsType:
+          type: string
+          description: Typ zboží - využívá pouze hodnoty z registru GOODS_TYPE
+        image:
+          $ref: "#/components/schemas/FileData"
+        name:
+          type: string
+          description: Název položky
+          minLength: 0
+          maxLength: 100
+        producer:
+          type: string
+          description: Výrobce
+          minLength: 0
+          maxLength: 50
+        quality:
+          type: string
+          description: Kvalita zboží - využívá pouze hodnoty z registru GOODS_QUALITY
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        totalPriceWithoutVat:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          description: Typ položky operativního leasingu
+          enum:
+            - ACCESSORY
+            - LEASED_GOODS
+            - SHIPPING_FEE
+      title: OperatingLeaseItem
+    OperatingLeaseOrder:
+      type: object
+      required:
+        - items
+      properties:
+        deliveryType:
+          type: string
+          description: REG_177
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: Položky v pořadí
+          items:
+            $ref: "#/components/schemas/OperatingLeaseItem"
+        reservationDate:
+          type: string
+          format: date-time
+          description: Datum a čas do rezervace objednávky
+        shippingCarrier:
+          type: string
+          description: Dopravce - využívá pouze hodnoty z registru SHIPPING_CARRIER
+      title: OperatingLeaseOrder
+    OperatingLeaseSettings:
+      type: object
+      required:
+        - installmentScheduleParameters
+        - productCode
+      properties:
+        installmentScheduleParameters:
+          type: array
+          description: Parametry pro vytvoření splátkového kalendáře
+          items:
+            $ref: "#/components/schemas/InstallmentScheduleParameter"
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        providedExternalServices:
+          type: array
+          description: Poskytované externí služby
+          items:
+            $ref: "#/components/schemas/ProvidedExternalService"
+      title: OperatingLeaseSettings
+    OrderBase:
+      type: object
+      required:
+        - financings
+        - totalPrice
+        - type
+      properties:
+        brokered:
+          $ref: "#/components/schemas/BrokeredOrder"
+        carLoan:
+          $ref: "#/components/schemas/CarLoanOrder"
+        financings:
+          type: array
+          description: Objednávka financování
+          items:
+            $ref: "#/components/schemas/OrderFinancing"
+        number:
+          type: string
+          description: číslo objednávky (interní pro e-shop)
+          minLength: 1
+          maxLength: 100
+        operatingLease:
+          $ref: "#/components/schemas/OperatingLeaseOrder"
+        preferredDownPayment:
+          $ref: "#/components/schemas/Amount"
+        specificSymbol:
+          type: string
+          minLength: 0
+          maxLength: 10
+        standard:
+          $ref: "#/components/schemas/StandardOrder"
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          enum:
+            - BROKERED
+            - CAR_LOAN
+            - OPERATING_LEASE
+            - STANDARD
+        variableSymbol:
+          type: string
+          description: variabilní symboly (interní pro e-shop)
+      title: OrderBase
+    OrderFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        consumerLoan:
+          $ref: "#/components/schemas/ConsumerLoanSettings"
+        goodsFinancing:
+          $ref: "#/components/schemas/GoodsFinancingSettings"
+        installment:
+          $ref: "#/components/schemas/InstallmentSettings"
+        operatingLease:
+          $ref: "#/components/schemas/OperatingLeaseSettings"
+        type:
+          type: string
+          description: Typ financování objednávky
+          enum:
+            - CONSUMER_LOAN
+            - GOODS_FINANCING
+            - INSTALLMENT
+            - OPERATING_LEASE
+      title: OrderFinancing
+    OrderItem:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Interní kód (interní pro e-shop). Slouží k lepší identifikaci
+            položky pro budoucí změny
+          minLength: 0
+          maxLength: 100
+        ean:
+          type: string
+          description: EAN kód
+          minLength: 0
+          maxLength: 32
+        image:
+          $ref: "#/components/schemas/FileData"
+        name:
+          type: string
+          description: Název položky
+          minLength: 0
+          maxLength: 60
+        producer:
+          type: string
+          description: Výrobce
+          minLength: 0
+          maxLength: 50
+        quantity:
+          type: integer
+          format: int32
+          description: Množství položky. Pokud je prázdný, považuje se za 1
+          minimum: 0
+          maximum: 99999
+          exclusiveMinimum: false
+          exclusiveMaximum: false
+        totalPrice:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          description: typ položky
+          enum:
+            - PHYSICAL
+            - DISCOUNT
+            - SHIPPING_FEE
+            - SALES_TAX
+            - DIGITAL
+            - GIFT_CARD
+            - STORE_CREDIT
+            - FEE
+            - INSURANCE
+        unitPrice:
+          $ref: "#/components/schemas/Amount"
+      title: OrderItem
+    OriginationChannel:
+      type: object
+      required:
+        - type
+      properties:
+        online:
+          $ref: "#/components/schemas/MerchantUrls"
+        phone:
+          $ref: "#/components/schemas/PhoneSettings"
+        type:
+          type: string
+          description: Typ původního kanálu
+          enum:
+            - ONLINE
+            - IN_PERSON
+            - PHONE
+      title: OriginationChannel
+    PagingInfo:
+      type: object
+      properties:
+        itemsPerPage:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+          description: Aktuální limit
+        nextPage:
+          type: string
+        offset:
+          type: integer
+          format: int32
+          description: Aktuální posun
+        prevPage:
+          type: string
+      title: PagingInfo
+    Phone:
+      type: object
+      required:
+        - value
+      properties:
+        countryCode:
+          type: string
+        value:
+          type: string
+      title: Telefon
+    PhoneSettings:
+      type: object
+      properties:
+        callRequest:
+          $ref: "#/components/schemas/CallRequest"
+        notificationEndpoint:
+          type: string
+          description: Adresa URL partnera používaná jako koncový bod oznámení pro
+            získávání důležitých aktualizací o žádosti (schválení, zamítnutí,
+            storno atd.).
+          minLength: 0
+          maxLength: 1000
+      title: PhoneSettings
+    PossibleCreditAmount:
+      type: object
+      properties:
+        fixed:
+          $ref: "#/components/schemas/Amount"
+        type:
+          type: string
+          enum:
+            - FIXED
+            - VARIABLE
+        variable:
+          $ref: "#/components/schemas/VariableAmount"
+      title: PossibleCreditAmount
+    PrimaryCompanyIncome:
+      type: object
+      properties:
+        financialData:
+          $ref: "#/components/schemas/FinancialDataCompany"
+      title: PrimaryCompanyIncome
+    PrimaryPersonalDocumentFull:
+      type: object
+      required:
+        - type
+      properties:
+        identityCard:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        name:
+          type: string
+          description: Název primárního dokumentu
+        residencePermit:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        temporaryResidencePermit:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        type:
+          type: string
+          description: Typ primárního dokumentu
+          enum:
+            - IDENTITY_CARD
+            - RESIDENCE_PERMIT
+            - TEMPORARY_RESIDENCE_PERMIT
+            - UNIDENTIFIED
+      title: PrimaryPersonalDocumentFull
+    ProvidedExternalService:
+      type: object
+      required:
+        - serviceType
+      properties:
+        extendedGuarantee:
+          $ref: "#/components/schemas/ExtendedGuarantee"
+        serviceType:
+          type: string
+          description: Typ externí služby
+          enum:
+            - EXTENDED_GUARANTEE
+      title: ProvidedExternalService
+    RepaymentExample:
+      type: object
+      properties:
+        amountToPay:
+          $ref: "#/components/schemas/Amount"
+        flags:
+          type: array
+          items:
+            type: string
+            enum:
+              - FAVOURITE
+        installment:
+          $ref: "#/components/schemas/Amount"
+        maturityText:
+          type: string
+        numberOfInstallments:
+          type: integer
+          format: int32
+      title: SpláceníPříklad
+    RequiredDocumentDetail:
+      type: object
+      required:
+        - category
+      properties:
+        category:
+          $ref: "#/components/schemas/RequiredDocumentDetailCategory"
+      title: RequiredDocumentDetail
+    RequiredDocumentDetailCategory:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Požadovaný kód typu kategorie
+          enum:
+            - BANK_ACCOUNT_STATEMENT
+            - CONSOLIDABLE_CONTRACT_DOCUMENTATION
+            - PRIMARY_DOCUMENT
+            - PROOF_OF_INCOME
+            - PROOF_OF_OTHER_INCOME
+            - SECONDARY_DOCUMENT
+            - TAX_RETURN
+        documentTypes:
+          type: array
+          description: Požadované typy dokumentů kategorie
+          items:
+            $ref: "#/components/schemas/RequiredDocumentDetailType"
+      title: RequiredDocumentDetailCategory
+    RequiredDocumentDetailType:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Požadovaný kód typu dokumentu
+          enum:
+            - ACADEMIC_CARD
+            - ACCEPTANCE_LETTER_OR_REPAYMENT_SCHEDULE
+            - BANK_ACCOUNT_STATEMENT
+            - BANK_ACCOUNT_STATEMENT_2
+            - BANK_ACCOUNT_STATEMENT_3
+            - BANK_ACCOUNT_STATEMENT_SALARY_INCLUDED
+            - BIRTH_CERTIFICATE
+            - BUSINESS_BANK_ACCOUNT_STATEMENT
+            - COMPANY_TAX_RETURN
+            - CONTRACT_EXCERPT
+            - DEBT_QUANTIFICATION
+            - DRIVING_LICENSE
+            - FOREIGN_IDENTITY_CARD
+            - GUN_LICENSE
+            - IDENTITY_CARD
+            - INKARTA_CD
+            - INSTALLMENT_SCHEDULE
+            - INSTALLMENT_SCHEDULE_AGREEMENT
+            - INSURANCE_CARD
+            - LAST_MONTH_BANK_ACCOUNT_STATEMENT
+            - LAST_MONTH_BANK_ACCOUNT_STATEMENT_OVERDRAFT
+            - LAST_MONTH_BANK_ACCOUNT_STATEMENT_SALARIES_INCLUDED
+            - LAST_MONTH_BANK_ACCOUNT_STATEMENT_SALARY_INCLUDED
+            - LAST_MONTH_CREDIT_CARD_STATEMENT
+            - LAST_MONTH_OVERDRAFT_ACCOUNT_STATEMENT
+            - OPEN_CARD
+            - PASSPORT
+            - PAYSLIP
+            - PENSION_ASSESSMENT
+            - POSTAL_BANK_DOCUMENTATION
+            - PROOF_OF_ASSISTANT_PAY
+            - PROOF_OF_DISABLED_PERSON_PAY
+            - PROOF_OF_FOSTER_PARENT_PAY
+            - PROOF_OF_INCOME
+            - PROOF_OF_MATERNITY_PAY
+            - RESIDENCE_PERMIT
+            - RETIREMENT_ASSESSMENT
+            - SURETY_DOCUMENTATION
+            - TAX_RETURN
+            - TAX_RETURN_AND_BANK_ACCOUNT_STATEMENT
+            - TEMPORARY_RESIDENCE_PERMIT
+      title: RequiredDocumentDetailType
+    SecondaryPersonalDocumentFull:
+      type: object
+      required:
+        - type
+      properties:
+        academicCard:
+          $ref: "#/components/schemas/AcademicIdentificationDocumentFull"
+        birthCertificate:
+          $ref: "#/components/schemas/BirthCertificateFull"
+        drivingLicense:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        foreignIdentityCard:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        gunLicense:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        insuranceCard:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        name:
+          type: string
+          description: Název sekundárního dokumentu
+        passport:
+          $ref: "#/components/schemas/IdentificationDocumentFull"
+        type:
+          type: string
+          description: Typ sekundárního dokumentu
+          enum:
+            - ACADEMIC_CARD
+            - BIRTH_CERTIFICATE
+            - DRIVING_LICENSE
+            - FOREIGN_IDENTITY_CARD
+            - GUN_LICENSE
+            - INSURANCE_CARD
+            - PASSPORT
+      title: SecondaryPersonalDocumentFull
+    ShoppingWallet:
+      type: object
+      properties:
+        newShoppingWallet:
+          $ref: "#/components/schemas/NewShoppingWallet"
+        type:
+          type: string
+          description: Typ nákupní peněženky
+          enum:
+            - NEW_SHOPPING_WALLET
+            - EXISTING_SHOPPING_WALLET
+      title: ShoppingWallet
+    ShoppingWalletSettings:
+      type: object
+      properties:
+        preferredInstallment:
+          $ref: "#/components/schemas/Amount"
+        productCode:
+          type: string
+          description: Kód produktu, označuje předchozí výsledek výpočtu
+        productSetCode:
+          type: string
+          description: Kód sady výrobků
+      title: ShoppingWalletSettings
+    StandardOrder:
+      type: object
+      properties:
+        deliveryType:
+          type: string
+          description: REG_177
+          enum:
+            - DELIVERY_CARRIER
+            - ONLINE
+            - PERSONAL_BRANCH
+            - PERSONAL_BRANCH_WITH_ASSISTANCE
+            - PERSONAL_PARTNER
+        items:
+          type: array
+          description: Položky v pořadí
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        reservationDate:
+          type: string
+          format: date-time
+          description: Datum a čas do objednání je rezervován. Po tomto datu e-shop
+            negarantuje dostupnost zboží (pokud se zpracování žádosti protáhne,
+            může to ohrozit vyřízení objednávky).
+      title: StandardOrder
+    VariableAmount:
+      type: object
+      properties:
+        maximum:
+          $ref: "#/components/schemas/Amount"
+        minimum:
+          $ref: "#/components/schemas/Amount"
+      title: VariableAmount
+    Wallet:
+      type: object
+      properties:
+        shoppingWallet:
+          $ref: "#/components/schemas/ShoppingWallet"
+        type:
+          type: string
+          description: Typ peněženky
+          enum:
+            - SHOPPING_WALLET
+            - LOAN_WALLET
+      title: Peněženka
+    WalletBase:
+      type: object
+      required:
+        - financing
+      properties:
+        amount:
+          $ref: "#/components/schemas/Amount"
+        financing:
+          $ref: "#/components/schemas/WalletFinancing"
+      title: WalletBase
+    WalletFinancing:
+      type: object
+      required:
+        - type
+      properties:
+        shoppingWallet:
+          $ref: "#/components/schemas/ShoppingWalletSettings"
+        type:
+          type: string
+          description: Typ financování peněženky
+          enum:
+            - SHOPPING_WALLET
+      title: WalletFinancing
+    ScoringData:
+      type: object
+      required:
+        - customer
+      properties:
+        customer:
+          $ref: "#/components/schemas/PrecheckCustomer"
+    PrecheckCustomer:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - phone
+        - externalId
+      properties:
+        firstName:
+          type: string
+          example: John
+          description: Křestní jméno zákazníka. Řetězcové hodnoty delší než 100 znaků
+            budou zkráceny na 100 znaků.
+        lastName:
+          type: string
+          example: Newborn
+          description: Příjmení zákazníka. Řetězcové hodnoty delší než 100 znaků budou
+            zkráceny na 100 znaků.
+        email:
+          type: string
+          example: john.newborn@country.com
+          description: E-mailová adresa zákazníka. MUSÍ to být platný e-mail podle [RFC
+            2822](https://tools.ietf.org/html/rfc2822).
+        phone:
+          type: string
+          example: "+420777123456"
+          description: Číslo mobilního telefonu s předvolbou země (včetně úvodního `+`).
+        externalId:
+          type: string
+          example: "1576849"
+          description: Jedinečný identifikátor zákazníka v systému partnera. Obvykle se
+            používá k propojení žádosti a odpovědi.
+    PrecheckResult:
+      type: object
+      required:
+        - id
+        - recommendation
+        - customer
+        - potentialCreditAmount
+      properties:
+        id:
+          type: string
+          example: "1234"
+          description: Jedinečný identifikátor Precheck. Odesláním tohoto identifikátoru v
+            žádosti ApplicationRequest zvýšíte míru schválení.
+        recommendation:
+          type: boolean
+          description: |-
+            Doporučení, zda by měl být příkaz předán HCO.
+
+                true = žádost bude pravděpodobně schválena.
+            false = žádost bude pravděpodobně zamítnuta.
+        message:
+          type: string
+          example: V HCO peněžence nemáte dostatečný limit.
+          description: Vlastní zpráva pro zákazníka.
+        customer:
+          $ref: "#/components/schemas/PrecheckCustomer"
+        potentialCreditAmount:
+          $ref: "#/components/schemas/AmountOld"
+    MultiPrecheckRequest:
+      type: object
+      required:
+        - scoringData
+      properties:
+        scoringData:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScoringData"
+        notificationEndpoint:
+          type: string
+          example: https://www.youreshop.cz/multiPrecheck/results
+          description: Adresa URL partnera používaného jako koncový bod oznámení pro
+            poskytování informací o výsledku multipreskripční kontroly. Musí to
+            být platná adresa URL podle [RFC
+            3986](https://tools.ietf.org/html/rfc3986). Maximálně 1000 znaků.
+    MultiPrecheckResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Jedinečný identifikátor dávky předběžné kontroly.
+    BatchNotification:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          description: Jedinečný identifikátor dávky předběžné kontroly.
+        status:
+          type: string
+          enum:
+            - SUCCESS
+            - PARTIAL_SUCCESS
+            - FAILURE
+          description: Výsledek dávky předběžné kontroly.
+    MultiPrecheckResult:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          description: Jedinečný identifikátor dávky předběžné kontroly.
+        status:
+          type: string
+          enum:
+            - SUCCESS
+            - PARTIAL_SUCCESS
+            - FAILURE
+            - PROCESSING
+          description: Výsledek dávky předběžné kontroly.
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrecheckResult"
+          description: Vyžadováno, pokud předběžná kontrola skončila výsledkem `SUCCESS`
+            nebo `PARTIAL_SUCCESS`
+    AmountOld:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          example: 133000
+          description: Amount in minor units (133000 represents 1330) [ISO
+            4217](https://en.wikipedia.org/wiki/ISO_4217)
+        currency:
+          type: string
+          example: CZK
+          description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
+            Povolena je pouze místní měna (CZK v České republice a EUR na
+            Slovensku).
+    Error:
+      type: object
+      required:
+        - code
+        - message
+        - severity
+      properties:
+        code:
+          type: string
+          example: BAD_REQUEST
+          description: Jedinečný interní kód chyby
+        message:
+          type: string
+          example: Bad request
+          description: Lidsky čitelný popis chyby (nelokalizovaný)
+        severity:
+          type: string
+          enum:
+            - ERROR
+            - WARN
+            - INFO
+        attribute:
+          type: string
+          example: customer.addresses[1].streetNumber
+          description: JSON cesta k atributu požadavku, který způsobil chybu (pokud je to
+            relevantní)
+        ticketId:
+          type: string
+          example: UAT1:AMS:20160516-091658.450:45e4
+          description: Interní ID tipu, které se používá pro zpětné dohledání chyby
+    Errors:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+          description: Pole s chybami

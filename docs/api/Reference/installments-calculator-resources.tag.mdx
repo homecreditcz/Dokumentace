@@ -1,0 +1,40 @@
+---
+id: installments-calculator-resources
+title: "Installments calculator resources"
+description: "Installments calculator resources"
+custom_edit_url: null
+---
+
+
+
+When you want to provide your customer (that wants to pay for a purchase by a loan) an option to choose from available installment programs while he is still on your website, it is necessary to implement "installments calculator".
+
+Choose one of the following approaches to integrate installments calculator into your website:
+
+- A) API - Implementing your own installment calculator, with your FE in your design that uses designated API resources ([described below](#implementing-own-installments-calculator)).
+
+- B) Widget - Integrating Home Credit's javascript widget (described in [special chapter](./java-script-widget-integration)) that:
+  - provides GUI and front-end functionalities
+  - process all needed calculations
+  - provides necessary data to e-shop's back-end in order to easily use them within [*application* creation request](./create-application)
+
+- C) Standalone - An external installment calculator provided by Home Credit; partners are not required to implement their own installment calculator—see [here](/docs/documentation/dev-env#3-external-repayment-calculator-issued-by-home-credit---standalone)
+## Implementing own installments calculator
+
+In order to implement your own installment calculator (with your GUI design) you will need following resources:
+
+- `/financing/v3/installmentProgramsOffers` - to find out available installment programs offers and their details
+
+- `/financing/v3/installmentPrograms` - to find out details of a chosen installment program
+
+- `/financing/v3/installmentProgramsDownPayments` - to find out down payment options within available installment programs offers
+
+
+
+```mdx-code-block
+import DocCardList from '@theme/DocCardList';
+import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
+
+<DocCardList items={useCurrentSidebarCategory().items}/>
+```
+      

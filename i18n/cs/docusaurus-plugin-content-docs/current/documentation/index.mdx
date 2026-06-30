@@ -1,0 +1,70 @@
+import IntegrationSteps from '@site/src/components/IntegrationSteps';
+
+# Základní informace pro partnery
+
+Rozhraní pro platební metodu HC On-line je **REST API**, kde se pro veškerou komunikaci (dotazy - requesty a odpovědi - response) a popis dat využívá notace JSON.
+
+## Přehled integrace
+
+Implementace je o **čtyřech krocích**. U každého kroku si můžete zvolit variantu, která vám nejlépe vyhovuje—od plné kontroly přes API po minimální integraci.
+
+<div className="integration-steps-doc">
+
+<IntegrationSteps compact />
+
+</div>
+
+---
+
+### 1. 📊 Kalkulačka v detailu produktu
+
+Umožněte zákazníkům zobrazit možnosti splátek na stránce produktu. Vyberte jednu ze tří variant:
+
+| Varianta | Popis | Odkaz |
+|----------|--------|--------|
+| **API** | Vlastní design, my vracíme hodnoty. *Pouze pro certifikované zprostředkovatele dle zákona 257/2016 Sb.* | [PSP - Zdroje splátkové kalkulačky](/docs/api/Reference/installments-calculator-resources)<br/>[eshop - Zdroje splátkové kalkulačky](/docs/api/eshopReference/installments-calculator-resources) |
+| **Widget** | JavaScriptový widget do stránek vašeho e-shopu (stáhněte [zde](/docs/documentation/widgets/install)). *Pouze pro certifikované zprostředkovatele dle zákona 257/2016 Sb.* | [JavaScript widget integration](/docs/documentation/widgets/install) |
+| **Standalone** | „Pouze odkaz“ k nám—otevře naši kalkulačku v novém okně nebo záložce. | [Standalone](/docs/documentation/dev-env#3-home-creditem-vystavená-externí-kalkulačka-splátek) |
+
+---
+
+### 2. 🛒 Vytvoření žádosti (Create application)
+
+Vytvoření žádosti přes API a přesměrování klienta k nám k doplnění žádosti.
+
+- **Autentizace:** [PSP: Login partner](/docs/api/Reference/login-partner) - [eshop: Login partner](/docs/api/eshopReference/login-partner) (`authentication/v1/partner`)
+- **Vytvoření žádosti:** [PSP: Create application](/docs/api/Reference/create-application) (`financing/v3/applications`) - [eshop: Create application](/docs/api/eshopReference/create-using-post-3) (`financing/v1/applications`)
+- **Přesměrujte** zákazníka na `gatewayRedirectUrl` vrácené v odpovědi, aby mohl žádost dokončit u nás.
+
+---
+
+### 3. 🔔 Notifikace
+
+Mějte přehled o stavu žádosti. Vyberte jednu ze tří variant:
+
+| Varianta | Popis | Odkaz |
+|----------|--------|--------|
+| **Notifikační endpoint** | Zasíláme na vaše API při každé změně žádosti. | [PSP: Application notification](/docs/api/Reference/application-notification)<br/>[eshop: Application notification](/docs/api/eshopReference/application-notification) |
+| **Webservice** | Přes API odpovíme na váš dotaz aktuálním stavem žádosti („GET applicationDetail“). | [PSP: Get application](/docs/api/Reference/get-application)<br/>[eshop: Get application](/docs/api/eshopReference/get-using-get-7) |
+| **Webclient + email** | Ruční potvrzení po přihlášení do webové aplikace doplněné emailem. | — |
+
+---
+
+### 4. 📦 Potvrzení vyskladnění nebo doručení
+
+Potvrďte odeslání a případně doručení zboží. Vyberte způsob hlášení:
+
+| Varianta | Popis | Odkaz |
+|----------|--------|--------|
+| **Označit objednávku jako odeslanou** | Potvrzení odeslání zboží přes API. | [PSP: Označit objednávku jako odeslanou](/docs/api/Reference/mark-order-as-shipped)<br/>[eshop: Označit objednávku jako odeslanou](/docs/api/eshopReference/send-order-items-using-put) |
+| **Označit objednávku jako doručenou** | Potvrzení o doručení zboží klientovi přes API. | [PSP: Označit objednávku jako doručenou](/docs/api/Reference/mark-order-as-delivered)<br/>[eshop: Označit objednávku jako doručenou](/docs/api/eshopReference/deliver-using-put) |
+| **Webclient** | Ruční potvrzení po přihlášení do webové aplikace. | — |
+
+## Odkazy a další informace
+
+- **Technická dokumentace** k API (dále TD) a základní popis fungování platební metody je k nalezení na [zde](/docs/api/Reference/home-credit-partner-api-order)
+- Veřejně přístupná **repository s podkladovými daty** je k dispozici na https://github.com/homecreditcz, najdete zde:
+  - **Tuto příručku k veřejnému API** včetně návodů a vzorových dat
+  - **Kalkulačku splátek** ve formě javascriptového widgetu ([*widget-calculator*](/docs/documentation/widgets/install))
+  - **PHP skript** obstarávající základní funkcionalitu nezbytnou pro integraci HC platby na váš e-shop ([*php-script*](https://github.com/homecreditcz/php-script))
+  - **PHP knihovnu** obstarávající základní funkcionalitu nezbytnou pro integraci HC platby na váš e-shop ([*oneclick-api-client*](https://github.com/homecreditcz/oneclick-api-client)) - **POZOR - ZASTARALÉ - pouze pro PHP 5.6!!!**

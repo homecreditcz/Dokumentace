@@ -1,0 +1,67 @@
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGrad4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="redGrad4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E11931;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FC3A51;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="600" height="400" fill="url(#bgGrad4)"/>
+  
+  <!-- API Documentation book -->
+  <g transform="translate(80, 60)">
+    <!-- Book cover -->
+    <rect x="0" y="0" width="220" height="280" rx="8" fill="white" stroke="#E11931" stroke-width="3"/>
+    <rect x="0" y="0" width="220" height="50" rx="8" fill="url(#redGrad4)"/>
+    <text x="20" y="35" font-family="Source Sans Pro, sans-serif" font-size="18" font-weight="700" fill="white">API Reference</text>
+    
+    <!-- Content pages -->
+    <g transform="translate(20, 70)">
+      <!-- Endpoint 1 -->
+      <rect x="0" y="0" width="180" height="35" rx="4" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+      <text x="10" y="20" font-family="monospace" font-size="12" font-weight="600" fill="#E11931">POST /applications</text>
+      
+      <!-- Endpoint 2 -->
+      <rect x="0" y="45" width="180" height="35" rx="4" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+      <text x="10" y="65" font-family="monospace" font-size="12" font-weight="600" fill="#E11931">GET /applications/{id}</text>
+      
+      <!-- Endpoint 3 -->
+      <rect x="0" y="90" width="180" height="35" rx="4" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+      <text x="10" y="110" font-family="monospace" font-size="12" font-weight="600" fill="#E11931">POST /precheck</text>
+      
+      <!-- Endpoint 4 -->
+      <rect x="0" y="135" width="180" height="35" rx="4" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+      <text x="10" y="155" font-family="monospace" font-size="12" font-weight="600" fill="#E11931">PUT /orders/{id}</text>
+    </g>
+  </g>
+  
+  <!-- API endpoint visualization -->
+  <g transform="translate(350, 100)">
+    <!-- Request/Response flow -->
+    <rect x="0" y="0" width="200" height="200" rx="8" fill="white" stroke="#E11931" stroke-width="2"/>
+    
+    <!-- Request -->
+    <rect x="10" y="10" width="180" height="60" rx="4" fill="#fff3cd" stroke="#E11931" stroke-width="1"/>
+    <text x="20" y="30" font-family="Source Sans Pro, sans-serif" font-size="12" font-weight="600" fill="#E11931">Request</text>
+    <text x="20" y="50" font-family="monospace" font-size="10" fill="#495057">POST /api/v1/applications</text>
+    
+    <!-- Arrow -->
+    <path d="M100 80 L100 100" stroke="#E11931" stroke-width="2" stroke-linecap="round"/>
+    <path d="M95 95 L100 100 L105 95" stroke="#E11931" stroke-width="2" stroke-linecap="round" fill="none"/>
+    
+    <!-- Response -->
+    <rect x="10" y="110" width="180" height="60" rx="4" fill="#d1ecf1" stroke="#E11931" stroke-width="1"/>
+    <text x="20" y="130" font-family="Source Sans Pro, sans-serif" font-size="12" font-weight="600" fill="#E11931">Response</text>
+    <text x="20" y="150" font-family="monospace" font-size="10" fill="#495057">200 OK</text>
+    <text x="20" y="165" font-family="monospace" font-size="10" fill="#28a745">applicationId: abc-123</text>
+  </g>
+  
+  <!-- Decorative elements -->
+  <circle cx="50" cy="50" r="20" fill="#E11931" opacity="0.1"/>
+  <circle cx="550" cy="350" r="30" fill="#FC3A51" opacity="0.1"/>
+</svg>

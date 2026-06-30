@@ -1,0 +1,137 @@
+---
+id: cancel-using-put
+title: "Zrušit žádost"
+description: "Vyžaduje oprávnění <b>applications.cancel</b> pro autentizovaného uživatele"
+sidebar_label: "Zrušit žádost"
+hide_title: true
+hide_table_of_contents: true
+api: eJztfctyG0mS4K/4osxqSDQIAiT14kz1DghCEkokgAVAdatEGRHIDBHJzIzIzoxMCZB02NP2mA1trq3mZXDYAw8cHeayVmbiJYEf2R/YX9j1iMgHwGdV99isWUtlVgAz4+ER4e9wd3woCHIcFLZfF2qe51gGERZn4NOAh75Bg8KbUsGkgeFbHr4obBdejueXxAxPKHDPj6cRm52x+AL+Yfhbkg0QlA3CDOr8w/rwt+D5HEgoKBPWhEeExecjDuH80oqIoA49ZIesw+3QhBMKHhfzz3RIYGJQh8DED+dTSwAfnlCTxdPIDmEST20yYfGFTUrYhYWCxedJ00PmzT/HF4ETzqeMh/meOFGReI5lE8MqluEFCO6GgkP88+yUOiF4HKE6EfSQDdbfWowww2LH61F1Pb+09Q+5v5rmp3W11AEOPzF9flIC26QwWGo2QFibu5BAQIslsAX143M4CQQFPjT9+SV1LIgOGTc9Hs3OTAsYAbkgm0xwglvgGoDH4YSexBcuRGMR8flnyuKLMnY7ZB+hP/ZAdeZRPMUz+wgdnMiXf3P4iK3Wsn+w8Jd6gk0GzVavX9vb22+0+gP4CK8aPXyRzNMTJIL5ZTw1eSAs+Ai7PBChx3gg7j9Fe3c/Pu23DvptnKHWauvnP3UP5v/aaC097XTb9Uav12w9W3o+/1Oz0629XOyQIdxw7JAUVIh/DrzZ2XzKZmcw8Xyi9omUgDg0a3VizS9VxwnxHGJQRnDAlUGOfsqBIIJ2KQk4gx+g26jtvjrq1Jq7g9WSPuj4QlAIBIl4FH8FO/53E573+x0oFjcqG4esVq83Ov3GbrGIgxt8fgkTRlzK4mkJ5pcUIYAJGcXTE8qQwgwaKBLAM4diuv/FMuzPzhwOwzEIDsP4q8ARTW5zNjvFvhy7R9SUHdnszOaIn+CHs1MWXxgjiH+2OZt/gQiGxLCBv31rGVSj1UvguFbVUCKqR0xqjJAGxojxd+/uNftxyBY3pALtF8ViNmVKHYLY8Xl+BNdilhtPHZyFxdPAoWZ4El8Y8QVY7C33XWJQ4LAy9Cfj1XTDzg9ZumHbapY1+JGaFqO4CedIt2kD9RapaenRIuKrZx1uBlce37xtEFCY8KFPJvEFIOMiMFlahzECYzQebufJLcOhj/BCfbwcB9HsTDjyVO9DdstPctS4VanAR2i2Xtb2mrtH3cZ/O2j0+pJ7oCggEbWBUUTIIJEIwAhudjwV8pRhBUFm8RSCMRPkPfJ51dUOS2r9jjWfQkQdO5Yflo04Q4RZXk1g2IKP0N75sVHvH7Xa/aOn7YPWbgqElCtfEZMDFCBmChIjDp1QpgfZ2ICPgL17B51Ou9tv4Ag/IdMGJncKZZUphxJX2KWXMcv8cActzX5qO3uNxV1Z3BPckdCR/RVPkRBycPn8EpHshJ5A4DnMEmBH8y+OBUF87hImLMOOv7ry2OOpm5+71unsNeu1frPdOuo2cG/kijrzzxZ43A6DEHiOLUjeNUgaDmBQ07JoUALJY/Qm8Ig7NJEID/Tp9xvdVm3vqNfovmx0jxrdbruLm0kCQRwCjPLZKbXjKR7EFPfKjS+YTYDoQaMRRzmsKAG/2JzZfnwu2OzsZD6NL5ArYHectVAqcI/6WnYWtgtKxh4EFjvuHPQLpYJHfOJSQX3UXT4UkDcWtgthaJmFUsFCRcUjYlRY1l50A5/+IbR8aha2hR/SUiEwRtQlhe0PBTH2cKBA+BY7Lnz69EY1poHY4eYYWxicoS6DX3Pid/0kwAk+XB0KNRBDIMg+rklYNJDDhIHgrpIRVydehrvnUcN6K88KzPmXiJvhwuHXa616Y2+vsXvU7j9vdAufEOz7Db0rh8uwpAxKOKpjY3i+EWUlxAoyv0TFD5kUuW36cqFUoCx0pVp5bbN6rdttNrpH9ee11rPGbqF0c7v+Ub3d6jda/Tsb77w6qh/0+u39Rve2No1u58bXjd93mt1bpjhoPW22mr3nt0PR6D1vd466B3uN3o3N1Dm9+fSpVBCWcPCAniaq3ctqTpmoS9TvKiQsfMIOiweo8fMKWkscCDzOAoVxG5UKfix2br8olPIoXVwv3o7F2RyvC5KWpK6DdsJ1+E39uymBmKZPAw2kbkp8n4yvoCrBhmNEUMmgxnAScKm2Tyjy6/H/0/ga3f1aSyqmBAaIOLV6f4D4aAnqBvcGpi8b3UU6KCMSmF6CTeaXZnzuImcT9L0IE/A0sApO1LCU2o8Q5yklhb1QKmjIC6XCbmOv+bLRfVUoFXaae3vN1rPCm0+lgmGJ8d0AylafSpo93tX6xI3PGUeTQy6KYs9A+JSKmtqVu4cIHcug6+7sLBABivLZaTxFrE0GaoXucAEnbhhndoo2HAc5HnafWN7dvTw+R40D+Vbgzs58HhHU/PRghZtoTS8OX1OXWM7dEzXWsB2KcrVVJG+VIrhvLT8QrXvt+ov5ZxoIKZ7V/q+oz9UrY4aOc78h69RBfUINlxsFotkpRYELxCYmdaViYYxAWCJ05l+AgMcnpk+isIwTOuS+a+igCnfiSomxBLU34uweI/SpQ99yxrLjggA1Q2pG3BnyECbUnZ3BSroCjyNuCamgX4w4DH4zWC3IA76HzDPJ/I88is/BMtEtgYJVjpPOvdKst1dvQpi6Zm07RNHIMRH0HRl3qWn51BAH/j0wqKbQ5qC7J1ep0VUpmkM/njJkc8svMqcJEqlA34VEvxDHKUmNT3pRpMmhtNL2y/i/t+JTIPKhlvUndPHt0W67szf/Hwc/xqf1+PQo/vNu7ccGqqd8qd3LV3uNDhrg8el1rzvzPzV6+7M/d9MH7f78T42dVvxPEqEs8+6Nycyur9npoCHhQwTP620ch/vm9YJlQThJhl8qMMVyEkFVKgguiNPxkbFckVomdayI+uNdbHoNrNKEFBKD5FjLaCVCFwjMTkkAJkcTGkmiIEW2GrjvE8O22PF9GSFafotsDExuoj9rvDDsveVVBlZJWjv4bJAImUQvG4AzoWDGU4dCoFVPHhG0yHxrGArqwq6euU5836J+ua/HNiizyrDLPZ9EBnVLwAM+ZBZ4Po0mVFgl4MyxGE0bSysvJwaXYSmUCu3WXrPVKJRQRPbaaIXsdGut+vOrT45+1+w/P6r1es1eH1WtfItOrdtvSZ3rqjZwvb6hnIdEgMcdPr+0x7fpEXnck/L2fhhncPMeJ2cxQX1kAdLKT8CBlfQ5HiVdC0bcWy1Dz0FPJrYGh3rSuMoYnWFl/bHXMDR5iPg1cWdnDJfoWmyPsmMxKmxXSgWXvE/+qlYqOZz7S2hE4rCyNRUoqNShehSl7pDZmfJ0GdSJpzk/LoFWY+fVXg24SQMHfUjACL7kSmr9WkrrXaW0vz5wlNxDOjVqLXnOtx3F5gZisUuO6d06bU69v33i9jAgIwh4OOR+CCsTglBo7zAKu4dbJXDJe+VhQ5s+cdQkLbVzf/6ZitnZxKAoadB/YO+sKq3IofdTRVk8ndAoAQX7hr9QqqZdr8hwLU2fWg69v26sAUoZwSe5yWZoXIdan0qFP4TouFnQ0ZFWj6UkSinEYuLh1pW59hmfXwYiypGH1KApE38JzSUo+R9CdYrVXQNZwtZTyzezaeT3zHdfKBW6jf5BtyWf99AQQladY553cF3i8pDhQyP0fcqM8VVuq5tkA6XawZL98c9ot6DGDCYNqLAYQ8tOOzUlQqaT3Ik7+7MzRrQphHve7LVha6P66EaDRAGJL+8t1nMSKhWkzWfNfm0P97vZq7cPpGH5tIEy8VnzaR/lK250s9U76Cay8vmrXrMu+/Rqe43eUb/2e/z+vNnpNFvPjlTvXr/dbRzVu43dpjqikFnib/KErn/bRvW0KagrG7BfaPJmNHeDfFfOvYD6kfQP3YslrAnLvcoXdhf11XRqaYxS8OmE+pFkl8go8LpUoHtchBoUYPSY+IQJ9Aqa2TXfZMil+rGSWiTZjU98kbscNKmD2kkJ3PkX5DqCAx/5fGIJiMbIkSbSpMxtyWr5r8EK9ZJzHDE3xa3sbElnQEMr3/Ubv/uL+F1EfIsMHdobu0Pu3K2gq/aWVEYC2ecmmrmquKcu/luIWOGaEBY7DuqcBaFL/T2+oMPdoHN5Pn1LfZ+au/wd65Cxu6iA/Y2cZ7oLTYbXRM7f+C7scyZGwa9RCTtyiOSWE6/aBN4VogPMhpUI0OOqr4dXM91U1O9lXMorY9nDFmEJ+ISR2SmydOl/M0Ycb6Oj+Cv6IqiN3xACtX96oh79JXMFxBwnE86/6DiYr8BdijOZRAqFdJ7xTTucfu1pEs2T6zPOzSBt8Y1gvxHsN4L9/5pg78C4b9T6jVq/Uet/PrX+AsMoiXQt32AWLZlCtd1X8lNFJ0lbKBdHeY9LSO5ZAe5rxCwx/yxtgjwYJWDEm38uY2ji/HLpngyhgDUdWyNvRmanaU+YzL8EIp5GMjhNdgsXTNrrFiij1DDoE6/z04c5iy972G/r5wubclTb3W1i1Eht72i31q8tvdzrH7WfPpX3I/nHnU63/XJpe49ajd8tPuh0G9e3RKdOV8bYNRq7V1++bC6P1Gs+ay23k4GCKuCl2TrqdNvPuo1eb6lNo9t8qsNikuM/yhvKC09yOJLsqfpDuqZy7ftt+WgZke7nSLsSIp0/13ard7Df6B7ttWsI8LN2e7d39LTZqrXqCrpcWDTeWXUa3VofV7rXqPUa94n0QVv0U6mwUalejdOp+5QIaiIJbl33/oCRUIy4b02SRptXGz3l/tAyTcpUi62rLVpcwFMeMlMyhYAaoS+d2K8/FHZIYBmF7ddvPsmcAM+nhoRo+y1xAloquFSMOMbqeaGU1xh+t124LY4eg/GS8Hm8LaN+lMTzSW9/YSSEF2yvrxPPKo+4Sw2fmpYoG5MCwoARd90sNq/xnrieQ6/G1mWnnYTE3TMoDW9Y2Fsu8UYf3PM6rEGb0bpjGTbUOk1Yg5zwxftmXIPazGp543F5o1AqvF8LLJMOib/mkCF1JABNeKkaXhuTx+0Qx0Peg03Rk2Hh6tRDC3w+GfkEWdxz7lKoy43BoACK7o6xDJV+SX28xM2G2gYFEb787jt4bgWC+xaFiPqT+EKFE6tOGD9sJkkCyksYZQ9aPLKYPZbhoWmo8HXf8n/KWFI1P3yEeq+6uQkf4XG5WilvVDYewEdgZOQT5fCzuSRBvEsaYqgjrl9eT4aa+aac+aNezO78i0Pnl5aIzzGIhcVT1x7jux7FwPnk4joVh+cYxeiq3JUJxmih8oKxMHixQfXf59sqiltH2JWTmLbrnpXTkJ9r3yaxNNd31ZE9176UIUnXvpGhNde+SUPqbn9bxviwO5osBIDdq626cL2j6cTy7miRi8TLt3Spb4wIwyiboMw43mkrhtJgpsctJlR8fXafBSdERjlhXgOYXJDJ/AsePobZz/+nkKE0jMynFKS66OtIIG6aszMVPr+iXxj0SJLXPy7wolVJbL+F//3nf/0//+tfoFjcnf/bXmP+tdmP/wkOOu2f2t3W7M+t+LRY3IaXPLmBSyLV7fkXmFC8so8oC2wC+we9+FTlIsUXGHORS2iKzyEaayo5T6kEaWQM5cAuQ0tpOIMbOGdga37MrksgkoT0E8GLCKQfmZnVpwyd8knIhuIl4CWqVsaHkE21GV1TnDHwuINBPNLLn2dRK8/rq7C2EKiPxO0RXzDqB5jOoVy2Y0zuGmFQetqWWQZeirrg8hEPIYgwKj4LN5t/cYGRYXyBl5IC9dsRl0kopswPA88hgg5VzoVLBTdvhFKeaD2+cKgLExOzFbyAKPaA53BJh6g9hjJw3xJLIIwcYtoyF2H+ZTg7G+nsnDDZRBZP7dALMUojnF8OxylDkuPN/4h5HniZQuaXEvsEH3HBwUBwSiqk1OcThZxjvLW5kh8S2KFnsW2dHyL/ICngHyH+M6a7pUkhoP+Pf77eoRNP78iblfJ6ogCswkfIvVIITCLLdDDAfxJPpcmhhpDpFFnij4Xj5NBsLc0tXE1yL2h+6YbKBMhui7KEOcDtpK68m0bRIJPdMNzg0oq4UGGAxth2wkVIlCFnS0qxiWOHDpmd2mOEy8qJ7jWDOEboEMH962C89pgytP3qarxFFEhFtYyZws2PJPK8o0OuvgUCY/zseIrfE/h4mIMvWcS+5neBJSjI/EKKkLu5x7eCOxyjmHMSUCEaR5akDwLRGIWpJUpAhmOZfvK8jrTlAAnGzBj5nGGkpUqckkvhaCBpOYvLkDJZLkLEX22SYSCVZMeFY6n1JocYXwDJLsyoXdSrfMGZ8LmjohRDXOCIEkeM1owRNexVmVbjWYFO0RRKRcAeY60QaD3gO/gpntoOMRFzchoTVelS2Uu8A0yTxfDPiTf/EvAhdRe65RWtelsyuROKyTuBx+d/XGgq6a1ahtd7/NhiuAQHv6zpjV89ZAAAa9DRB+GGAcZ6xl8FZsei5p6kBqVHJhm/CD2wAZO55lNLZs/hAc+/HLKNMrx+qTI9LZGoRJLeDGktrIWYL7Pm8UCsbV6Zf0IiFEYgJIfXmas4t0ortJwkrTAwRhFxEnKMf45mZ36YTzF1YZBS+6AMAXGRGqfZUwzGl8SKiXSSgzE6GY5l3i5y/zQ3MD6HNDNRCUnknOVDtlmGnxRTwPBX7LYUG1tOliczZXR8korNV0G2fj4SOmO6KttOEnMKBV5hy+jWCXHjC8FCxDeUHsMxrETxhUHTZML4Al5PTPpm5bssIWmNmCY11wRf86kIfbYW+k6wimrCVhlet6Vuqq61F84szyPzek16cEoUa6H/FYV+HocUMVOG7CYi0sMTCJ8wDOjBU8XczTXKzOtpPPT4hPsYFK0YlplTp1VcYJ7Ckb7T9C1J8Cl5lw/ZA7VKMju1ssjJhbCGE2JzdfmOAWPraUjqOe6Djt9LkDcUq9nRpuJ60eyhCmVTjFFGvNLjbO56lE2k/8fLJTYNcrFNA+2Uo4wo2AYJcNOBwoRBCuN0AFI9+C+v9zP2kWMEalbTIsc+cd+srFvu8XqAuisz6JF+XPbY8aoaJE3f1K9Sy2Y9t2HJMOgNuzLGj2kKfDRW2YPRfEqNERsnRs84XR42yoVfyLUeFhJr57BQhpc4hjKLUjMIGbhGb3/+BY0latJcbKkbX8w/U8knMGJ4IcSjnPKbhKtF80tzDJMoniJ+KaDVhAYHRk8Up5PCXPlBM9utnDD5joZmjHzAwoTNc60JRT4RWsZK6kfi16m4MilyOaQ+nx0xgbc+ZwKpJMwjGPr6ZmcCZ1AyPoQVxBRqshAmEKrkaZwSOY2adg0GxFOJ1bm8gEEJBj5Fr/zi41WdKoSLwdj/XJaQxwVliqMhneKe6aTkfEKzdh8vlkdAX+UNK9rGHRnIOHplrg1gRblJUDtPIyiui0lKtsDjgT2WzBGRyo+nrmFBlNg3KClTI105r+SU7ywxMn3yjjgDWBly7lDCcMo+5mFmGQxKSV5YTM4xpySjy2EibQSV10rfW4HQGuSIg08j7kQWO9Z+BC23/h6Uu0pPFVApyOIpDghMZvQErsPDiEhwzex6aQAr6h4EwX3OUbuRqq/DR2PMYo/GtszLUGw4niIbrchBcl7sAaygQxGHUKnhguRzwxXWZFUjFk6luZgNkZHx83pbdpW6Ui90F3qNSDDiKilXJ9hiW1o+LsNgIO3E7fX1MQ99adqWjcl/zWHFD5WHlYfVylZl8+H3uVX8cMX/+31uo36oVvDf9wk4P2xtbTaqDyq7m1uVh08f1h7v1h9u1Ku7OxsbW7Wnu7uPt57WnjypPKo8qu7sVGu7T3Y26o8eVaqVzeqjJ5sPH25Un1QfVKo7Gw9rtd2nm7XN6ubD6uZWtVGrPnpYf1zZ2djcfVx7UnvQeLDzYKP65MHm443HT55sPXjaqNQ3KrVH3y/s6Q+V6lq1OqxUSJW+rX6fIeQPEjMGg0HCZZqJ2Q/vLPOYihB+JBFRfjpsUxuOsXIHSlMrb7CfpK0kZ1edFySWZLw36P2lvFRPpTaKdET1hPryqfY2Z2+t49DXkXo/EhsD6UI0EYmQNVKILULNQdCWlQHdEbyWbg8XOFuTlmn8M8pqaz5Fo23d5EaA/1PeQ5njrFYSJGbTKqzkBo5gdkqxL5udrWpOjdq4NA1zXkjFjVPRpOLnbBEmHp71JGk10RQT8bQovxXXRdpnxIYVyREm+HWQ3HZiQRQTOckkoqkDMFxV8yeiLXkOUW4mN4VpsehGyp7U5DkJqTskZ8cxkF7qUsvzlNX0qYgeSUaC25Ck1hijG3ZC5Y+qajAOMcclCJDvn1iuzUP8NjtNRJ8aFdZA6BzZE8yqir+6lq42gN9UI+JauaoHi1DmTg0zNnyV/v06V5bgXDqPtTB9s5K4nQLqRtQvc/94HdOH1qONcqVcKY+E66ymqrfPJ1j1AYd06cSCoktOuF8sQdG1GPeLQKDoEWGMinIS6lqZ/OeYbKizNWzOItSu9MH6PNldolIgiT4cmeCY6hIpwaI2DgZxqVMnQW6Q5GSQXy83r9c6GFp9dNDabXR79Xa3oY9VoxuaxspKW+znMl3rQQvWJSpZ9KZ1scoGQpLjHMkGtF060bUadCENNAjxv/3Z2Ymg0mmGlhnWDyLu7ExYy/VQeDLEkmKfGzGthbJ/XdJHVsMDSaJYrFZgfyct03JTp/lnC0sU6UyRJNdEDqAyRXIj/GTKDJJAufCT+huJJ052TYFUBY72m/sNVQBDEcnKePVaR1e+coNnvoWPUCzLz+WXETPL3KPsveuoGIJgTRXASThjOfB8SsxgRKlwnbL8lMO9d4L3v2a8d9w3lRmDBpDrlJM3clSTG79qVA8jxjUfd52FP9XiPXHDuG6wRt8b6DBUiyrJD6E+SNJHGy1ugOAnkJbkh1hqowf1+DvqS499AgA297j68AL1oSfwHGKxdcyql42NIMLX4r0eWyZCrZ949Fi+PvGOS/ID/87ee0y9lp/Z42NLnb/8VMi0QGJ5nVa9fiEDCBKPmsmDeDpiFBzLRWNhQQdeSf1u0tmCj6QHwfbjqSgBoyoSQaqxdhT/uyC5ElGy5Euo6iBtbTzBkmWJM07fIqjBCXA1OTKeBYazRPMjh0QWOj+zGkopjQ9+v9ZFp9EeDqT+P5BqqoyG0VUMlC2YcQiUW1oFQG7DhyYfqqvEq0N28SYLLx5yw06G8dco8xv+6pEDKm4eNaB2iCrUzQPieb/MBJm6QlJFEJT3KL+nKIysJV69wm6/eDEmtxRuWy1DcdfnQxafFxNvC4GiTKEdF2ElsrAI1MX8kmbCE1UPrNgiPVfSPMVqd+jsIMIaWo6FoUatxiQa6zYK6lqnmYXBALNc2J//2/xrA0x+El8IGNJJPiwJC/VJz5C20JVriWaW3XAsr89mZ9K2J0ppRR6PsFNGUon9IskklFdrCvfURnduUur0ZUeqKmVlv9A7E1840lJW/pq6SnFcw9vCbViuy/P3YIyIH1DxQyjerj1OFXztfDmX2ZZjSWdJfS55x+AunfJtpBUsjLWomwluh9CuhSKpi4brUnNme6H2nUrtHPXB7tN6gu1YAW3QfoEY7i1Wl8o8p1+zxlUY6HCR23tgvYfcPRy+Tb262WgbMKgZBvWuH07KcyLAXszxUQWuFu5xdLWr1L/Lsym2YNDioM9waZKUxZ0ELtXTOVZSQEu7jSLkpni7qFFb7+rsX2RNST+eTtB7sZrMiAXNBjvEBB0+glPKymS2VGqnku+SlFCivKojq3AlepfKeE2dY+P11KyRXsNEhcw5z7RNo803qQOJsRdmkFVhkI/lkbuhRYhabv6yIOu2CYM0ukf2Se8OuEkRs1i6OWkVifWUjBl1sWgXwsTzlqy5XFUtt4Xy0HS00GDpSneh9lrW5QEM9mWUEGDPmuPwd2qFE2JKD4W8liW5WmwL98RKBJF0vI0N3CutK2HaEDRkzi2OyIeGLDh2ASt5c2VVnp/Me00xTOauDdGDmVRow1UnGIaFEPBqbJJcP6T7qFLJArwYUDfIKMfRE+VaLHR4IOKL1TLUcT517Iq7IW0LvL3NMbQ8i8+W9wQGfc5hn7BxgqnBAFY6ab08l3HpJU2F5moOW/DQbQxjtBylHIA/NkaOhFTOp2Jt4TVyNoM4TqCavVn5jnjWmnyyJp8Eq8jL5tMMNtTUB03pJSQO9GTgFjR8n/u492x2ZnBlSthkYjk8CbHI7iSygTZhgP0tg8IBIxGxHDxJHMbk86nDwQb0kzBFaq40dD2Cns5A3Z9nEvynPLvBc9bams+xdExSXNIYSdY7/yL5fa4IKw+lfiS1g9AmE1loxZX378r8D6heWrKu0qJESKpRorEJA4rbgVVZ0ZZ04qmuwedxE0W9LnpnjPJXSVzX+DNG2gRK7ZjUISE3OdBK22AwOFnwSH1QVyXlsuyPXxUU2/Ba/Yn/PmRf8d+hLEFxWNiGw0Kj2z2qViqHhdJyGxdJ7Fg3a7KIOJYJWFjAJ4YA5Ri9pltAI4oBBOnw7e41rYjQvg/VDDF4XDMMDPAuE/XZSmbI+q2v51w2y0MiuVPRNNWIB7V+dbu239veqFQfVh5UH65VnlQfPnhc3npQ2d56QLcOCzcN96l0j53bfLBx144FIRpkFvry3obMDJDZgKc8piBdruBT4lgTqbbcuZW/q3Vbh4VfCOaDjc3bweyPrEAD885yHBC+dXxMfUjC+IG+x6iDYyz+rMsz3glps/W0vQCp+vrmkH3SOKyQuZZeVuVRXZn2LVV9IfHhpeEA15n2uFj4qDxeuo6QLJoiGT820CuGj+BYZmCPAS8qqaNC/3FU2RJWGHW4jSeiBIJ2JCSLg4/o/MeSiPI+UvfJ8XFt9SaojSBhOWCDBoKAna0lXwpVR+ors09HJFgOgpIgph42QW/4mF3WNHdBWDYVYT7EMWNQ6gpcWgoqjMyhpgxpT7hlYvw2kosU2IT4Z59LL3NurZZabGY4SrJGjm371pICJcWnx22MqpPCM5LVhuOpKQ2Kso52k2ZDdgerGGk+7u2rm/JvVx4ndZVZnBpeqA1cqwykQmuANCPlE70CaB6oJBk9B7ZSBkzuyVtgXQMzSaSQB0Bsg0KQq9DlwopUYJJBksIbqSKp4/y0tFZRGAhNVsw3jOLzQEAO7wc8or5vmXSQG2m1DH2e2HFyJy1mYr0m6ea//16mbrcBkqxSw9HjnN4z3rlN0nzMtiPbjHIqpL+TVc0Q93IS+p5VjFHAIxouU/0yB/jPrlcMK8V97ef1518mMvpQzjQuriY2BVJ06s7EYrju0GKoii/FN+uIqIUb2L9OQeTboExNn5+IMgG0UnNrTeXa3l77d7L+cBuFg0EXywmTXGa+SrO5Y6tSIFqLVYlXTvAqIxvjvkWKF2sUf9XJQb+8PPE9Yfa4SeafUfsNKBBGnPFE0shEb+mPvXYrC1t7qtBvrCiwWJTGRVHegRSxVkWxmNllyJrz6IpBSJgu9/hhpZrdwVBWfmfZlkdNi8ibGPxrvdlrH2G7BNJtlMZr2paRNT88LPvBhGYfyr3y6tWrV2uuu2aaA6x0mguu1j/YMJayRoUvRLLuJwmkN8SLp4HLYcVFa5ShRaQmlPU3rsynp+uPRtuuux0E95hteaoyzP6ZBIDGzBAxRvI7GUhCXX3tYhnK1yIpK/USupZjKU+hLFyv+CbyMS9hCvr6Dw2FQAWtECny4nPfImna4684i1UlX1RkDCaw+fHUoExtEvLUDDa9fXj7GOHNDYagXN1GtU7qQrVcfiQ5ljU7pe78EqrqVzYYXg6j/w0Hw2HkbGX1Wv1dwtus2ZmrHNSeH6mAEBH5mBQZAUraBFvFcvVOsoyveMPH4qmvbHK9VzBRwebJ7RPe31IX/u43fyejRAMySrxrUizoEqDpDaiMyVM+FD3rNgx+s7VRebT5pFqtbmxsDFYTCJMZZUPqFIuw9ES6Aehbi6kdfB0Iwkzio3BESlVnub2+/u7duzIqcniMGbmn+a9TkJhOFJokSQQkWdqgPFiGyKNsdjbJ7Vc8vZa6MRn2PhiF7VZl0ipl2sRUsbgy2jiBeBuqGw+eVOCGZnkCodi09KQCL2an642D7qqsz462HzFklrAuvp4PcOiFnsd9zAPTFXULgXryj0t5XKUCVvhlAc0N1PG551tUEF/W4tE/UJO+Th3pa1H1SubU/E/xhWkZ+ucTOGYnJ7K08AkzATEa1lUVXPR4P+kfmUkCapbHzBXQ+/brN99+/ebbr998+/Wbb79+8+3Xb779+s23X7/5D/v1G12nAANe1mXsS64Ersqsf53pQZh0jppQXh4WSoVt/WM3OsH+TakwQu1m+3Xhw4chCeiB73z6hI//EFIfc/zfZAX4pL5lWtKRlqX436gWrXR1zOUq6EmvXUBSy09WmY6IE+JfhVLBpuPkt3mkjjaiRBZ4f/1Bv8pf7+e6Xvn9nU+lpIe6ss61xR82waoBaZkC9TtCQ/2rPq4sr1LwyTusE0DeKcC4pzZz+4N69qHgEHYcyqrLBTUj/vu/ky+abA==
+sidebar_class_name: "put api-method"
+info_path: i18n/cs/docusaurus-plugin-content-docs/current/api/eshopReference/hc-oneclick-api-installments
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Zrušit žádost"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/financing/v1/applications/{uuid}/cancel"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Vyžaduje oprávnění <b>applications.cancel</b> pro autentizovaného uživatele
+
+Pokud je potřeba zcela zrušit objednávku zákazníka, je nutné zrušit
+příslušnou objednávku
+
+*aplikaci*. K tomuto účelu použijte
+`/financing/v1/applications/{applicationId}/cancel`
+
+zdroj, kde `{applicationId}` je ID *aplikace*, které jste obdrželi v
+odpovědi na příkaz
+
+`/financing/v1/applications` po jejím vytvoření.
+
+
+| Typ financování | Podporováno |
+| ----------- | --------------- |
+| `INSTALLMENT` | YES |
+
+
+
+| Stav žádosti | Dostupnost |
+| ----------- | --------------- |
+| `ODMÍTNUTO` | ANO |
+| `ZRUŠENO` | ANO |
+| `PROCESSING` | ANO |
+| `PŘIPRAVENO` | ANO |
+
+
+Pokud byla žádost úspěšně zpracována, ale žádost již byla zaplacena
+
+(`Application.stateReason = READY_PAID`), obdržíte stavový kód HTTP **202
+ACCEPTED**
+
+což znamená, že byl zahájen proces zrušení *žádosti*. Mělo by to být
+
+dokončen po provedení několika ručních úkonů v back office.
+
+
+V ostatních případech, kdy je žádost úspěšně zpracována, obdržíte stavový
+kód HTTP **200 OK**.
+
+
+V odpovědi také obdržíte minimálně následující informace o (brzy) zrušené
+žádosti:
+
+
+- Jedinečné ID žádosti
+
+- Typ žádosti
+
+- Stav žádosti
+
+- Podstav žádosti
+
+
+V ostatních případech se zobrazí jedna z následujících chyb:
+
+
+| Stavový kód | Kód | Vysvětlení |
+| ----------- | --------------- | -------------------- |
+| 400 | INVALID_REQUEST | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+| 404 | OBJECT_NOT_FOUND | Požadovaný prostředek nebyl nalezen |
+| 422 | NOT_SUPPORTED | Zdroj není pro daný typ financování podporován |
+| 422 | UNPROCESSABLE | Požadavek byl správně formulován, ale nebylo možné jej splnit kvůli sémantickým chybám |
+| 422 | APPLICATION_REJECTED | Při pokusu o zrušení již `REJECTED` `Aplikace`, což není povoleno |
+| 500 | INTERNAL_SERVER_ERROR | Nastala neočekávaná podmínka a není vhodná žádná konkrétnější zpráva |
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"uuid","in":"path","description":"uuid","required":true,"schema":{"type":"string"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"customReason":{"type":"string","description":"Specifikace důvodu APPLICATION_CANCELLED_OTHER"},"reason":{"type":"string","description":"Důvod zrušení. Pokud není nastaven, považuje se za APPLICATION_CANCELLED_OTHER.","enum":["APPLICATION_CANCELLED_CARRIER_CHANGED","APPLICATION_CANCELLED_CART_CONTENT_CHANGED","APPLICATION_CANCELLED_BY_CUSTOMER","APPLICATION_CANCELLED_BY_ERP","APPLICATION_CANCELLED_EXPIRED","APPLICATION_CANCELLED_UNFINISHED","APPLICATION_CANCELLED_BY_ESHOP_RULES","APPLICATION_CANCELLED_OTHER"]}},"title":"FinancingV1ApplicationCancelRequest"}}},"description":"request","required":true}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"object","required":["id","state"],"properties":{"customer":{"type":"object","properties":{"addresses":{"type":"array","description":"adresy. Povoleny jsou pouze typy `PERMANENT` a `CONTACT`.","items":{"type":"object","properties":{"addressType":{"type":"string","description":"typ adresy. V každém kontextu jsou povoleny pouze některé typy.","enum":["PERMANENT","CONTACT","DELIVERY","BILLING"]},"city":{"type":"string","description":"city"},"name":{"type":"string","description":"jméno na adrese"},"streetAddress":{"type":"string","description":"ulice/městská část"},"streetNumber":{"type":"string","description":"číslo ulice"},"zip":{"type":"string","description":"poštovní směrovací číslo"}},"title":"FinancingV1Address"}},"email":{"type":"string","description":"E-mailová adresa zákazníka"},"firstName":{"type":"string","description":"Křestní jméno (jméno) zákazníka"},"fullName":{"type":"string","description":"Celé jméno zákazníka včetně akademických titulů a pozdravu."},"lastName":{"type":"string","description":"Příjmení zákazníka"},"phone":{"type":"string","description":"Telefonní číslo s předvolbou země (včetně počátečního `+`)"},"tin":{"type":"string","description":"daňové identifikační číslo (ICO)"}},"title":"FinancingV1CustomerBase"},"gatewayRedirectUrl":{"type":"string","description":"Adresa URL přesměrování brány. Přesměrování uživatele na tuto adresu URL, pokud je stav PROCESOVÁNÍ a stavDůvod je PROCESOVÁNÍ_DOPLŇUJÍCÍ_ÚDAJE nebo PROCESOVÁNÍ_VYLEPŠENÍ nebo PROCESOVÁNÍ_PŘESMĚROVÁNÍ_POTŘEBNÉ."},"id":{"type":"string","description":"Jedinečný identifikátor v HCO"},"order":{"type":"object","required":["items","number","state","totalPrice"],"properties":{"deliveryDate":{"type":"string","format":"date","description":"datum a čas doručení"},"deliveryTrackingNumber":{"type":"string","description":"sledovací číslo dodávky"},"deliveryType":{"type":"string","description":"typ doručení, pro typ `DELIVERY_CARRIER` lze dále specifikovat atributem DeliveryCarrier.Typ doruceni. Dopravcem, osobni prevzeti, online doruceni atd.","enum":["DELIVERY_CARRIER","ONLINE","PERSONAL_BRANCH","PERSONAL_BRANCH_WITH_ASSISTANCE","PERSONAL_PARTNER"]},"items":{"type":"array","description":"objednat položky","items":{"type":"object","required":["name","state","totalPrice"],"properties":{"code":{"type":"string","description":"interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny","minLength":0,"maxLength":100},"deliveryDate":{"type":"string","format":"date","description":"datum dodání položky. Pouze v případě, že celá objednávka NEBYLA odeslána najednou."},"deliveryTrackingNumber":{"type":"string","description":"Sledovací číslo položky. Pouze v případě, že celá objednávka NEBYLA odeslána najednou."},"ean":{"type":"string","description":"EAN kód","minLength":0,"maxLength":32},"image":{"type":"object","properties":{"content":{"type":"string","description":"Obsah souboru (zakódováno Base64, maximální velikost zakódovaného řetězce je 500 kB)"},"filename":{"type":"string","description":"název souboru"},"url":{"type":"string","description":"Adresa URL souboru"}},"title":"FinancováníFile"},"name":{"type":"string","description":"název položky"},"producer":{"type":"string"},"quantity":{"type":"integer","format":"int64","description":"Množství položky"},"sentDate":{"type":"string","format":"date","description":"datum odeslání položky. Pouze v případě, že celá objednávka NEBYLA odeslána najednou."},"state":{"type":"string","enum":["CANCELLED","DELIVERED","PROCESSING","RETURNED","SENT"]},"totalPrice":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Částka v desetinném formátu"},"currency":{"type":"string","description":"Měna částky. ISO 4217"}},"title":"FinancingV1Amount"},"type":{"type":"string","description":"typ položky","enum":["DIGITAL","DISCOUNT","FEE","GIFT_CARD","INSURANCE","PHYSICAL","SALES_TAX","SHIPPING_FEE","STORE_CREDIT"]},"unitPrice":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Částka v desetinném formátu"},"currency":{"type":"string","description":"Měna částky. ISO 4217"}},"title":"FinancingV1Amount"}},"title":"FinancingV1OrderItem"}},"number":{"type":"string","description":"číslo objednávky (interní pro e-shop)"},"reservationDate":{"type":"string","format":"date-time","description":"Datum a čas do objednání je rezervován. Po tomto datu e-shop negarantuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit vyřízení objednávky)."},"sentDate":{"type":"string","format":"date","description":"datum a čas odeslání objednávky"},"state":{"type":"string","description":"Stav objednávky","enum":["CANCELLED","DELIVERED","PROCESSING","RETURNED","SENT"]},"totalPrice":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Částka v desetinném formátu"},"currency":{"type":"string","description":"Měna částky. ISO 4217"}},"title":"FinancingV1Amount"},"variableSymbols":{"type":"array","description":"variabilní symboly (interní pro e-shop)","items":{"type":"string"}}},"title":"FinancingV1Order"},"settingsConsumerLoan":{"type":"object","properties":{"preferredDownPayment":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Částka v desetinném formátu"},"currency":{"type":"string","description":"Měna částky. ISO 4217"}},"title":"FinancingV1Amount"},"preferredInstallment":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Částka v desetinném formátu"},"currency":{"type":"string","description":"Měna částky. ISO 4217"}},"title":"FinancingV1Amount"},"preferredMonths":{"type":"integer","format":"int64","description":"Preferovaný počet splátek (v měsících)"},"productCode":{"type":"string","description":"Kód produktu, označuje předchozí výsledek výpočtu"},"productSetCode":{"type":"string","description":"Kód sady produktů, který omezí další výpočty"}},"title":"FinancingV1FinancingSettings"},"settingsGoodsFinancing":{"type":"object","properties":{"preferredDownPayment":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Částka v desetinném formátu"},"currency":{"type":"string","description":"Měna částky. ISO 4217"}},"title":"FinancingV1Amount"},"preferredInstallment":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Částka v desetinném formátu"},"currency":{"type":"string","description":"Měna částky. ISO 4217"}},"title":"FinancingV1Amount"},"preferredMonths":{"type":"integer","format":"int64","description":"Preferovaný počet splátek (v měsících)"},"productCode":{"type":"string","description":"Kód produktu, označuje předchozí výsledek výpočtu"},"productSetCode":{"type":"string","description":"Kód sady produktů, který omezí další výpočty"}},"title":"FinancingV1FinancingSettings"},"settingsInstallment":{"type":"object","properties":{"preferredDownPayment":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Částka v desetinném formátu"},"currency":{"type":"string","description":"Měna částky. ISO 4217"}},"title":"FinancingV1Amount"},"preferredInstallment":{"type":"object","required":["amount","currency"],"properties":{"amount":{"type":"number","description":"Částka v desetinném formátu"},"currency":{"type":"string","description":"Měna částky. ISO 4217"}},"title":"FinancingV1Amount"},"preferredMonths":{"type":"integer","format":"int64","description":"Preferovaný počet splátek (v měsících)"},"productCode":{"type":"string","description":"Kód produktu, označuje předchozí výsledek výpočtu"},"productSetCode":{"type":"string","description":"Kód sady produktů, který omezí další výpočty"}},"title":"FinancingV1FinancingSettings"},"state":{"type":"string","description":"Stav aplikace.","enum":["CANCELLED","PROCESSING","READY","REJECTED"]},"stateReason":{"type":"string","description":"Popisuje vnitřní stav aplikace, např. když je stav PROCESSING - důvod, proč aplikace zůstává ve stavu zpracování","enum":["CANCELLED_NOT_PAID","CANCELLED_RETURNED","CANCELLED_TO_RETURN","PROCESSING_ADDITIONAL_DATA","PROCESSING_ALT_OFFER","PROCESSING_APPROVED","PROCESSING_NEW","PROCESSING_PREAPPROVED","PROCESSING_REDIRECT_NEEDED","PROCESSING_REVIEW","PROCESSING_SIGNED","PROCESSING_VALIDATION_IN_PROGRESS","PROCESSING_VERIFICATION","READY_DELIVERED","READY_DELIVERING","READY_PAID","READY_SHIPPED","READY_TO_SHIP","REJECTED"]},"type":{"type":"string","description":"Typ financování","enum":["CONSUMER_LOAN","GOODS_FINANCING","INSTALLMENT","OPERATING_LEASE"]}},"title":"FinancingV1Application"}}}},"201":{"description":"Created"},"401":{"description":"Unauthorized"},"403":{"description":"Forbidden"},"404":{"description":"Not Found"}}}
+>
+  
+</StatusCodes>
+
+
+      
