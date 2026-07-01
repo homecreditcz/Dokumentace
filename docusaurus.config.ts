@@ -9,7 +9,7 @@ import type * as OpenApiPlugin from 'docusaurus-plugin-openapi-docs';
 const algoliaAppId = process.env.ALGOLIA_APP_ID || '2LFKCQ1DQW';
 const algoliaApiKey = process.env.ALGOLIA_API_KEY || '0a0f61b5d7d13fbaec8b8456de829168';
 const algoliaIndexName = process.env.ALGOLIA_INDEX_NAME || 'testCrawler';
-const algoliaSiteVerification = process.env.ALGOLIA_SITE_VERIFICATION || '4C6B0500CCB5D6F7';
+const algoliaSiteVerification = process.env.ALGOLIA_SITE_VERIFICATION || '69BC428E154BF052';
 
 const config: Config = {
   title: "Home Credit Developer Documentation",
