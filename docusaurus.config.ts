@@ -184,7 +184,7 @@ const config: Config = {
       indexName: algoliaIndexName,
 
       // Optional: see doc section below
-      contextualSearch: true,
+      contextualSearch: false,
 
       // Remove /cs/ prefix from URLs since Czech is the default locale at root
       replaceSearchResultPathname: {
