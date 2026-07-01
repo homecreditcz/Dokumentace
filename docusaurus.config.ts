@@ -15,7 +15,6 @@ const config: Config = {
   title: "Home Credit Developer Documentation",
   tagline: "Integrate your ecommerce system with Home Credit easily and provide your customers with a seamless payment experience.",
   favicon: "img/favicon.ico",
-  trailingSlash: true,
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
