@@ -6,9 +6,9 @@ import type * as OpenApiPlugin from 'docusaurus-plugin-openapi-docs';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 // Load environment variables (with fallbacks for local development)
-const algoliaAppId = process.env.ALGOLIA_APP_ID || '5E4WTU';
-const algoliaApiKey = process.env.ALGOLIA_API_KEY || '4b81aa9f2e1b2fe42002c4';
-const algoliaIndexName = process.env.ALGOLIA_INDEX_NAME || 'mainCrawler';
+const algoliaAppId = process.env.ALGOLIA_APP_ID || 'PBCNXEYFI2';
+const algoliaApiKey = process.env.ALGOLIA_API_KEY || '48d66ff729deba2c985df900c321b72d';
+const algoliaIndexName = process.env.ALGOLIA_INDEX_NAME || 'homecreditcz_github_io_pbcnxeyfi2_pages';
 const algoliaSiteVerification = process.env.ALGOLIA_SITE_VERIFICATION || 'BB5757DF62EAF0E2';
 
 const config: Config = {
