@@ -6,10 +6,10 @@ import type * as OpenApiPlugin from 'docusaurus-plugin-openapi-docs';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 // Load environment variables (with fallbacks for local development)
-const algoliaAppId = process.env.ALGOLIA_APP_ID || '5E4WTU9V3Y';
-const algoliaApiKey = process.env.ALGOLIA_API_KEY || '4b81aa9f2e1b2fe42002c490738e8943';
+const algoliaAppId = process.env.ALGOLIA_APP_ID || '5E4WTU';
+const algoliaApiKey = process.env.ALGOLIA_API_KEY || '4b81aa9f2e1b2fe42002c4';
 const algoliaIndexName = process.env.ALGOLIA_INDEX_NAME || 'mainCrawler';
-const algoliaSiteVerification = process.env.ALGOLIA_SITE_VERIFICATION || '69BC428E154BF052';
+const algoliaSiteVerification = process.env.ALGOLIA_SITE_VERIFICATION || 'BB5757DF62EAF0E2';
 
 const config: Config = {
   title: "Home Credit Developer Documentation",
