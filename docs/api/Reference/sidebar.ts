@@ -82,6 +82,12 @@ const sidebar: SidebarsConfig = {
           label: "API status check",
           className: "api-method get",
         },
+        {
+          type: "doc",
+          id: "api/Reference/api-health-check",
+          label: "API health check",
+          className: "api-method get",
+        },
       ],
     },
     {
@@ -151,22 +157,9 @@ const sidebar: SidebarsConfig = {
       ],
     },
     {
-      type: "category",
+      type: "doc",
+      id: "api/Reference/java-script-widget-integration",
       label: "JavaScript widget integration",
-      link: {
-        type: "doc",
-        id: "api/Reference/java-script-widget-integration",
-      },
-      collapsible: false,
-      collapsed: false,
-      items: [
-        {
-          type: "doc",
-          id: "api/Reference/api-health-check",
-          label: "API health check",
-          className: "api-method get",
-        },
-      ],
     },
     {
       type: "category",
