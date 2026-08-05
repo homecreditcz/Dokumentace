@@ -103,6 +103,15 @@ const sidebar: SidebarsConfig = {
           },
           className: "api-method get",
         },
+         {
+          type: "doc",
+          id: "current/api/Reference/api-health-check",
+          label: "Kontrola stavu API",
+          customProps: {
+            tagDisplayName: "x-displayName",
+          },
+          className: "api-method get",
+        },
       ],
     },
     {
@@ -193,25 +202,9 @@ const sidebar: SidebarsConfig = {
       ],
     },
     {
-      type: "category",
+      type: "doc",
+      id: "current/api/Reference/java-script-widget-integration",
       label: "Integrace JavaScriptového widgetu",
-      link: {
-        type: "doc",
-        id: "current/api/Reference/java-script-widget-integration",
-      },
-      collapsible: false,
-      collapsed: false,
-      items: [
-        {
-          type: "doc",
-          id: "current/api/Reference/api-health-check",
-          label: "Kontrola stavu API",
-          customProps: {
-            tagDisplayName: "x-displayName",
-          },
-          className: "api-method get",
-        },
-      ],
     },
     {
       type: "category",
