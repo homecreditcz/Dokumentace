@@ -19,7 +19,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "current/api/Reference/login-partner",
-          label: "Přihlášení partnera",
+          label: "Přihlášení  partnera",
           customProps: {
             tagDisplayName: "x-displayName",
           },
