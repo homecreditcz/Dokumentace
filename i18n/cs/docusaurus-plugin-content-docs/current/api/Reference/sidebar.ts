@@ -8,7 +8,7 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Zabezpečení",
+      label: "Zabezpečení ",
       link: {
         type: "doc",
         id: "current/api/Reference/security",
