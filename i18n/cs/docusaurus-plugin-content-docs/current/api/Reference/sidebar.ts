@@ -76,7 +76,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "current/api/Reference/get-application",
-          label: "Získat aplikaci",
+          label: "Podrobnosti o žádosti",
           customProps: {
             tagDisplayName: "x-displayName",
           },
@@ -97,7 +97,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "current/api/Reference/api-status-check",
-          label: "Kontrola stavu API",
+          label: "Kontrola dostupnosti API",
           customProps: {
             tagDisplayName: "x-displayName",
           },
