@@ -8,7 +8,7 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Zabezpečení ",
+      label: "Zabezpečení",
       link: {
         type: "doc",
         id: "current/api/Reference/security",
@@ -76,7 +76,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "current/api/Reference/get-application",
-          label: "Podrobnosti o  žádosti",
+          label: "Podrobnosti o žádosti",
           customProps: {
             tagDisplayName: "x-displayName",
           },
