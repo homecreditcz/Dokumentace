@@ -52,12 +52,2351 @@ Vytvořte novou *aplikaci*
   
 </ParamsDetails>
 
-<RequestSchema
+/* <RequestSchema
   title={"Body"}
   body={{"content":{"application/json;charset=UTF-8":{"schema":{"anyOf":[{"type":"object","properties":{"customer":{"type":"object","properties":{"type":{"type":"string","enum":["PERSON","ENTREPRENEUR","LEGAL_ENTITY"],"description":"Typ zákazníka"},"person":{"type":"object","properties":{"firstName":{"type":"string","description":"Jméno zákazníka (křestní jméno). Jméno BY MĚLO odpovídat regulárnímu výrazu \"^[A-ZÁ-Ž]\"?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$“, MĚLO BY mít délku 2 až 30 znaků a znaky BY MĚLY být v znakové sadě \"ISO 8859-2“."},"lastName":{"type":"string","description":"Příjmení zákazníka. Jméno MĚLO BY odpovídat regulárnímu výrazu \"^[A-ZÁ-Ž]\"?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$“, MĚLO BY mít délku 2 až 30 znaků a znaky MĚLY BY být v znakové sadě \"ISO 8859-2“."},"fullName":{"type":"string","description":"Celé jméno zákazníka, včetně akademických titulů a oslovení. Atribut \"fullName“ je rozdělen (a případně zkrácen) na \"firstName“ a \"lastName“; \"fullName“ není nikdy vrácen v odpovědi. V případě, že jsou zadány všechny tři atributy, \"fullName“ je vyřazen. Celé jméno by nemělo být delší než 100 znaků a znaky by měly být v znakové sadě \"ISO 8859-2“."},"contacts":{"type":"array","description":"Kontakty osoby.","items":{}},"addresses":{"type":"array","items":{"type":"object","properties":{"city":{"type":"string","description":"Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků."},"streetAddress":{"type":"string","description":"Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků."},"streetNumber":{"type":"string","description":"Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků."},"zip":{"type":"string","description":"Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků."},"flags":{"type":"array","items":{"type":"string","enum":["PERMANENT","CONTACT"]},"description":"Typy adres."}}},"description":"Adresy."},"identificationNumber":{"type":"string","description":"Identifikační číslo zákazníka (ve skutečnosti rodné číslo). MUSÍ být platné podle platných právních předpisů. Zákazník MUSÍ být starší 18 let."},"ipAddress":{"type":"string","description":"IPv4 nebo IPv6 adresa zákazníka."},"fingerprintComponents":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"],"description":"Složky otisků prstů."}},"description":"POVINNÉ pro typ zákazníka \"PERSON“. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší."},"entrepreneur":{"type":"object","properties":{"businessName":{"type":"string","description":"Název obchodní společnosti."},"addresses":{"type":"array","items":{"type":"object","properties":{"city":{"type":"string","description":"Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků."},"streetAddress":{"type":"string","description":"Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků."},"streetNumber":{"type":"string","description":"Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků."},"zip":{"type":"string","description":"Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků."},"flags":{"type":"array","items":{"type":"string","enum":["PERMANENT","CONTACT"]},"description":"Typy adres."}}},"description":"Adresy."},"businessIdentificationNumber":{"type":"string","description":"Identifikační číslo společnosti (známé jako IČO)."},"ipAddress":{"type":"string","description":"IPv4 nebo IPv6 adresa zákazníka."},"fingerprintComponents":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"],"description":"Složky otisků prstů."}},"description":"POVINNÉ pro typ zákazníka \"PODNIKATEL“. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší."},"legalEntity":{"type":"object","properties":{"businessName":{"type":"string","description":"Název obchodní společnosti."},"addresses":{"type":"array","items":{"type":"object","properties":{"city":{"type":"string","description":"Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků."},"streetAddress":{"type":"string","description":"Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků."},"streetNumber":{"type":"string","description":"Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků."},"zip":{"type":"string","description":"Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků."},"flags":{"type":"array","items":{"type":"string","enum":["PERMANENT","CONTACT"]},"description":"Typy adres."}}},"description":"Adresy."},"businessIdentificationNumber":{"type":"string","description":"Identifikační číslo společnosti (známé jako IČO)."},"ipAddress":{"type":"string","description":"IPv4 nebo IPv6 adresa zákazníka."},"fingerprintComponents":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"],"description":"Složky otisků prstů."}},"description":"POVINNÉ pro typ zákazníka `LEGAL_ENTITY`. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší."}},"required":["type"],"description":"Údaje o zákazníkovi. Tato specifikace typu zákazníka je POVINNÁ."},"originationContext":{"type":"object","properties":{"channel":{"type":"object","properties":{"type":{"type":"string","enum":["ONLINE"],"description":"Typ kanálu původu"},"online":{"type":"object","properties":{"approvedRedirect":{"type":"string","description":"URL partnera používaná pro přesměrování zákazníka zpět na webovou stránku partnera po schválení žádosti. MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují.  NESMÍ být delší než 1000 znaků."},"rejectedRedirect":{"type":"string","description":"URL partnera používaná pro přesměrování zákazníka zpět na web partnera po zamítnutí žádosti. MUSÍ být platná URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují. NESMÍ být delší než 1000 znaků."},"notificationEndpoint":{"type":"string","description":"URL partnera používaná jako koncový bod pro zasílání oznámení partnerovi o důležitých aktualizacích v procesu žádosti (schválení, zamítnutí, zrušení atd.). MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL by měla obsahovat schéma (například `https://`). Nesmí být delší než 1000 znaků."}},"description":"Sbírka URL adres partnerů používaných pro přesměrování zákazníka zpět na webovou stránku partnera nebo jako koncový bod pro oznámení. VYŽADOVÁNO pro typ kanálu ONLINE."}},"required":["type","online"],"description":"Kanál původu"},"precheckIds":{"type":"array","items":{"type":"string"},"description":"Pole všech identifikátorů předběžné kontroly souvisejících s touto aplikací. Pokud partner provedl operaci předběžné kontroly s údaji tohoto zákazníka, MĚL BY do tohoto atributu zadat identifikátor předběžné kontroly (precheckId). MĚL BY to být platný identifikátor předběžné kontroly. Viz Operace předběžné kontroly a jejich odezva."},"sourceId":{"type":"string","description":"Identifikátor zdroje nebo kampaně, ze které pochází potenciální zákazník. Partner BY MĚL poskytnout platné `sourceId`."},"extendedData":{"type":"array","items":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"]},"description":"Další údaje o původu aplikace. Seznam podporovaných klíčů pro extendedData: utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, fbclid, url."}},"required":["channel"],"description":"Další informace o kontextu vzniku žádosti o financování (např. přesměrování URL zpět na partnerský web)"},"financedSubject":{"type":"object","properties":{"type":{"type":"string","enum":["ORDER"],"description":"Financovaný typ předmětu"},"order":{"type":"object","properties":{"type":{"type":"string","enum":["STANDARD","BROKERED"],"description":"Typ objednávky."},"number":{"type":"string","description":"Identifikátor, specifikovaný partnerem (e-shop, POS obchod, zprostředkovatel). MŮŽE být poskytnut pro snazší identifikaci aplikace na straně partnera. NESMÍ být delší než 100 znaků."},"specificSymbol":{"type":"string","description":"Specifický symbol (interní pro partnera) pro vyrovnávací platbu. NESMÍ být delší než 10 znaků."},"variableSymbol":{"type":"string","description":"Proměnný symbol (interní pro e-shop) pro vyrovnání platby. NESMÍ být delší než 10 znaků. Pokud je prázdný, použije se místo něj `order.number`. Pokud není zadán nebo není použitelný (např. `order.number` obsahuje pouze písmena), použije se interní identifikátor Home Credit."},"totalPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Celková částka objednávky včetně DPH"},"preferredDownPayment":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Preferovaná výše zálohy (částka MĚLA BY být zaokrouhlena na stovky CZK/5 EUR) (příklad: platná záloha 35 EUR, neplatná záloha 32 EUR)"},"financings":{"type":"array","items":{"type":"object","properties":{"type":{"type":"string","enum":["INSTALLMENT"],"description":"Typ financování"},"amount":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Financovaná částka pro financování. MŮŽE být poskytnuta pro objednávky s jediným financováním. MUSÍ být poskytnuta pro objednávky s více financováními."},"installment":{"type":"object","properties":{"preferredMonths":{"type":"number","description":"Preferovaný počet splátek (v měsících)"},"preferredInstallment":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Preferovaná výše zálohy (částka by měla být zaokrouhlena na stovky CZK/5 EUR)"},"productCode":{"type":"string","description":"Kód produktu (získaný z výsledku výpočtu)."},"flags":{"type":"array","items":{"type":"string","enum":["BUYBACK"]},"description":"Typ splátkového programu. Obvykle se používá u více financování."}},"description":"Nastavení pro typ financování SPLÁTKOVÝ. VYŽADOVÁNO pro typ financování SPLÁTKOVÝ."}},"required":["type","installment"]},"description":"Informace o formě financování ŽÁDOST o objednávku. MUSÍ být uvedeno alespoň \"typ“ \"financování“ u objednávek s jediným způsobem financování. MUSÍ být uvedena alespoň \"částka“ a \"typ“ pro konkrétní části \"financování“ u objednávek s více způsoby financování (obvykle složitější produkt, například nákup iPhonu s budoucím zpětným odkupem)."},"standard":{"type":"object","properties":{"deliveryType":{"type":"string","enum":["PERSONAL_BRANCH","PERSONAL_PARTNER","ONLINE","DELIVERY_CARRIER"],"description":"Typ služby použité pro dodání zboží"},"reservationDate":{"type":"string","description":"Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky)."},"items":{"type":"array","items":{"type":"object","properties":{"code":{"type":"string","description":"Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků."},"ean":{"type":"string","description":"Kód EAN. Maximálně 32 znaků."},"name":{"type":"string","description":"Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků."},"quantity":{"type":"number","description":"Počet položek. Pokud je pole prázdné, považuje se za 1."},"type":{"type":"string","enum":["PHYSICAL","DISCOUNT","SHIPPING_FEE","SALES_TAX","DIGITAL","GIFT_CARD","STORE_CREDIT","FEE","INSURANCE"],"description":"Typ položky"},"totalPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Celková cena za všechny kusy (včetně DPH)"},"unitPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`."},"producer":{"type":"string","description":"Nesmí být delší než 50 znaků."},"image":{"type":"object","properties":{"filename":{"type":"string","description":"Název souboru."}},"required":["filename"],"oneOf":[{"properties":{"url":{"type":"string","description":"URL souboru (úplná)."}},"required":["url"]},{"properties":{"content":{"type":"string","description":"Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)"}},"required":["content"]}],"description":"Obrázek položky"}},"required":["name","totalPrice"]},"description":"Objednávka musí obsahovat alespoň jednu položku."}},"required":["items"],"description":"MUSÍ být poskytnuto pro `order.type` = `STANDARD`"},"brokered":{"type":"object","properties":{"merchantOrders":{"type":"array","items":{"type":"object","properties":{"number":{"type":"string","description":"Interní číslo objednávky obchodníka (e-shop, POS obchod), MŮŽE být uvedeno pro snazší identifikaci aplikace na straně partnera, NESMÍ být delší než 100 znaků."},"name":{"type":"string","description":"Název obchodníka NESMÍ být delší než 60 znaků."},"logo":{"type":"object","properties":{"filename":{"type":"string","description":"Název souboru."}},"required":["filename"],"oneOf":[{"properties":{"url":{"type":"string","description":"URL souboru (úplná)."}},"required":["url"]},{"properties":{"content":{"type":"string","description":"Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)"}},"required":["content"]}],"description":"Logo obchodníka"},"businessIdentificationNumber":{"type":"number","description":"Identifikační číslo podniku, NESMÍ být delší než 8 číslic"},"url":{"type":"string","description":"URL adresa webové stránky (e-shopu) obchodníka NESMÍ být delší než 1000 znaků a MUSÍ být platnou URL adresou."},"deliveryType":{"type":"string","enum":["PERSONAL_BRANCH","PERSONAL_PARTNER","ONLINE","DELIVERY_CARRIER"],"description":"Typ služby použité pro dodání zboží"},"reservationDate":{"type":"string","description":"Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky)."},"items":{"type":"array","items":{"type":"object","properties":{"code":{"type":"string","description":"Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků."},"ean":{"type":"string","description":"Kód EAN. Maximálně 32 znaků."},"name":{"type":"string","description":"Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků."},"quantity":{"type":"number","description":"Počet položek. Pokud je pole prázdné, považuje se za 1."},"type":{"type":"string","enum":["PHYSICAL","DISCOUNT","SHIPPING_FEE","SALES_TAX","DIGITAL","GIFT_CARD","STORE_CREDIT","FEE","INSURANCE"],"description":"Typ položky"},"totalPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Celková cena za všechny kusy (včetně DPH)"},"unitPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`."},"producer":{"type":"string","description":"Nesmí být delší než 50 znaků."},"image":{"type":"object","properties":{"filename":{"type":"string","description":"Název souboru."}},"required":["filename"],"oneOf":[{"properties":{"url":{"type":"string","description":"URL souboru (úplná)."}},"required":["url"]},{"properties":{"content":{"type":"string","description":"Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)"}},"required":["content"]}],"description":"Obrázek položky"}},"required":["name","totalPrice"]},"description":"Objednat položky"}},"required":["name"]},"description":"Pole obchodních objednávek (obvykle se skládá z jedné objednávky)"}},"required":["merchantOrders"],"description":"MUSÍ být poskytnuto pro `order.type` = `BROKERED`"}},"required":["type","totalPrice","financings"],"description":"Informace o nákupu zboží zákazníkem. VYŽADOVÁNO pro typ OBJEDNÁVKY financovaného předmětu"}},"required":["type","order"],"description":"Předmět financování (například nákup iPhone, půjčka ve výši 20 000 Kč ...)"}},"required":["customer","originationContext","financedSubject"],"example":{"customer":{"type":"PERSON","person":{"firstName":"John","lastName":"Newborn","fullName":"Ing. John Newborn, Csc.","contacts":[{"type":"EMAIL","email":{"value":"john.newborn@country.com"},"mobile":{"countryCode":"+420","value":"777123456"},"phone":{"countryCode":"+420","value":"777123456"}}],"addresses":[{"city":"Prague","streetAddress":"Letenská","streetNumber":"22","zip":"140 00","flags":["PERMANENT"]}],"identificationNumber":"890619/5723","ipAddress":"172.10.10.1","fingerprintComponents":{"key":"property","value":"value"}},"entrepreneur":{"businessName":"Planeta s.r.o.","addresses":[{"city":"Prague","streetAddress":"Letenská","streetNumber":"22","zip":"140 00","flags":["PERMANENT"]}],"businessIdentificationNumber":"123456854","ipAddress":"172.10.10.1","fingerprintComponents":{"key":"property","value":"value"}},"legalEntity":{"businessName":"Planeta s.r.o.","addresses":[{"city":"Prague","streetAddress":"Letenská","streetNumber":"22","zip":"140 00","flags":["PERMANENT"]}],"businessIdentificationNumber":"123456854","ipAddress":"172.10.10.1","fingerprintComponents":{"key":"property","value":"value"}}},"originationContext":{"channel":{"type":"ONLINE","online":{"approvedRedirect":"https://www.partnereshop.cz","rejectedRedirect":"https://www.partnereshop.cz/kosik","notificationEndpoint":"https://www.partnereshop.cz/order/AA234"}},"precheckIds":[],"sourceId":"Cash_10_2020","extendedData":[{"key":"property","value":"value"}]},"financedSubject":{"type":"ORDER","order":{"type":"STANDARD","number":"11111111","specificSymbol":"1122334455","variableSymbol":"1234567","totalPrice":{"value":13300,"currency":"CZK"},"preferredDownPayment":{"value":13300,"currency":"CZK"},"financings":[{"type":"INSTALLMENT","amount":{"value":13300,"currency":"CZK"},"installment":{"preferredMonths":6,"preferredInstallment":{"value":13300,"currency":"CZK"},"productCode":"'COCONL06'","flags":["BUYBACK"]}}],"standard":{"deliveryType":"PERSONAL_BRANCH","reservationDate":"2017-07-15T00:00:00+02:00","items":[{"code":"EXC4677-1a","ean":"888462064002","name":"iPhone 6s 32GB SpaceGray","quantity":1,"type":"PHYSICAL","totalPrice":{"value":13300,"currency":"CZK"},"unitPrice":{"value":13300,"currency":"CZK"},"producer":"'Apple'","image":{"filename":"iphone6s.jpg","url":"https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg"}}]},"brokered":{"merchantOrders":[{"number":"22222222","name":"MALL","logo":{"filename":"iphone6s.jpg","url":"https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg"},"businessIdentificationNumber":26204967,"url":"www.mall.cz","deliveryType":"PERSONAL_BRANCH","reservationDate":"2017-07-15T00:00:00+02:00","items":[{"code":"EXC4677-1a","ean":"888462064002","name":"iPhone 6s 32GB SpaceGray","quantity":1,"type":"PHYSICAL","totalPrice":{"value":13300,"currency":"CZK"},"unitPrice":{"value":13300,"currency":"CZK"},"producer":"'Apple'","image":{"filename":"iphone6s.jpg","url":"https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg"}}]}]}}}}},{"type":"object","properties":{"customer":{"type":"object","properties":{"type":{"type":"string","enum":["PERSON","ENTREPRENEUR","LEGAL_ENTITY"],"description":"Typ zákazníka"},"person":{"type":"object","properties":{"firstName":{"type":"string","description":"Jméno zákazníka (křestní jméno). Jméno BY MĚLO odpovídat regulárnímu výrazu \"^[A-ZÁ-Ž]\"?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$“, MĚLO BY mít délku 2 až 30 znaků a znaky BY MĚLY být v znakové sadě \"ISO 8859-2“."},"lastName":{"type":"string","description":"Příjmení zákazníka. Jméno MĚLO BY odpovídat regulárnímu výrazu \"^[A-ZÁ-Ž]\"?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$“, MĚLO BY mít délku 2 až 30 znaků a znaky MĚLY BY být v znakové sadě \"ISO 8859-2“."},"fullName":{"type":"string","description":"Celé jméno zákazníka, včetně akademických titulů a oslovení. Atribut \"fullName“ je rozdělen (a případně zkrácen) na \"firstName“ a \"lastName“; \"fullName“ není nikdy vrácen v odpovědi. V případě, že jsou zadány všechny tři atributy, \"fullName“ je vyřazen. Celé jméno by nemělo být delší než 100 znaků a znaky by měly být v znakové sadě \"ISO 8859-2“."},"contacts":{"type":"array","description":"Kontakty osoby.","items":{}},"addresses":{"type":"array","items":{"type":"object","properties":{"city":{"type":"string","description":"Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků."},"streetAddress":{"type":"string","description":"Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků."},"streetNumber":{"type":"string","description":"Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků."},"zip":{"type":"string","description":"Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků."},"flags":{"type":"array","items":{"type":"string","enum":["PERMANENT","CONTACT"]},"description":"Typy adres."}}},"description":"Adresy."},"identificationNumber":{"type":"string","description":"Identifikační číslo zákazníka (ve skutečnosti rodné číslo). MUSÍ být platné podle platných právních předpisů. Zákazník MUSÍ být starší 18 let."},"ipAddress":{"type":"string","description":"IPv4 nebo IPv6 adresa zákazníka."},"fingerprintComponents":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"],"description":"Složky otisků prstů."}},"description":"POVINNÉ pro typ zákazníka \"PERSON“. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší."},"entrepreneur":{"type":"object","properties":{"businessName":{"type":"string","description":"Název obchodní společnosti."},"addresses":{"type":"array","items":{"type":"object","properties":{"city":{"type":"string","description":"Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků."},"streetAddress":{"type":"string","description":"Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků."},"streetNumber":{"type":"string","description":"Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků."},"zip":{"type":"string","description":"Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků."},"flags":{"type":"array","items":{"type":"string","enum":["PERMANENT","CONTACT"]},"description":"Typy adres."}}},"description":"Adresy."},"businessIdentificationNumber":{"type":"string","description":"Identifikační číslo společnosti (známé jako IČO)."},"ipAddress":{"type":"string","description":"IPv4 nebo IPv6 adresa zákazníka."},"fingerprintComponents":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"],"description":"Složky otisků prstů."}},"description":"POVINNÉ pro typ zákazníka \"PODNIKATEL“. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší."},"legalEntity":{"type":"object","properties":{"businessName":{"type":"string","description":"Název obchodní společnosti."},"addresses":{"type":"array","items":{"type":"object","properties":{"city":{"type":"string","description":"Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků."},"streetAddress":{"type":"string","description":"Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků."},"streetNumber":{"type":"string","description":"Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků."},"zip":{"type":"string","description":"Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků."},"flags":{"type":"array","items":{"type":"string","enum":["PERMANENT","CONTACT"]},"description":"Typy adres."}}},"description":"Adresy."},"businessIdentificationNumber":{"type":"string","description":"Identifikační číslo společnosti (známé jako IČO)."},"ipAddress":{"type":"string","description":"IPv4 nebo IPv6 adresa zákazníka."},"fingerprintComponents":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"],"description":"Složky otisků prstů."}},"description":"POVINNÉ pro typ zákazníka `LEGAL_ENTITY`. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší."}},"required":["type"],"description":"Údaje o zákazníkovi. Tato specifikace typu zákazníka je POVINNÁ."},"originationContext":{"type":"object","properties":{"channel":{"type":"object","properties":{"type":{"type":"string","enum":["ONLINE"],"description":"Typ kanálu původu"},"online":{"type":"object","properties":{"approvedRedirect":{"type":"string","description":"URL partnera používaná pro přesměrování zákazníka zpět na webovou stránku partnera po schválení žádosti. MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují.  NESMÍ být delší než 1000 znaků."},"rejectedRedirect":{"type":"string","description":"URL partnera používaná pro přesměrování zákazníka zpět na web partnera po zamítnutí žádosti. MUSÍ být platná URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují. NESMÍ být delší než 1000 znaků."},"notificationEndpoint":{"type":"string","description":"URL partnera používaná jako koncový bod pro zasílání oznámení partnerovi o důležitých aktualizacích v procesu žádosti (schválení, zamítnutí, zrušení atd.). MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL by měla obsahovat schéma (například `https://`). Nesmí být delší než 1000 znaků."}},"description":"Sbírka URL adres partnerů používaných pro přesměrování zákazníka zpět na webovou stránku partnera nebo jako koncový bod pro oznámení. VYŽADOVÁNO pro typ kanálu ONLINE."}},"required":["type","online"],"description":"Kanál původu"},"precheckIds":{"type":"array","items":{"type":"string"},"description":"Pole všech identifikátorů předběžné kontroly souvisejících s touto aplikací. Pokud partner provedl operaci předběžné kontroly s údaji tohoto zákazníka, MĚL BY do tohoto atributu zadat identifikátor předběžné kontroly (precheckId). MĚL BY to být platný identifikátor předběžné kontroly. Viz Operace předběžné kontroly a jejich odezva."},"sourceId":{"type":"string","description":"Identifikátor zdroje nebo kampaně, ze které pochází potenciální zákazník. Partner BY MĚL poskytnout platné `sourceId`."},"extendedData":{"type":"array","items":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"]},"description":"Další údaje o původu aplikace. Seznam podporovaných klíčů pro extendedData: utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, fbclid, url."}},"required":["channel"],"description":"Další informace o kontextu vzniku žádosti o financování (např. přesměrování URL zpět na partnerský web)"},"financedSubject":{"type":"object","properties":{"type":{"type":"string","enum":["ORDER"],"description":"Financovaný typ předmětu"},"order":{"type":"object","properties":{"type":{"type":"string","enum":["STANDARD","BROKERED"],"description":"Typ objednávky."},"number":{"type":"string","description":"Identifikátor, specifikovaný partnerem (e-shop, POS obchod, zprostředkovatel). MŮŽE být poskytnut pro snazší identifikaci aplikace na straně partnera. NESMÍ být delší než 100 znaků."},"specificSymbol":{"type":"string","description":"Specifický symbol (interní pro partnera) pro vyrovnávací platbu. NESMÍ být delší než 10 znaků."},"variableSymbol":{"type":"string","description":"Proměnný symbol (interní pro e-shop) pro vyrovnání platby. NESMÍ být delší než 10 znaků. Pokud je prázdný, použije se místo něj `order.number`. Pokud není zadán nebo není použitelný (např. `order.number` obsahuje pouze písmena), použije se interní identifikátor Home Credit."},"totalPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Celková částka objednávky včetně DPH"},"preferredDownPayment":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Preferovaná výše zálohy (částka MĚLA BY být zaokrouhlena na stovky CZK/5 EUR) (příklad: platná záloha 35 EUR, neplatná záloha 32 EUR)"},"financings":{"type":"array","items":{"type":"object","properties":{"type":{"type":"string","enum":["INSTALLMENT"],"description":"Typ financování"},"amount":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Financovaná částka pro financování. MŮŽE být poskytnuta pro objednávky s jediným financováním. MUSÍ být poskytnuta pro objednávky s více financováními."},"installment":{"type":"object","properties":{"preferredMonths":{"type":"number","description":"Preferovaný počet splátek (v měsících)"},"preferredInstallment":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Preferovaná výše zálohy (částka by měla být zaokrouhlena na stovky CZK/5 EUR)"},"productCode":{"type":"string","description":"Kód produktu (získaný z výsledku výpočtu)."},"flags":{"type":"array","items":{"type":"string","enum":["BUYBACK"]},"description":"Typ splátkového programu. Obvykle se používá u více financování."}},"description":"Nastavení pro typ financování SPLÁTKOVÝ. VYŽADOVÁNO pro typ financování SPLÁTKOVÝ."}},"required":["type","installment"]},"description":"Informace o formě financování ŽÁDOST o objednávku. MUSÍ být uvedeno alespoň \"typ“ \"financování“ u objednávek s jediným způsobem financování. MUSÍ být uvedena alespoň \"částka“ a \"typ“ pro konkrétní části \"financování“ u objednávek s více způsoby financování (obvykle složitější produkt, například nákup iPhonu s budoucím zpětným odkupem)."},"standard":{"type":"object","properties":{"deliveryType":{"type":"string","enum":["PERSONAL_BRANCH","PERSONAL_PARTNER","ONLINE","DELIVERY_CARRIER"],"description":"Typ služby použité pro dodání zboží"},"reservationDate":{"type":"string","description":"Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky)."},"items":{"type":"array","items":{"type":"object","properties":{"code":{"type":"string","description":"Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků."},"ean":{"type":"string","description":"Kód EAN. Maximálně 32 znaků."},"name":{"type":"string","description":"Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků."},"quantity":{"type":"number","description":"Počet položek. Pokud je pole prázdné, považuje se za 1."},"type":{"type":"string","enum":["PHYSICAL","DISCOUNT","SHIPPING_FEE","SALES_TAX","DIGITAL","GIFT_CARD","STORE_CREDIT","FEE","INSURANCE"],"description":"Typ položky"},"totalPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Celková cena za všechny kusy (včetně DPH)"},"unitPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`."},"producer":{"type":"string","description":"Nesmí být delší než 50 znaků."},"image":{"type":"object","properties":{"filename":{"type":"string","description":"Název souboru."}},"required":["filename"],"oneOf":[{"properties":{"url":{"type":"string","description":"URL souboru (úplná)."}},"required":["url"]},{"properties":{"content":{"type":"string","description":"Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)"}},"required":["content"]}],"description":"Obrázek položky"}},"required":["name","totalPrice"]},"description":"Objednávka musí obsahovat alespoň jednu položku."}},"required":["items"],"description":"MUSÍ být poskytnuto pro `order.type` = `STANDARD`"},"brokered":{"type":"object","properties":{"merchantOrders":{"type":"array","items":{"type":"object","properties":{"number":{"type":"string","description":"Interní číslo objednávky obchodníka (e-shop, POS obchod), MŮŽE být uvedeno pro snazší identifikaci aplikace na straně partnera, NESMÍ být delší než 100 znaků."},"name":{"type":"string","description":"Název obchodníka NESMÍ být delší než 60 znaků."},"logo":{"type":"object","properties":{"filename":{"type":"string","description":"Název souboru."}},"required":["filename"],"oneOf":[{"properties":{"url":{"type":"string","description":"URL souboru (úplná)."}},"required":["url"]},{"properties":{"content":{"type":"string","description":"Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)"}},"required":["content"]}],"description":"Logo obchodníka"},"businessIdentificationNumber":{"type":"number","description":"Identifikační číslo podniku, NESMÍ být delší než 8 číslic"},"url":{"type":"string","description":"URL adresa webové stránky (e-shopu) obchodníka NESMÍ být delší než 1000 znaků a MUSÍ být platnou URL adresou."},"deliveryType":{"type":"string","enum":["PERSONAL_BRANCH","PERSONAL_PARTNER","ONLINE","DELIVERY_CARRIER"],"description":"Typ služby použité pro dodání zboží"},"reservationDate":{"type":"string","description":"Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky)."},"items":{"type":"array","items":{"type":"object","properties":{"code":{"type":"string","description":"Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků."},"ean":{"type":"string","description":"Kód EAN. Maximálně 32 znaků."},"name":{"type":"string","description":"Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků."},"quantity":{"type":"number","description":"Počet položek. Pokud je pole prázdné, považuje se za 1."},"type":{"type":"string","enum":["PHYSICAL","DISCOUNT","SHIPPING_FEE","SALES_TAX","DIGITAL","GIFT_CARD","STORE_CREDIT","FEE","INSURANCE"],"description":"Typ položky"},"totalPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Celková cena za všechny kusy (včetně DPH)"},"unitPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`."},"producer":{"type":"string","description":"Nesmí být delší než 50 znaků."},"image":{"type":"object","properties":{"filename":{"type":"string","description":"Název souboru."}},"required":["filename"],"oneOf":[{"properties":{"url":{"type":"string","description":"URL souboru (úplná)."}},"required":["url"]},{"properties":{"content":{"type":"string","description":"Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)"}},"required":["content"]}],"description":"Obrázek položky"}},"required":["name","totalPrice"]},"description":"Objednat položky"}},"required":["name"]},"description":"Pole obchodních objednávek (obvykle se skládá z jedné objednávky)"}},"required":["merchantOrders"],"description":"MUSÍ být poskytnuto pro `order.type` = `BROKERED`"}},"required":["type","totalPrice","financings"],"description":"Informace o nákupu zboží zákazníkem. VYŽADOVÁNO pro typ OBJEDNÁVKY financovaného předmětu"}},"required":["type","order"],"description":"Předmět financování (například nákup iPhone, půjčka ve výši 20 000 Kč ...)"}},"required":["customer","originationContext","financedSubject"],"example":{"customer":{"type":"PERSON","person":{"firstName":"John","lastName":"Newborn","fullName":"Ing. John Newborn, Csc.","contacts":[{"type":"EMAIL","email":{"value":"john.newborn@country.com"},"mobile":{"countryCode":"+420","value":"777123456"},"phone":{"countryCode":"+420","value":"777123456"}}],"addresses":[{"city":"Prague","streetAddress":"Letenská","streetNumber":"22","zip":"140 00","flags":["PERMANENT"]}],"identificationNumber":"890619/5723","ipAddress":"172.10.10.1","fingerprintComponents":{"key":"property","value":"value"}},"entrepreneur":{"businessName":"Planeta s.r.o.","addresses":[{"city":"Prague","streetAddress":"Letenská","streetNumber":"22","zip":"140 00","flags":["PERMANENT"]}],"businessIdentificationNumber":"123456854","ipAddress":"172.10.10.1","fingerprintComponents":{"key":"property","value":"value"}},"legalEntity":{"businessName":"Planeta s.r.o.","addresses":[{"city":"Prague","streetAddress":"Letenská","streetNumber":"22","zip":"140 00","flags":["PERMANENT"]}],"businessIdentificationNumber":"123456854","ipAddress":"172.10.10.1","fingerprintComponents":{"key":"property","value":"value"}}},"originationContext":{"channel":{"type":"ONLINE","online":{"approvedRedirect":"https://www.partnereshop.cz","rejectedRedirect":"https://www.partnereshop.cz/kosik","notificationEndpoint":"https://www.partnereshop.cz/order/AA234"}},"precheckIds":[],"sourceId":"Cash_10_2020","extendedData":[{"key":"property","value":"value"}]},"financedSubject":{"type":"ORDER","order":{"type":"STANDARD","number":"11111111","specificSymbol":"1122334455","variableSymbol":"1234567","totalPrice":{"value":13300,"currency":"CZK"},"preferredDownPayment":{"value":13300,"currency":"CZK"},"financings":[{"type":"INSTALLMENT","amount":{"value":13300,"currency":"CZK"},"installment":{"preferredMonths":6,"preferredInstallment":{"value":13300,"currency":"CZK"},"productCode":"'COCONL06'","flags":["BUYBACK"]}}],"standard":{"deliveryType":"PERSONAL_BRANCH","reservationDate":"2017-07-15T00:00:00+02:00","items":[{"code":"EXC4677-1a","ean":"888462064002","name":"iPhone 6s 32GB SpaceGray","quantity":1,"type":"PHYSICAL","totalPrice":{"value":13300,"currency":"CZK"},"unitPrice":{"value":13300,"currency":"CZK"},"producer":"'Apple'","image":{"filename":"iphone6s.jpg","url":"https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg"}}]},"brokered":{"merchantOrders":[{"number":"22222222","name":"MALL","logo":{"filename":"iphone6s.jpg","url":"https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg"},"businessIdentificationNumber":26204967,"url":"www.mall.cz","deliveryType":"PERSONAL_BRANCH","reservationDate":"2017-07-15T00:00:00+02:00","items":[{"code":"EXC4677-1a","ean":"888462064002","name":"iPhone 6s 32GB SpaceGray","quantity":1,"type":"PHYSICAL","totalPrice":{"value":13300,"currency":"CZK"},"unitPrice":{"value":13300,"currency":"CZK"},"producer":"'Apple'","image":{"filename":"iphone6s.jpg","url":"https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg"}}]}]}}}}},{"type":"object","properties":{"customer":{"type":"object","properties":{"type":{"type":"string","enum":["PERSON","ENTREPRENEUR","LEGAL_ENTITY"],"description":"Typ zákazníka"},"person":{"type":"object","properties":{"firstName":{"type":"string","description":"Jméno zákazníka (křestní jméno). Jméno BY MĚLO odpovídat regulárnímu výrazu \"^[A-ZÁ-Ž]\"?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$“, MĚLO BY mít délku 2 až 30 znaků a znaky BY MĚLY být v znakové sadě \"ISO 8859-2“."},"lastName":{"type":"string","description":"Příjmení zákazníka. Jméno MĚLO BY odpovídat regulárnímu výrazu \"^[A-ZÁ-Ž]\"?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$“, MĚLO BY mít délku 2 až 30 znaků a znaky MĚLY BY být v znakové sadě \"ISO 8859-2“."},"fullName":{"type":"string","description":"Celé jméno zákazníka, včetně akademických titulů a oslovení. Atribut \"fullName“ je rozdělen (a případně zkrácen) na \"firstName“ a \"lastName“; \"fullName“ není nikdy vrácen v odpovědi. V případě, že jsou zadány všechny tři atributy, \"fullName“ je vyřazen. Celé jméno by nemělo být delší než 100 znaků a znaky by měly být v znakové sadě \"ISO 8859-2“."},"contacts":{"type":"array","description":"Kontakty osoby.","items":{}},"addresses":{"type":"array","items":{"type":"object","properties":{"city":{"type":"string","description":"Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků."},"streetAddress":{"type":"string","description":"Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků."},"streetNumber":{"type":"string","description":"Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků."},"zip":{"type":"string","description":"Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků."},"flags":{"type":"array","items":{"type":"string","enum":["PERMANENT","CONTACT"]},"description":"Typy adres."}}},"description":"Adresy."},"identificationNumber":{"type":"string","description":"Identifikační číslo zákazníka (ve skutečnosti rodné číslo). MUSÍ být platné podle platných právních předpisů. Zákazník MUSÍ být starší 18 let."},"ipAddress":{"type":"string","description":"IPv4 nebo IPv6 adresa zákazníka."},"fingerprintComponents":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"],"description":"Složky otisků prstů."}},"description":"POVINNÉ pro typ zákazníka \"PERSON“. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší."},"entrepreneur":{"type":"object","properties":{"businessName":{"type":"string","description":"Název obchodní společnosti."},"addresses":{"type":"array","items":{"type":"object","properties":{"city":{"type":"string","description":"Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků."},"streetAddress":{"type":"string","description":"Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků."},"streetNumber":{"type":"string","description":"Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků."},"zip":{"type":"string","description":"Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků."},"flags":{"type":"array","items":{"type":"string","enum":["PERMANENT","CONTACT"]},"description":"Typy adres."}}},"description":"Adresy."},"businessIdentificationNumber":{"type":"string","description":"Identifikační číslo společnosti (známé jako IČO)."},"ipAddress":{"type":"string","description":"IPv4 nebo IPv6 adresa zákazníka."},"fingerprintComponents":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"],"description":"Složky otisků prstů."}},"description":"POVINNÉ pro typ zákazníka \"PODNIKATEL“. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší."},"legalEntity":{"type":"object","properties":{"businessName":{"type":"string","description":"Název obchodní společnosti."},"addresses":{"type":"array","items":{"type":"object","properties":{"city":{"type":"string","description":"Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků."},"streetAddress":{"type":"string","description":"Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků."},"streetNumber":{"type":"string","description":"Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků."},"zip":{"type":"string","description":"Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků."},"flags":{"type":"array","items":{"type":"string","enum":["PERMANENT","CONTACT"]},"description":"Typy adres."}}},"description":"Adresy."},"businessIdentificationNumber":{"type":"string","description":"Identifikační číslo společnosti (známé jako IČO)."},"ipAddress":{"type":"string","description":"IPv4 nebo IPv6 adresa zákazníka."},"fingerprintComponents":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"],"description":"Složky otisků prstů."}},"description":"POVINNÉ pro typ zákazníka `LEGAL_ENTITY`. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší."}},"required":["type"],"description":"Údaje o zákazníkovi. Tato specifikace typu zákazníka je POVINNÁ."},"originationContext":{"type":"object","properties":{"channel":{"type":"object","properties":{"type":{"type":"string","enum":["ONLINE"],"description":"Typ kanálu původu"},"online":{"type":"object","properties":{"approvedRedirect":{"type":"string","description":"URL partnera používaná pro přesměrování zákazníka zpět na webovou stránku partnera po schválení žádosti. MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují.  NESMÍ být delší než 1000 znaků."},"rejectedRedirect":{"type":"string","description":"URL partnera používaná pro přesměrování zákazníka zpět na web partnera po zamítnutí žádosti. MUSÍ být platná URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují. NESMÍ být delší než 1000 znaků."},"notificationEndpoint":{"type":"string","description":"URL partnera používaná jako koncový bod pro zasílání oznámení partnerovi o důležitých aktualizacích v procesu žádosti (schválení, zamítnutí, zrušení atd.). MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL by měla obsahovat schéma (například `https://`). Nesmí být delší než 1000 znaků."}},"description":"Sbírka URL adres partnerů používaných pro přesměrování zákazníka zpět na webovou stránku partnera nebo jako koncový bod pro oznámení. VYŽADOVÁNO pro typ kanálu ONLINE."}},"required":["type","online"],"description":"Kanál původu"},"precheckIds":{"type":"array","items":{"type":"string"},"description":"Pole všech identifikátorů předběžné kontroly souvisejících s touto aplikací. Pokud partner provedl operaci předběžné kontroly s údaji tohoto zákazníka, MĚL BY do tohoto atributu zadat identifikátor předběžné kontroly (precheckId). MĚL BY to být platný identifikátor předběžné kontroly. Viz Operace předběžné kontroly a jejich odezva."},"sourceId":{"type":"string","description":"Identifikátor zdroje nebo kampaně, ze které pochází potenciální zákazník. Partner BY MĚL poskytnout platné `sourceId`."},"extendedData":{"type":"array","items":{"type":"object","properties":{"key":{"type":"string","description":"Klíč"},"value":{"type":"string","description":"Hodnota"}},"required":["key","value"]},"description":"Další údaje o původu aplikace. Seznam podporovaných klíčů pro extendedData: utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, fbclid, url."}},"required":["channel"],"description":"Další informace o kontextu vzniku žádosti o financování (např. přesměrování URL zpět na partnerský web)"},"financedSubject":{"type":"object","properties":{"type":{"type":"string","enum":["ORDER"],"description":"Typ financovaného předmětu"},"order":{"type":"object","properties":{"type":{"type":"string","enum":["STANDARD","BROKERED"],"description":"Typ objednávky."},"number":{"type":"string","description":"Identifikátor, specifikovaný partnerem (e-shop, POS obchod, zprostředkovatel). MŮŽE být poskytnut pro snazší identifikaci aplikace na straně partnera. NESMÍ být delší než 100 znaků."},"specificSymbol":{"type":"string","description":"Specifický symbol (interní pro partnera) pro vyrovnávací platbu. NESMÍ být delší než 10 znaků."},"variableSymbol":{"type":"string","description":"Proměnný symbol (interní pro e-shop) pro vyrovnání platby. NESMÍ být delší než 10 znaků. Pokud je prázdný, použije se místo něj `order.number`. Pokud není zadán nebo není použitelný (např. `order.number` obsahuje pouze písmena), použije se interní identifikátor Home Credit."},"totalPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Celková částka objednávky včetně DPH"},"preferredDownPayment":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Preferovaná výše zálohy (částka MĚLA BY být zaokrouhlena na stovky CZK/5 EUR) (příklad: platná záloha 35 EUR, neplatná záloha 32 EUR)"},"financings":{"type":"array","items":{"type":"object","properties":{"type":{"type":"string","enum":["INSTALLMENT"],"description":"Typ financování"},"amount":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Financovaná částka pro financování. MŮŽE být poskytnuta pro objednávky s jediným financováním. MUSÍ být poskytnuta pro objednávky s více financováními."},"installment":{"type":"object","properties":{"preferredMonths":{"type":"number","description":"Preferovaný počet splátek (v měsících)"},"preferredInstallment":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Preferovaná výše zálohy (částka by měla být zaokrouhlena na stovky CZK/5 EUR)"},"productCode":{"type":"string","description":"Kód produktu (získaný z výsledku výpočtu)."},"flags":{"type":"array","items":{"type":"string","enum":["BUYBACK"]},"description":"Typ splátkového programu. Obvykle se používá u více financování."}},"description":"Nastavení pro typ financování SPLÁTKOVÝ. VYŽADOVÁNO pro typ financování SPLÁTKOVÝ."}},"required":["type","installment"]},"description":"Informace o formě financování ŽÁDOST o objednávku. MUSÍ být uvedeno alespoň \"typ“ \"financování“ u objednávek s jediným způsobem financování. MUSÍ být uvedena alespoň \"částka“ a \"typ“ pro konkrétní části \"financování“ u objednávek s více způsoby financování (obvykle složitější produkt, například nákup iPhonu s budoucím zpětným odkupem)."},"standard":{"type":"object","properties":{"deliveryType":{"type":"string","enum":["PERSONAL_BRANCH","PERSONAL_PARTNER","ONLINE","DELIVERY_CARRIER"],"description":"Typ služby použité pro dodání zboží"},"reservationDate":{"type":"string","description":"Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky)."},"items":{"type":"array","items":{"type":"object","properties":{"code":{"type":"string","description":"Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků."},"ean":{"type":"string","description":"Kód EAN. Maximálně 32 znaků."},"name":{"type":"string","description":"Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků."},"quantity":{"type":"number","description":"Počet položek. Pokud je pole prázdné, považuje se za 1."},"type":{"type":"string","enum":["PHYSICAL","DISCOUNT","SHIPPING_FEE","SALES_TAX","DIGITAL","GIFT_CARD","STORE_CREDIT","FEE","INSURANCE"],"description":"Typ položky"},"totalPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Celková cena za všechny kusy (včetně DPH)"},"unitPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`."},"producer":{"type":"string","description":"Nesmí být delší než 50 znaků."},"image":{"type":"object","properties":{"filename":{"type":"string","description":"Název souboru."}},"required":["filename"],"oneOf":[{"properties":{"url":{"type":"string","description":"URL souboru (úplná)."}},"required":["url"]},{"properties":{"content":{"type":"string","description":"Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)"}},"required":["content"]}],"description":"Obrázek položky"}},"required":["name","totalPrice"]},"description":"Objednávka musí obsahovat alespoň jednu položku."}},"required":["items"],"description":"MUSÍ být poskytnuto pro `order.type` = `STANDARD`"},"brokered":{"type":"object","properties":{"merchantOrders":{"type":"array","items":{"type":"object","properties":{"number":{"type":"string","description":"Interní číslo objednávky obchodníka (e-shop, POS obchod), MŮŽE být uvedeno pro snazší identifikaci aplikace na straně partnera, NESMÍ být delší než 100 znaků."},"name":{"type":"string","description":"Název obchodníka NESMÍ být delší než 60 znaků."},"logo":{"type":"object","properties":{"filename":{"type":"string","description":"Název souboru."}},"required":["filename"],"oneOf":[{"properties":{"url":{"type":"string","description":"URL souboru (úplná)."}},"required":["url"]},{"properties":{"content":{"type":"string","description":"Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)"}},"required":["content"]}],"description":"Logo obchodníka"},"businessIdentificationNumber":{"type":"number","description":"Identifikační číslo podniku, NESMÍ být delší než 8 číslic"},"url":{"type":"string","description":"URL adresa webové stránky (e-shopu) obchodníka NESMÍ být delší než 1000 znaků a MUSÍ být platnou URL adresou."},"deliveryType":{"type":"string","enum":["PERSONAL_BRANCH","PERSONAL_PARTNER","ONLINE","DELIVERY_CARRIER"],"description":"Typ služby použité pro dodání zboží"},"reservationDate":{"type":"string","description":"Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky)."},"items":{"type":"array","items":{"type":"object","properties":{"code":{"type":"string","description":"Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků."},"ean":{"type":"string","description":"Kód EAN. Maximálně 32 znaků."},"name":{"type":"string","description":"Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků."},"quantity":{"type":"number","description":"Počet položek. Pokud je pole prázdné, považuje se za 1."},"type":{"type":"string","enum":["PHYSICAL","DISCOUNT","SHIPPING_FEE","SALES_TAX","DIGITAL","GIFT_CARD","STORE_CREDIT","FEE","INSURANCE"],"description":"Typ položky"},"totalPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Celková cena za všechny kusy (včetně DPH)"},"unitPrice":{"type":"object","properties":{"value":{"type":"number","description":"Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)"},"currency":{"type":"string","description":"Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku)."}},"required":["value","currency"],"description":"Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`."},"producer":{"type":"string","description":"Nesmí být delší než 50 znaků."},"image":{"type":"object","properties":{"filename":{"type":"string","description":"Název souboru."}},"required":["filename"],"oneOf":[{"properties":{"url":{"type":"string","description":"URL souboru (úplná)."}},"required":["url"]},{"properties":{"content":{"type":"string","description":"Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)"}},"required":["content"]}],"description":"Obrázek položky"}},"required":["name","totalPrice"]},"description":"Objednat položky"}},"required":["name"]},"description":"Pole obchodních objednávek (obvykle se skládá z jedné objednávky)"}},"required":["merchantOrders"],"description":"MUSÍ být poskytnuto pro `order.type` = `BROKERED`"}},"required":["type","totalPrice","financings"],"description":"Informace o nákupu zboží zákazníkem. VYŽADOVÁNO pro typ OBJEDNÁVKY financovaného předmětu"}},"required":["type","order"],"description":"Předmět financování (například nákup iPhone, půjčka ve výši 20 000 Kč ...)"}},"required":["customer","originationContext","financedSubject"],"example":{"customer":{"type":"PERSON","person":{"firstName":"John","lastName":"Newborn","fullName":"Ing. John Newborn, Csc.","contacts":[{"type":"EMAIL","email":{"value":"john.newborn@country.com"},"mobile":{"countryCode":"+420","value":"777123456"},"phone":{"countryCode":"+420","value":"777123456"}}],"addresses":[{"city":"Prague","streetAddress":"Letenská","streetNumber":"22","zip":"140 00","flags":["PERMANENT"]}],"identificationNumber":"890619/5723","ipAddress":"172.10.10.1","fingerprintComponents":{"key":"property","value":"value"}},"entrepreneur":{"businessName":"Planeta s.r.o.","addresses":[{"city":"Prague","streetAddress":"Letenská","streetNumber":"22","zip":"140 00","flags":["PERMANENT"]}],"businessIdentificationNumber":"123456854","ipAddress":"172.10.10.1","fingerprintComponents":{"key":"property","value":"value"}},"legalEntity":{"businessName":"Planeta s.r.o.","addresses":[{"city":"Prague","streetAddress":"Letenská","streetNumber":"22","zip":"140 00","flags":["PERMANENT"]}],"businessIdentificationNumber":"123456854","ipAddress":"172.10.10.1","fingerprintComponents":{"key":"property","value":"value"}}},"originationContext":{"channel":{"type":"ONLINE","online":{"approvedRedirect":"https://www.partnereshop.cz","rejectedRedirect":"https://www.partnereshop.cz/kosik","notificationEndpoint":"https://www.partnereshop.cz/order/AA234"}},"precheckIds":[],"sourceId":"Cash_10_2020","extendedData":[{"key":"property","value":"value"}]},"financedSubject":{"type":"INVALID_TYPE","order":{"type":"STANDARD","number":"11111111","specificSymbol":"1122334455","variableSymbol":"1234567","totalPrice":{"value":13300,"currency":"CZK"},"preferredDownPayment":{"value":13300,"currency":"CZK"},"financings":[{"type":"INSTALLMENT","amount":{"value":13300,"currency":"CZK"},"installment":{"preferredMonths":6,"preferredInstallment":{"value":13300,"currency":"CZK"},"productCode":"'COCONL06'","flags":["BUYBACK"]}}],"standard":{"deliveryType":"PERSONAL_BRANCH","reservationDate":"2017-07-15T00:00:00+02:00","items":[{"code":"EXC4677-1a","ean":"888462064002","name":"iPhone 6s 32GB SpaceGray","quantity":1,"type":"PHYSICAL","totalPrice":{"value":13300,"currency":"CZK"},"unitPrice":{"value":13300,"currency":"CZK"},"producer":"'Apple'","image":{"filename":"iphone6s.jpg","url":"https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg"}}]},"brokered":{"merchantOrders":[{"number":"22222222","name":"MALL","logo":{"filename":"iphone6s.jpg","url":"https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg"},"businessIdentificationNumber":26204967,"url":"www.mall.cz","deliveryType":"PERSONAL_BRANCH","reservationDate":"2017-07-15T00:00:00+02:00","items":[{"code":"EXC4677-1a","ean":"888462064002","name":"iPhone 6s 32GB SpaceGray","quantity":1,"type":"PHYSICAL","totalPrice":{"value":13300,"currency":"CZK"},"unitPrice":{"value":13300,"currency":"CZK"},"producer":"'Apple'","image":{"filename":"iphone6s.jpg","url":"https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg"}}]}]}}}}}]}}}}}
 >
   
 </RequestSchema>
+*/
+
+<RequestSchema
+  title={"Body"}
+  body={{
+    content: {
+      "application/json;charset=UTF-8": {
+        schema: {
+          anyOf: [
+            {
+              type: "object",
+              properties: {
+                customer: {
+                  type: "object",
+                  properties: {
+                    type: {
+                      type: "string",
+                      enum: ["PERSON", "ENTREPRENEUR", "LEGAL_ENTITY"],
+                      description: "Typ zákazníka",
+                    },
+                    person: {
+                      type: "object",
+                      properties: {
+                        firstName: {
+                          type: "string",
+                          description:
+                            'Jméno zákazníka (křestní jméno). Jméno BY MĚLO odpovídat regulárnímu výrazu "^[A-ZÁ-Ž]\'?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$", MĚLO BY mít délku 2 až 30 znaků a znaky BY MĚLY být v znakové sadě "ISO 8859-2".',
+                        },
+                        lastName: {
+                          type: "string",
+                          description:
+                            'Příjmení zákazníka. Jméno MĚLO BY odpovídat regulárnímu výrazu "^[A-ZÁ-Ž]\'?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$", MĚLO BY mít délku 2 až 30 znaků a znaky MĚLY BY být v znakové sadě "ISO 8859-2".',
+                        },
+                        fullName: {
+                          type: "string",
+                          description:
+                            'Celé jméno zákazníka, včetně akademických titulů a oslovení. Atribut "fullName" je rozdělen (a případně zkrácen) na "firstName" a "lastName"; "fullName" není nikdy vrácen v odpovědi. V případě, že jsou zadány všechny tři atributy, "fullName" je vyřazen. Celé jméno by nemělo být delší než 100 znaků a znaky by měly být v znakové sadě "ISO 8859-2".',
+                        },
+                        contacts: {
+                          type: "array",
+                          description: "Kontakty osoby.",
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: {
+                                type: "string",
+                                enum: ["EMAIL", "MOBILE", "PHONE"],
+                                description: "Typ kontaktu",
+                              },
+                              email: {
+                                type: "object",
+                                properties: {
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "E-mailová adresa zákazníka. MUSÍ být platný e-mail podle RFC 2822.",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "E-mailová adresa zákazníka. VYŽADOVÁNO pro typ kontaktu EMAIL.",
+                              },
+                              mobile: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo mobilního telefonu zákazníka. VYŽADOVÁNO pro typ kontaktu MOBILE_PHONE.",
+                              },
+                              phone: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo pevné linky zákazníka. VYŽADOVÁNO pro typ kontaktu PHONE.",
+                              },
+                            },
+                            required: ["type"],
+                          },
+                        },
+                        addresses: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              city: {
+                                type: "string",
+                                description:
+                                  "Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetAddress: {
+                                type: "string",
+                                description:
+                                  "Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetNumber: {
+                                type: "string",
+                                description:
+                                  "Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků.",
+                              },
+                              zip: {
+                                type: "string",
+                                description:
+                                  "Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků.",
+                              },
+                              flags: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  enum: ["PERMANENT", "CONTACT"],
+                                },
+                                description: "Typy adres.",
+                              },
+                            },
+                          },
+                          description: "Adresy.",
+                        },
+                        identificationNumber: {
+                          type: "string",
+                          description:
+                            "Identifikační číslo zákazníka (ve skutečnosti rodné číslo). MUSÍ být platné podle platných právních předpisů. Zákazník MUSÍ být starší 18 let.",
+                        },
+                        ipAddress: {
+                          type: "string",
+                          description: "IPv4 nebo IPv6 adresa zákazníka.",
+                        },
+                        fingerprintComponents: {
+                          type: "object",
+                          properties: {
+                            key: { type: "string", description: "Klíč" },
+                            value: { type: "string", description: "Hodnota" },
+                          },
+                          required: ["key", "value"],
+                          description: "Složky otisků prstů.",
+                        },
+                      },
+                      description:
+                        'POVINNÉ pro typ zákazníka "PERSON". Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší.',
+                    },
+                    entrepreneur: {
+                      type: "object",
+                      properties: {
+                        businessName: {
+                          type: "string",
+                          description: "Název obchodní společnosti.",
+                        },
+                        contacts: {
+                          type: "array",
+                          description: "Kontakty podnikatele.",
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: {
+                                type: "string",
+                                enum: ["EMAIL", "MOBILE", "PHONE"],
+                                description: "Typ kontaktu",
+                              },
+                              email: {
+                                type: "object",
+                                properties: {
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "E-mailová adresa zákazníka. MUSÍ být platný e-mail podle RFC 2822.",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "E-mailová adresa zákazníka. VYŽADOVÁNO pro typ kontaktu EMAIL.",
+                              },
+                              mobile: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo mobilního telefonu zákazníka. VYŽADOVÁNO pro typ kontaktu MOBILE_PHONE.",
+                              },
+                              phone: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo pevné linky zákazníka. VYŽADOVÁNO pro typ kontaktu PHONE.",
+                              },
+                            },
+                            required: ["type"],
+                          },
+                        },
+                        addresses: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              city: {
+                                type: "string",
+                                description:
+                                  "Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetAddress: {
+                                type: "string",
+                                description:
+                                  "Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetNumber: {
+                                type: "string",
+                                description:
+                                  "Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků.",
+                              },
+                              zip: {
+                                type: "string",
+                                description:
+                                  "Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků.",
+                              },
+                              flags: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  enum: ["PERMANENT", "CONTACT"],
+                                },
+                                description: "Typy adres.",
+                              },
+                            },
+                          },
+                          description: "Adresy.",
+                        },
+                        businessIdentificationNumber: {
+                          type: "string",
+                          description:
+                            "Identifikační číslo společnosti (známé jako IČO).",
+                        },
+                        ipAddress: {
+                          type: "string",
+                          description: "IPv4 nebo IPv6 adresa zákazníka.",
+                        },
+                        fingerprintComponents: {
+                          type: "object",
+                          properties: {
+                            key: { type: "string", description: "Klíč" },
+                            value: { type: "string", description: "Hodnota" },
+                          },
+                          required: ["key", "value"],
+                          description: "Složky otisků prstů.",
+                        },
+                      },
+                      description:
+                        'POVINNÉ pro typ zákazníka "PODNIKATEL". Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší.',
+                    },
+                    legalEntity: {
+                      type: "object",
+                      properties: {
+                        businessName: {
+                          type: "string",
+                          description: "Název obchodní společnosti.",
+                        },
+                        contacts: {
+                          type: "array",
+                          description: "Kontakty právnické osoby.",
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: {
+                                type: "string",
+                                enum: ["EMAIL", "MOBILE", "PHONE"],
+                                description: "Typ kontaktu",
+                              },
+                              email: {
+                                type: "object",
+                                properties: {
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "E-mailová adresa zákazníka. MUSÍ být platný e-mail podle RFC 2822.",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "E-mailová adresa zákazníka. VYŽADOVÁNO pro typ kontaktu EMAIL.",
+                              },
+                              mobile: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo mobilního telefonu zákazníka. VYŽADOVÁNO pro typ kontaktu MOBILE_PHONE.",
+                              },
+                              phone: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo pevné linky zákazníka. VYŽADOVÁNO pro typ kontaktu PHONE.",
+                              },
+                            },
+                            required: ["type"],
+                          },
+                        },
+                        addresses: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              city: {
+                                type: "string",
+                                description:
+                                  "Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetAddress: {
+                                type: "string",
+                                description:
+                                  "Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetNumber: {
+                                type: "string",
+                                description:
+                                  "Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků.",
+                              },
+                              zip: {
+                                type: "string",
+                                description:
+                                  "Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků.",
+                              },
+                              flags: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  enum: ["PERMANENT", "CONTACT"],
+                                },
+                                description: "Typy adres.",
+                              },
+                            },
+                          },
+                          description: "Adresy.",
+                        },
+                        businessIdentificationNumber: {
+                          type: "string",
+                          description:
+                            "Identifikační číslo společnosti (známé jako IČO).",
+                        },
+                        ipAddress: {
+                          type: "string",
+                          description: "IPv4 nebo IPv6 adresa zákazníka.",
+                        },
+                        fingerprintComponents: {
+                          type: "object",
+                          properties: {
+                            key: { type: "string", description: "Klíč" },
+                            value: { type: "string", description: "Hodnota" },
+                          },
+                          required: ["key", "value"],
+                          description: "Složky otisků prstů.",
+                        },
+                      },
+                      description:
+                        "POVINNÉ pro typ zákazníka `LEGAL_ENTITY`. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší.",
+                    },
+                  },
+                  required: ["type"],
+                  description:
+                    "Údaje o zákazníkovi. Tato specifikace typu zákazníka je POVINNÁ.",
+                },
+                originationContext: {
+                  type: "object",
+                  properties: {
+                    channel: {
+                      type: "object",
+                      properties: {
+                        type: {
+                          type: "string",
+                          enum: ["ONLINE"],
+                          description: "Typ kanálu původu",
+                        },
+                        online: {
+                          type: "object",
+                          properties: {
+                            approvedRedirect: {
+                              type: "string",
+                              description:
+                                "URL partnera používaná pro přesměrování zákazníka zpět na webovou stránku partnera po schválení žádosti. MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují. NESMÍ být delší než 1000 znaků.",
+                            },
+                            rejectedRedirect: {
+                              type: "string",
+                              description:
+                                "URL partnera používaná pro přesměrování zákazníka zpět na web partnera po zamítnutí žádosti. MUSÍ být platná URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují. NESMÍ být delší než 1000 znaků.",
+                            },
+                            notificationEndpoint: {
+                              type: "string",
+                              description:
+                                "URL partnera používaná jako koncový bod pro zasílání oznámení partnerovi o důležitých aktualizacích v procesu žádosti (schválení, zamítnutí, zrušení atd.). MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL by měla obsahovat schéma (například `https://`). Nesmí být delší než 1000 znaků.",
+                            },
+                          },
+                          description:
+                            "Sbírka URL adres partnerů používaných pro přesměrování zákazníka zpět na webovou stránku partnera nebo jako koncový bod pro oznámení. VYŽADOVÁNO pro typ kanálu ONLINE.",
+                        },
+                      },
+                      required: ["type", "online"],
+                      description: "Kanál původu",
+                    },
+                    precheckIds: {
+                      type: "array",
+                      items: { type: "string" },
+                      description:
+                        "Pole všech identifikátorů předběžné kontroly souvisejících s touto aplikací. Pokud partner provedl operaci předběžné kontroly s údaji tohoto zákazníka, MĚL BY do tohoto atributu zadat identifikátor předběžné kontroly (precheckId). MĚL BY to být platný identifikátor předběžné kontroly. Viz Operace předběžné kontroly a jejich odezva.",
+                    },
+                    sourceId: {
+                      type: "string",
+                      description:
+                        "Identifikátor zdroje nebo kampaně, ze které pochází potenciální zákazník. Partner BY MĚL poskytnout platné `sourceId`.",
+                    },
+                    extendedData: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          key: { type: "string", description: "Klíč" },
+                          value: { type: "string", description: "Hodnota" },
+                        },
+                        required: ["key", "value"],
+                      },
+                      description:
+                        "Další údaje o původu aplikace. Seznam podporovaných klíčů pro extendedData: utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, fbclid, url.",
+                    },
+                  },
+                  required: ["channel"],
+                  description:
+                    "Další informace o kontextu vzniku žádosti o financování (např. přesměrování URL zpět na partnerský web)",
+                },
+                financedSubject: {
+                  type: "object",
+                  properties: {
+                    type: {
+                      type: "string",
+                      enum: ["ORDER"],
+                      description: "Financovaný typ předmětu",
+                    },
+                    order: {
+                      type: "object",
+                      properties: {
+                        type: {
+                          type: "string",
+                          enum: ["STANDARD", "BROKERED"],
+                          description: "Typ objednávky.",
+                        },
+                        number: {
+                          type: "string",
+                          description:
+                            "Identifikátor, specifikovaný partnerem (e-shop, POS obchod, zprostředkovatel). MŮŽE být poskytnut pro snazší identifikaci aplikace na straně partnera. NESMÍ být delší než 100 znaků.",
+                        },
+                        specificSymbol: {
+                          type: "string",
+                          description:
+                            "Specifický symbol (interní pro partnera) pro vyrovnávací platbu. NESMÍ být delší než 10 znaků.",
+                        },
+                        variableSymbol: {
+                          type: "string",
+                          description:
+                            "Proměnný symbol (interní pro e-shop) pro vyrovnání platby. NESMÍ být delší než 10 znaků. Pokud je prázdný, použije se místo něj `order.number`. Pokud není zadán nebo není použitelný (např. `order.number` obsahuje pouze písmena), použije se interní identifikátor Home Credit.",
+                        },
+                        totalPrice: {
+                          type: "object",
+                          properties: {
+                            value: {
+                              type: "number",
+                              description:
+                                "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                            },
+                            currency: {
+                              type: "string",
+                              description:
+                                "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                            },
+                          },
+                          required: ["value", "currency"],
+                          description: "Celková částka objednávky včetně DPH",
+                        },
+                        preferredDownPayment: {
+                          type: "object",
+                          properties: {
+                            value: {
+                              type: "number",
+                              description:
+                                "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                            },
+                            currency: {
+                              type: "string",
+                              description:
+                                "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                            },
+                          },
+                          required: ["value", "currency"],
+                          description:
+                            "Preferovaná výše zálohy (částka MĚLA BY být zaokrouhlena na stovky CZK/5 EUR) (příklad: platná záloha 35 EUR, neplatná záloha 32 EUR)",
+                        },
+                        financings: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: {
+                                type: "string",
+                                enum: ["INSTALLMENT"],
+                                description: "Typ financování",
+                              },
+                              amount: {
+                                type: "object",
+                                properties: {
+                                  value: {
+                                    type: "number",
+                                    description:
+                                      "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                  },
+                                  currency: {
+                                    type: "string",
+                                    description:
+                                      "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                  },
+                                },
+                                required: ["value", "currency"],
+                                description:
+                                  "Financovaná částka pro financování. MŮŽE být poskytnuta pro objednávky s jediným financováním. MUSÍ být poskytnuta pro objednávky s více financováními.",
+                              },
+                              installment: {
+                                type: "object",
+                                properties: {
+                                  preferredMonths: {
+                                    type: "number",
+                                    description:
+                                      "Preferovaný počet splátek (v měsících)",
+                                  },
+                                  preferredInstallment: {
+                                    type: "object",
+                                    properties: {
+                                      value: {
+                                        type: "number",
+                                        description:
+                                          "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                      },
+                                      currency: {
+                                        type: "string",
+                                        description:
+                                          "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                      },
+                                    },
+                                    required: ["value", "currency"],
+                                    description:
+                                      "Preferovaná výše zálohy (částka by měla být zaokrouhlena na stovky CZK/5 EUR)",
+                                  },
+                                  productCode: {
+                                    type: "string",
+                                    description:
+                                      "Kód produktu (získaný z výsledku výpočtu).",
+                                  },
+                                  flags: {
+                                    type: "array",
+                                    items: {
+                                      type: "string",
+                                      enum: ["BUYBACK"],
+                                    },
+                                    description:
+                                      "Typ splátkového programu. Obvykle se používá u více financování.",
+                                  },
+                                },
+                                description:
+                                  "Nastavení pro typ financování SPLÁTKOVÝ. VYŽADOVÁNO pro typ financování SPLÁTKOVÝ.",
+                              },
+                            },
+                            required: ["type", "installment"],
+                          },
+                          description:
+                            'Informace o formě financování ŽÁDOST o objednávku. MUSÍ být uvedeno alespoň "typ" "financování" u objednávek s jediným způsobem financování. MUSÍ být uvedena alespoň "částka" a "typ" pro konkrétní části "financování" u objednávek s více způsoby financování (obvykle složitější produkt, například nákup iPhonu s budoucím zpětným odkupem).',
+                        },
+                        standard: {
+                          type: "object",
+                          properties: {
+                            deliveryType: {
+                              type: "string",
+                              enum: [
+                                "PERSONAL_BRANCH",
+                                "PERSONAL_PARTNER",
+                                "ONLINE",
+                                "DELIVERY_CARRIER",
+                              ],
+                              description:
+                                "Typ služby použité pro dodání zboží",
+                            },
+                            reservationDate: {
+                              type: "string",
+                              description:
+                                "Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky).",
+                            },
+                            items: {
+                              type: "array",
+                              items: {
+                                type: "object",
+                                properties: {
+                                  code: {
+                                    type: "string",
+                                    description:
+                                      "Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků.",
+                                  },
+                                  ean: {
+                                    type: "string",
+                                    description:
+                                      "Kód EAN. Maximálně 32 znaků.",
+                                  },
+                                  name: {
+                                    type: "string",
+                                    description:
+                                      "Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků.",
+                                  },
+                                  quantity: {
+                                    type: "number",
+                                    description:
+                                      "Počet položek. Pokud je pole prázdné, považuje se za 1.",
+                                  },
+                                  type: {
+                                    type: "string",
+                                    enum: [
+                                      "PHYSICAL",
+                                      "DISCOUNT",
+                                      "SHIPPING_FEE",
+                                      "SALES_TAX",
+                                      "DIGITAL",
+                                      "GIFT_CARD",
+                                      "STORE_CREDIT",
+                                      "FEE",
+                                      "INSURANCE",
+                                    ],
+                                    description: "Typ položky",
+                                  },
+                                  totalPrice: {
+                                    type: "object",
+                                    properties: {
+                                      value: {
+                                        type: "number",
+                                        description:
+                                          "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                      },
+                                      currency: {
+                                        type: "string",
+                                        description:
+                                          "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                      },
+                                    },
+                                    required: ["value", "currency"],
+                                    description:
+                                      "Celková cena za všechny kusy (včetně DPH)",
+                                  },
+                                  unitPrice: {
+                                    type: "object",
+                                    properties: {
+                                      value: {
+                                        type: "number",
+                                        description:
+                                          "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                      },
+                                      currency: {
+                                        type: "string",
+                                        description:
+                                          "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                      },
+                                    },
+                                    required: ["value", "currency"],
+                                    description:
+                                      "Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`.",
+                                  },
+                                  producer: {
+                                    type: "string",
+                                    description: "Nesmí být delší než 50 znaků.",
+                                  },
+                                  image: {
+                                    type: "object",
+                                    properties: {
+                                      filename: {
+                                        type: "string",
+                                        description: "Název souboru.",
+                                      },
+                                    },
+                                    required: ["filename"],
+                                    oneOf: [
+                                      {
+                                        properties: {
+                                          url: {
+                                            type: "string",
+                                            description: "URL souboru (úplná).",
+                                          },
+                                        },
+                                        required: ["url"],
+                                      },
+                                      {
+                                        properties: {
+                                          content: {
+                                            type: "string",
+                                            description:
+                                              "Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)",
+                                          },
+                                        },
+                                        required: ["content"],
+                                      },
+                                    ],
+                                    description: "Obrázek položky",
+                                  },
+                                },
+                                required: ["name", "totalPrice"],
+                              },
+                              description:
+                                "Objednávka musí obsahovat alespoň jednu položku.",
+                            },
+                          },
+                          required: ["items"],
+                          description:
+                            "MUSÍ být poskytnuto pro `order.type` = `STANDARD`",
+                        },
+                        brokered: {
+                          type: "object",
+                          properties: {
+                            merchantOrders: {
+                              type: "array",
+                              items: {
+                                type: "object",
+                                properties: {
+                                  number: {
+                                    type: "string",
+                                    description:
+                                      "Interní číslo objednávky obchodníka (e-shop, POS obchod), MŮŽE být uvedeno pro snazší identifikaci aplikace na straně partnera, NESMÍ být delší než 100 znaků.",
+                                  },
+                                  name: {
+                                    type: "string",
+                                    description:
+                                      "Název obchodníka NESMÍ být delší než 60 znaků.",
+                                  },
+                                  logo: {
+                                    type: "object",
+                                    properties: {
+                                      filename: {
+                                        type: "string",
+                                        description: "Název souboru.",
+                                      },
+                                    },
+                                    required: ["filename"],
+                                    oneOf: [
+                                      {
+                                        properties: {
+                                          url: {
+                                            type: "string",
+                                            description: "URL souboru (úplná).",
+                                          },
+                                        },
+                                        required: ["url"],
+                                      },
+                                      {
+                                        properties: {
+                                          content: {
+                                            type: "string",
+                                            description:
+                                              "Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)",
+                                          },
+                                        },
+                                        required: ["content"],
+                                      },
+                                    ],
+                                    description: "Logo obchodníka",
+                                  },
+                                  businessIdentificationNumber: {
+                                    type: "number",
+                                    description:
+                                      "Identifikační číslo podniku, NESMÍ být delší než 8 číslic",
+                                  },
+                                  url: {
+                                    type: "string",
+                                    description:
+                                      "URL adresa webové stránky (e-shopu) obchodníka NESMÍ být delší než 1000 znaků a MUSÍ být platnou URL adresou.",
+                                  },
+                                  deliveryType: {
+                                    type: "string",
+                                    enum: [
+                                      "PERSONAL_BRANCH",
+                                      "PERSONAL_PARTNER",
+                                      "ONLINE",
+                                      "DELIVERY_CARRIER",
+                                    ],
+                                    description:
+                                      "Typ služby použité pro dodání zboží",
+                                  },
+                                  reservationDate: {
+                                    type: "string",
+                                    description:
+                                      "Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky).",
+                                  },
+                                  items: {
+                                    type: "array",
+                                    items: {
+                                      type: "object",
+                                      properties: {
+                                        code: {
+                                          type: "string",
+                                          description:
+                                            "Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků.",
+                                        },
+                                        ean: {
+                                          type: "string",
+                                          description:
+                                            "Kód EAN. Maximálně 32 znaků.",
+                                        },
+                                        name: {
+                                          type: "string",
+                                          description:
+                                            "Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků.",
+                                        },
+                                        quantity: {
+                                          type: "number",
+                                          description:
+                                            "Počet položek. Pokud je pole prázdné, považuje se za 1.",
+                                        },
+                                        type: {
+                                          type: "string",
+                                          enum: [
+                                            "PHYSICAL",
+                                            "DISCOUNT",
+                                            "SHIPPING_FEE",
+                                            "SALES_TAX",
+                                            "DIGITAL",
+                                            "GIFT_CARD",
+                                            "STORE_CREDIT",
+                                            "FEE",
+                                            "INSURANCE",
+                                          ],
+                                          description: "Typ položky",
+                                        },
+                                        totalPrice: {
+                                          type: "object",
+                                          properties: {
+                                            value: {
+                                              type: "number",
+                                              description:
+                                                "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                            },
+                                            currency: {
+                                              type: "string",
+                                              description:
+                                                "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                            },
+                                          },
+                                          required: ["value", "currency"],
+                                          description:
+                                            "Celková cena za všechny kusy (včetně DPH)",
+                                        },
+                                        unitPrice: {
+                                          type: "object",
+                                          properties: {
+                                            value: {
+                                              type: "number",
+                                              description:
+                                                "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                            },
+                                            currency: {
+                                              type: "string",
+                                              description:
+                                                "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                            },
+                                          },
+                                          required: ["value", "currency"],
+                                          description:
+                                            "Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`.",
+                                        },
+                                        producer: {
+                                          type: "string",
+                                          description:
+                                            "Nesmí být delší než 50 znaků.",
+                                        },
+                                        image: {
+                                          type: "object",
+                                          properties: {
+                                            filename: {
+                                              type: "string",
+                                              description: "Název souboru.",
+                                            },
+                                          },
+                                          required: ["filename"],
+                                          oneOf: [
+                                            {
+                                              properties: {
+                                                url: {
+                                                  type: "string",
+                                                  description:
+                                                    "URL souboru (úplná).",
+                                                },
+                                              },
+                                              required: ["url"],
+                                            },
+                                            {
+                                              properties: {
+                                                content: {
+                                                  type: "string",
+                                                  description:
+                                                    "Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)",
+                                                },
+                                              },
+                                              required: ["content"],
+                                            },
+                                          ],
+                                          description: "Obrázek položky",
+                                        },
+                                      },
+                                      required: ["name", "totalPrice"],
+                                    },
+                                    description: "Objednat položky",
+                                  },
+                                },
+                                required: ["name"],
+                              },
+                              description:
+                                "Pole obchodních objednávek (obvykle se skládá z jedné objednávky)",
+                            },
+                          },
+                          required: ["merchantOrders"],
+                          description:
+                            "MUSÍ být poskytnuto pro `order.type` = `BROKERED`",
+                        },
+                      },
+                      required: ["type", "totalPrice", "financings"],
+                      description:
+                        "Informace o nákupu zboží zákazníkem. VYŽADOVÁNO pro typ OBJEDNÁVKY financovaného předmětu",
+                    },
+                  },
+                  required: ["type", "order"],
+                  description:
+                    "Předmět financování (například nákup iPhone, půjčka ve výši 20 000 Kč ...)",
+                },
+              },
+              required: [
+                "customer",
+                "originationContext",
+                "financedSubject",
+              ],
+              example: {
+                customer: {
+                  type: "PERSON",
+                  person: {
+                    firstName: "John",
+                    lastName: "Newborn",
+                    fullName: "Ing. John Newborn, Csc.",
+                    contacts: [
+                      {
+                        type: "EMAIL",
+                        email: { value: "john.newborn@country.com" },
+                        mobile: {
+                          countryCode: "+420",
+                          value: "777123456",
+                        },
+                        phone: {
+                          countryCode: "+420",
+                          value: "777123456",
+                        },
+                      },
+                    ],
+                    addresses: [
+                      {
+                        city: "Prague",
+                        streetAddress: "Letenská",
+                        streetNumber: "22",
+                        zip: "140 00",
+                        flags: ["PERMANENT"],
+                      },
+                    ],
+                    identificationNumber: "890619/5723",
+                    ipAddress: "172.10.10.1",
+                    fingerprintComponents: {
+                      key: "property",
+                      value: "value",
+                    },
+                  },
+                  entrepreneur: {
+                    businessName: "Planeta s.r.o.",
+                    addresses: [
+                      {
+                        city: "Prague",
+                        streetAddress: "Letenská",
+                        streetNumber: "22",
+                        zip: "140 00",
+                        flags: ["PERMANENT"],
+                      },
+                    ],
+                    businessIdentificationNumber: "123456854",
+                    ipAddress: "172.10.10.1",
+                    fingerprintComponents: {
+                      key: "property",
+                      value: "value",
+                    },
+                  },
+                  legalEntity: {
+                    businessName: "Planeta s.r.o.",
+                    addresses: [
+                      {
+                        city: "Prague",
+                        streetAddress: "Letenská",
+                        streetNumber: "22",
+                        zip: "140 00",
+                        flags: ["PERMANENT"],
+                      },
+                    ],
+                    businessIdentificationNumber: "123456854",
+                    ipAddress: "172.10.10.1",
+                    fingerprintComponents: {
+                      key: "property",
+                      value: "value",
+                    },
+                  },
+                },
+                originationContext: {
+                  channel: {
+                    type: "ONLINE",
+                    online: {
+                      approvedRedirect: "https://www.partnereshop.cz",
+                      rejectedRedirect: "https://www.partnereshop.cz/kosik",
+                      notificationEndpoint:
+                        "https://www.partnereshop.cz/order/AA234",
+                    },
+                  },
+                  precheckIds: [],
+                  sourceId: "Cash_10_2020",
+                  extendedData: [{ key: "property", value: "value" }],
+                },
+                financedSubject: {
+                  type: "ORDER",
+                  order: {
+                    type: "STANDARD",
+                    number: "11111111",
+                    specificSymbol: "1122334455",
+                    variableSymbol: "1234567",
+                    totalPrice: { value: 13300, currency: "CZK" },
+                    preferredDownPayment: {
+                      value: 13300,
+                      currency: "CZK",
+                    },
+                    financings: [
+                      {
+                        type: "INSTALLMENT",
+                        amount: { value: 13300, currency: "CZK" },
+                        installment: {
+                          preferredMonths: 6,
+                          preferredInstallment: {
+                            value: 13300,
+                            currency: "CZK",
+                          },
+                          productCode: "'COCONL06'",
+                          flags: ["BUYBACK"],
+                        },
+                      },
+                    ],
+                    standard: {
+                      deliveryType: "PERSONAL_BRANCH",
+                      reservationDate: "2017-07-15T00:00:00+02:00",
+                      items: [
+                        {
+                          code: "EXC4677-1a",
+                          ean: "888462064002",
+                          name: "iPhone 6s 32GB SpaceGray",
+                          quantity: 1,
+                          type: "PHYSICAL",
+                          totalPrice: { value: 13300, currency: "CZK" },
+                          unitPrice: { value: 13300, currency: "CZK" },
+                          producer: "'Apple'",
+                          image: {
+                            filename: "iphone6s.jpg",
+                            url: "https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg",
+                          },
+                        },
+                      ],
+                    },
+                    brokered: {
+                      merchantOrders: [
+                        {
+                          number: "22222222",
+                          name: "MALL",
+                          logo: {
+                            filename: "iphone6s.jpg",
+                            url: "https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg",
+                          },
+                          businessIdentificationNumber: 26204967,
+                          url: "www.mall.cz",
+                          deliveryType: "PERSONAL_BRANCH",
+                          reservationDate: "2017-07-15T00:00:00+02:00",
+                          items: [
+                            {
+                              code: "EXC4677-1a",
+                              ean: "888462064002",
+                              name: "iPhone 6s 32GB SpaceGray",
+                              quantity: 1,
+                              type: "PHYSICAL",
+                              totalPrice: {
+                                value: 13300,
+                                currency: "CZK",
+                              },
+                              unitPrice: {
+                                value: 13300,
+                                currency: "CZK",
+                              },
+                              producer: "'Apple'",
+                              image: {
+                                filename: "iphone6s.jpg",
+                                url: "https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg",
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            {
+              type: "object",
+              properties: {
+                customer: {
+                  type: "object",
+                  properties: {
+                    type: {
+                      type: "string",
+                      enum: ["PERSON", "ENTREPRENEUR", "LEGAL_ENTITY"],
+                      description: "Typ zákazníka",
+                    },
+                    person: {
+                      type: "object",
+                      properties: {
+                        firstName: {
+                          type: "string",
+                          description:
+                            'Jméno zákazníka (křestní jméno). Jméno BY MĚLO odpovídat regulárnímu výrazu "^[A-ZÁ-Ž]\'?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$", MĚLO BY mít délku 2 až 30 znaků a znaky BY MĚLY být v znakové sadě "ISO 8859-2".',
+                        },
+                        lastName: {
+                          type: "string",
+                          description:
+                            'Příjmení zákazníka. Jméno MĚLO BY odpovídat regulárnímu výrazu "^[A-ZÁ-Ž]\'?[- \\u00A0a-zA-Zá-žÁ-Ž]*[a-zA-Zá-žÁ-Ž]$", MĚLO BY mít délku 2 až 30 znaků a znaky MĚLY BY být v znakové sadě "ISO 8859-2".',
+                        },
+                        fullName: {
+                          type: "string",
+                          description:
+                            'Celé jméno zákazníka, včetně akademických titulů a oslovení. Atribut "fullName" je rozdělen (a případně zkrácen) na "firstName" a "lastName"; "fullName" není nikdy vrácen v odpovědi. V případě, že jsou zadány všechny tři atributy, "fullName" je vyřazen. Celé jméno by nemělo být delší než 100 znaků a znaky by měly být v znakové sadě "ISO 8859-2".',
+                        },
+                        contacts: {
+                          type: "array",
+                          description: "Kontakty osoby.",
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: {
+                                type: "string",
+                                enum: ["EMAIL", "MOBILE", "PHONE"],
+                                description: "Typ kontaktu",
+                              },
+                              email: {
+                                type: "object",
+                                properties: {
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "E-mailová adresa zákazníka. MUSÍ být platný e-mail podle RFC 2822.",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "E-mailová adresa zákazníka. VYŽADOVÁNO pro typ kontaktu EMAIL.",
+                              },
+                              mobile: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo mobilního telefonu zákazníka. VYŽADOVÁNO pro typ kontaktu MOBILE_PHONE.",
+                              },
+                              phone: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo pevné linky zákazníka. VYŽADOVÁNO pro typ kontaktu PHONE.",
+                              },
+                            },
+                            required: ["type"],
+                          },
+                        },
+                        addresses: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              city: {
+                                type: "string",
+                                description:
+                                  "Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetAddress: {
+                                type: "string",
+                                description:
+                                  "Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetNumber: {
+                                type: "string",
+                                description:
+                                  "Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků.",
+                              },
+                              zip: {
+                                type: "string",
+                                description:
+                                  "Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků.",
+                              },
+                              flags: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  enum: ["PERMANENT", "CONTACT"],
+                                },
+                                description: "Typy adres.",
+                              },
+                            },
+                          },
+                          description: "Adresy.",
+                        },
+                        identificationNumber: {
+                          type: "string",
+                          description:
+                            "Identifikační číslo zákazníka (ve skutečnosti rodné číslo). MUSÍ být platné podle platných právních předpisů. Zákazník MUSÍ být starší 18 let.",
+                        },
+                        ipAddress: {
+                          type: "string",
+                          description: "IPv4 nebo IPv6 adresa zákazníka.",
+                        },
+                        fingerprintComponents: {
+                          type: "object",
+                          properties: {
+                            key: { type: "string", description: "Klíč" },
+                            value: { type: "string", description: "Hodnota" },
+                          },
+                          required: ["key", "value"],
+                          description: "Složky otisků prstů.",
+                        },
+                      },
+                      description:
+                        'POVINNÉ pro typ zákazníka "PERSON". Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší.',
+                    },
+                    entrepreneur: {
+                      type: "object",
+                      properties: {
+                        businessName: {
+                          type: "string",
+                          description: "Název obchodní společnosti.",
+                        },
+                        contacts: {
+                          type: "array",
+                          description: "Kontakty podnikatele.",
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: {
+                                type: "string",
+                                enum: ["EMAIL", "MOBILE", "PHONE"],
+                                description: "Typ kontaktu",
+                              },
+                              email: {
+                                type: "object",
+                                properties: {
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "E-mailová adresa zákazníka. MUSÍ být platný e-mail podle RFC 2822.",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "E-mailová adresa zákazníka. VYŽADOVÁNO pro typ kontaktu EMAIL.",
+                              },
+                              mobile: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo mobilního telefonu zákazníka. VYŽADOVÁNO pro typ kontaktu MOBILE_PHONE.",
+                              },
+                              phone: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo pevné linky zákazníka. VYŽADOVÁNO pro typ kontaktu PHONE.",
+                              },
+                            },
+                            required: ["type"],
+                          },
+                        },
+                        addresses: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              city: {
+                                type: "string",
+                                description:
+                                  "Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetAddress: {
+                                type: "string",
+                                description:
+                                  "Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetNumber: {
+                                type: "string",
+                                description:
+                                  "Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků.",
+                              },
+                              zip: {
+                                type: "string",
+                                description:
+                                  "Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků.",
+                              },
+                              flags: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  enum: ["PERMANENT", "CONTACT"],
+                                },
+                                description: "Typy adres.",
+                              },
+                            },
+                          },
+                          description: "Adresy.",
+                        },
+                        businessIdentificationNumber: {
+                          type: "string",
+                          description:
+                            "Identifikační číslo společnosti (známé jako IČO).",
+                        },
+                        ipAddress: {
+                          type: "string",
+                          description: "IPv4 nebo IPv6 adresa zákazníka.",
+                        },
+                        fingerprintComponents: {
+                          type: "object",
+                          properties: {
+                            key: { type: "string", description: "Klíč" },
+                            value: { type: "string", description: "Hodnota" },
+                          },
+                          required: ["key", "value"],
+                          description: "Složky otisků prstů.",
+                        },
+                      },
+                      description:
+                        'POVINNÉ pro typ zákazníka "PODNIKATEL". Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší.',
+                    },
+                    legalEntity: {
+                      type: "object",
+                      properties: {
+                        businessName: {
+                          type: "string",
+                          description: "Název obchodní společnosti.",
+                        },
+                        contacts: {
+                          type: "array",
+                          description: "Kontakty právnické osoby.",
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: {
+                                type: "string",
+                                enum: ["EMAIL", "MOBILE", "PHONE"],
+                                description: "Typ kontaktu",
+                              },
+                              email: {
+                                type: "object",
+                                properties: {
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "E-mailová adresa zákazníka. MUSÍ být platný e-mail podle RFC 2822.",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "E-mailová adresa zákazníka. VYŽADOVÁNO pro typ kontaktu EMAIL.",
+                              },
+                              mobile: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo mobilního telefonu zákazníka. VYŽADOVÁNO pro typ kontaktu MOBILE_PHONE.",
+                              },
+                              phone: {
+                                type: "object",
+                                properties: {
+                                  countryCode: {
+                                    type: "string",
+                                    description: "MUSÍ být platný countryCode.",
+                                  },
+                                  value: {
+                                    type: "string",
+                                    description:
+                                      "Číslo mobilního telefonu BY MĚLO být 9 znaků dlouhé. Samotné číslo mobilního telefonu bez kódu země BY MĚLO začínat číslicí `6` nebo `7` (pro ČR) nebo `9x` kde `x` je různé od `6` (pro SR).",
+                                  },
+                                },
+                                required: ["value"],
+                                description:
+                                  "Číslo pevné linky zákazníka. VYŽADOVÁNO pro typ kontaktu PHONE.",
+                              },
+                            },
+                            required: ["type"],
+                          },
+                        },
+                        addresses: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              city: {
+                                type: "string",
+                                description:
+                                  "Město. Hodnoty řetězců delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetAddress: {
+                                type: "string",
+                                description:
+                                  "Část ulice/města. Řetězcové hodnoty delší než 100 znaků budou zkráceny na 100 znaků.",
+                              },
+                              streetNumber: {
+                                type: "string",
+                                description:
+                                  "Číslo ulice. Řetězcové hodnoty delší než 50 znaků budou zkráceny na 50 znaků.",
+                              },
+                              zip: {
+                                type: "string",
+                                description:
+                                  "Poštovní směrovací číslo. Řetězcové hodnoty delší než 10 znaků budou zkráceny na 10 znaků.",
+                              },
+                              flags: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  enum: ["PERMANENT", "CONTACT"],
+                                },
+                                description: "Typy adres.",
+                              },
+                            },
+                          },
+                          description: "Adresy.",
+                        },
+                        businessIdentificationNumber: {
+                          type: "string",
+                          description:
+                            "Identifikační číslo společnosti (známé jako IČO).",
+                        },
+                        ipAddress: {
+                          type: "string",
+                          description: "IPv4 nebo IPv6 adresa zákazníka.",
+                        },
+                        fingerprintComponents: {
+                          type: "object",
+                          properties: {
+                            key: { type: "string", description: "Klíč" },
+                            value: { type: "string", description: "Hodnota" },
+                          },
+                          required: ["key", "value"],
+                          description: "Složky otisků prstů.",
+                        },
+                      },
+                      description:
+                        "POVINNÉ pro typ zákazníka `LEGAL_ENTITY`. Pokud jsou známy, MŮŽOU být zahrnuty údaje o zákazníkovi, aby byl proces schvalování pro definovaný typ zákazníka plynulejší.",
+                    },
+                  },
+                  required: ["type"],
+                  description:
+                    "Údaje o zákazníkovi. Tato specifikace typu zákazníka je POVINNÁ.",
+                },
+                originationContext: {
+                  type: "object",
+                  properties: {
+                    channel: {
+                      type: "object",
+                      properties: {
+                        type: {
+                          type: "string",
+                          enum: ["ONLINE"],
+                          description: "Typ kanálu původu",
+                        },
+                        online: {
+                          type: "object",
+                          properties: {
+                            approvedRedirect: {
+                              type: "string",
+                              description:
+                                "URL partnera používaná pro přesměrování zákazníka zpět na webovou stránku partnera po schválení žádosti. MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují. NESMÍ být delší než 1000 znaků.",
+                            },
+                            rejectedRedirect: {
+                              type: "string",
+                              description:
+                                "URL partnera používaná pro přesměrování zákazníka zpět na web partnera po zamítnutí žádosti. MUSÍ být platná URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL BY MĚLA obsahovat schéma (například `https://`), jinak některé prohlížeče zákazníka správně nepřesměrují. NESMÍ být delší než 1000 znaků.",
+                            },
+                            notificationEndpoint: {
+                              type: "string",
+                              description:
+                                "URL partnera používaná jako koncový bod pro zasílání oznámení partnerovi o důležitých aktualizacích v procesu žádosti (schválení, zamítnutí, zrušení atd.). MUSÍ být platnou URL podle [RFC 3986](https://tools.ietf.org/html/rfc3986). URL by měla obsahovat schéma (například `https://`). Nesmí být delší než 1000 znaků.",
+                            },
+                          },
+                          description:
+                            "Sbírka URL adres partnerů používaných pro přesměrování zákazníka zpět na webovou stránku partnera nebo jako koncový bod pro oznámení. VYŽADOVÁNO pro typ kanálu ONLINE.",
+                        },
+                      },
+                      required: ["type", "online"],
+                      description: "Kanál původu",
+                    },
+                    precheckIds: {
+                      type: "array",
+                      items: { type: "string" },
+                      description:
+                        "Pole všech identifikátorů předběžné kontroly souvisejících s touto aplikací. Pokud partner provedl operaci předběžné kontroly s údaji tohoto zákazníka, MĚL BY do tohoto atributu zadat identifikátor předběžné kontroly (precheckId). MĚL BY to být platný identifikátor předběžné kontroly. Viz Operace předběžné kontroly a jejich odezva.",
+                    },
+                    sourceId: {
+                      type: "string",
+                      description:
+                        "Identifikátor zdroje nebo kampaně, ze které pochází potenciální zákazník. Partner BY MĚL poskytnout platné `sourceId`.",
+                    },
+                    extendedData: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          key: { type: "string", description: "Klíč" },
+                          value: { type: "string", description: "Hodnota" },
+                        },
+                        required: ["key", "value"],
+                      },
+                      description:
+                        "Další údaje o původu aplikace. Seznam podporovaných klíčů pro extendedData: utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, fbclid, url.",
+                    },
+                  },
+                  required: ["channel"],
+                  description:
+                    "Další informace o kontextu vzniku žádosti o financování (např. přesměrování URL zpět na partnerský web)",
+                },
+                financedSubject: {
+                  type: "object",
+                  properties: {
+                    type: {
+                      type: "string",
+                      enum: ["ORDER"],
+                      description: "Financovaný typ předmětu",
+                    },
+                    order: {
+                      type: "object",
+                      properties: {
+                        type: {
+                          type: "string",
+                          enum: ["STANDARD", "BROKERED"],
+                          description: "Typ objednávky.",
+                        },
+                        number: {
+                          type: "string",
+                          description:
+                            "Identifikátor, specifikovaný partnerem (e-shop, POS obchod, zprostředkovatel). MŮŽE být poskytnut pro snazší identifikaci aplikace na straně partnera. NESMÍ být delší než 100 znaků.",
+                        },
+                        specificSymbol: {
+                          type: "string",
+                          description:
+                            "Specifický symbol (interní pro partnera) pro vyrovnávací platbu. NESMÍ být delší než 10 znaků.",
+                        },
+                        variableSymbol: {
+                          type: "string",
+                          description:
+                            "Proměnný symbol (interní pro e-shop) pro vyrovnání platby. NESMÍ být delší než 10 znaků. Pokud je prázdný, použije se místo něj `order.number`. Pokud není zadán nebo není použitelný (např. `order.number` obsahuje pouze písmena), použije se interní identifikátor Home Credit.",
+                        },
+                        totalPrice: {
+                          type: "object",
+                          properties: {
+                            value: {
+                              type: "number",
+                              description:
+                                "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                            },
+                            currency: {
+                              type: "string",
+                              description:
+                                "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                            },
+                          },
+                          required: ["value", "currency"],
+                          description: "Celková částka objednávky včetně DPH",
+                        },
+                        preferredDownPayment: {
+                          type: "object",
+                          properties: {
+                            value: {
+                              type: "number",
+                              description:
+                                "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                            },
+                            currency: {
+                              type: "string",
+                              description:
+                                "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                            },
+                          },
+                          required: ["value", "currency"],
+                          description:
+                            "Preferovaná výše zálohy (částka MĚLA BY být zaokrouhlena na stovky CZK/5 EUR) (příklad: platná záloha 35 EUR, neplatná záloha 32 EUR)",
+                        },
+                        financings: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              type: {
+                                type: "string",
+                                enum: ["INSTALLMENT"],
+                                description: "Typ financování",
+                              },
+                              amount: {
+                                type: "object",
+                                properties: {
+                                  value: {
+                                    type: "number",
+                                    description:
+                                      "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                  },
+                                  currency: {
+                                    type: "string",
+                                    description:
+                                      "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                  },
+                                },
+                                required: ["value", "currency"],
+                                description:
+                                  "Financovaná částka pro financování. MŮŽE být poskytnuta pro objednávky s jediným financováním. MUSÍ být poskytnuta pro objednávky s více financováními.",
+                              },
+                              installment: {
+                                type: "object",
+                                properties: {
+                                  preferredMonths: {
+                                    type: "number",
+                                    description:
+                                      "Preferovaný počet splátek (v měsících)",
+                                  },
+                                  preferredInstallment: {
+                                    type: "object",
+                                    properties: {
+                                      value: {
+                                        type: "number",
+                                        description:
+                                          "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                      },
+                                      currency: {
+                                        type: "string",
+                                        description:
+                                          "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                      },
+                                    },
+                                    required: ["value", "currency"],
+                                    description:
+                                      "Preferovaná výše zálohy (částka by měla být zaokrouhlena na stovky CZK/5 EUR)",
+                                  },
+                                  productCode: {
+                                    type: "string",
+                                    description:
+                                      "Kód produktu (získaný z výsledku výpočtu).",
+                                  },
+                                  flags: {
+                                    type: "array",
+                                    items: {
+                                      type: "string",
+                                      enum: ["BUYBACK"],
+                                    },
+                                    description:
+                                      "Typ splátkového programu. Obvykle se používá u více financování.",
+                                  },
+                                },
+                                description:
+                                  "Nastavení pro typ financování SPLÁTKOVÝ. VYŽADOVÁNO pro typ financování SPLÁTKOVÝ.",
+                              },
+                            },
+                            required: ["type", "installment"],
+                          },
+                          description:
+                            'Informace o formě financování ŽÁDOST o objednávku. MUSÍ být uvedeno alespoň "typ" "financování" u objednávek s jediným způsobem financování. MUSÍ být uvedena alespoň "částka" a "typ" pro konkrétní části "financování" u objednávek s více způsoby financování (obvykle složitější produkt, například nákup iPhonu s budoucím zpětným odkupem).',
+                        },
+                        standard: {
+                          type: "object",
+                          properties: {
+                            deliveryType: {
+                              type: "string",
+                              enum: [
+                                "PERSONAL_BRANCH",
+                                "PERSONAL_PARTNER",
+                                "ONLINE",
+                                "DELIVERY_CARRIER",
+                              ],
+                              description:
+                                "Typ služby použité pro dodání zboží",
+                            },
+                            reservationDate: {
+                              type: "string",
+                              description:
+                                "Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky).",
+                            },
+                            items: {
+                              type: "array",
+                              items: {
+                                type: "object",
+                                properties: {
+                                  code: {
+                                    type: "string",
+                                    description:
+                                      "Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků.",
+                                  },
+                                  ean: {
+                                    type: "string",
+                                    description:
+                                      "Kód EAN. Maximálně 32 znaků.",
+                                  },
+                                  name: {
+                                    type: "string",
+                                    description:
+                                      "Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků.",
+                                  },
+                                  quantity: {
+                                    type: "number",
+                                    description:
+                                      "Počet položek. Pokud je pole prázdné, považuje se za 1.",
+                                  },
+                                  type: {
+                                    type: "string",
+                                    enum: [
+                                      "PHYSICAL",
+                                      "DISCOUNT",
+                                      "SHIPPING_FEE",
+                                      "SALES_TAX",
+                                      "DIGITAL",
+                                      "GIFT_CARD",
+                                      "STORE_CREDIT",
+                                      "FEE",
+                                      "INSURANCE",
+                                    ],
+                                    description: "Typ položky",
+                                  },
+                                  totalPrice: {
+                                    type: "object",
+                                    properties: {
+                                      value: {
+                                        type: "number",
+                                        description:
+                                          "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                      },
+                                      currency: {
+                                        type: "string",
+                                        description:
+                                          "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                      },
+                                    },
+                                    required: ["value", "currency"],
+                                    description:
+                                      "Celková cena za všechny kusy (včetně DPH)",
+                                  },
+                                  unitPrice: {
+                                    type: "object",
+                                    properties: {
+                                      value: {
+                                        type: "number",
+                                        description:
+                                          "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                      },
+                                      currency: {
+                                        type: "string",
+                                        description:
+                                          "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                      },
+                                    },
+                                    required: ["value", "currency"],
+                                    description:
+                                      "Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`.",
+                                  },
+                                  producer: {
+                                    type: "string",
+                                    description: "Nesmí být delší než 50 znaků.",
+                                  },
+                                  image: {
+                                    type: "object",
+                                    properties: {
+                                      filename: {
+                                        type: "string",
+                                        description: "Název souboru.",
+                                      },
+                                    },
+                                    required: ["filename"],
+                                    oneOf: [
+                                      {
+                                        properties: {
+                                          url: {
+                                            type: "string",
+                                            description: "URL souboru (úplná).",
+                                          },
+                                        },
+                                        required: ["url"],
+                                      },
+                                      {
+                                        properties: {
+                                          content: {
+                                            type: "string",
+                                            description:
+                                              "Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)",
+                                          },
+                                        },
+                                        required: ["content"],
+                                      },
+                                    ],
+                                    description: "Obrázek položky",
+                                  },
+                                },
+                                required: ["name", "totalPrice"],
+                              },
+                              description:
+                                "Objednávka musí obsahovat alespoň jednu položku.",
+                            },
+                          },
+                          required: ["items"],
+                          description:
+                            "MUSÍ být poskytnuto pro `order.type` = `STANDARD`",
+                        },
+                        brokered: {
+                          type: "object",
+                          properties: {
+                            merchantOrders: {
+                              type: "array",
+                              items: {
+                                type: "object",
+                                properties: {
+                                  number: {
+                                    type: "string",
+                                    description:
+                                      "Interní číslo objednávky obchodníka (e-shop, POS obchod), MŮŽE být uvedeno pro snazší identifikaci aplikace na straně partnera, NESMÍ být delší než 100 znaků.",
+                                  },
+                                  name: {
+                                    type: "string",
+                                    description:
+                                      "Název obchodníka NESMÍ být delší než 60 znaků.",
+                                  },
+                                  logo: {
+                                    type: "object",
+                                    properties: {
+                                      filename: {
+                                        type: "string",
+                                        description: "Název souboru.",
+                                      },
+                                    },
+                                    required: ["filename"],
+                                    oneOf: [
+                                      {
+                                        properties: {
+                                          url: {
+                                            type: "string",
+                                            description: "URL souboru (úplná).",
+                                          },
+                                        },
+                                        required: ["url"],
+                                      },
+                                      {
+                                        properties: {
+                                          content: {
+                                            type: "string",
+                                            description:
+                                              "Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)",
+                                          },
+                                        },
+                                        required: ["content"],
+                                      },
+                                    ],
+                                    description: "Logo obchodníka",
+                                  },
+                                  businessIdentificationNumber: {
+                                    type: "number",
+                                    description:
+                                      "Identifikační číslo podniku, NESMÍ být delší než 8 číslic",
+                                  },
+                                  url: {
+                                    type: "string",
+                                    description:
+                                      "URL adresa webové stránky (e-shopu) obchodníka NESMÍ být delší než 1000 znaků a MUSÍ být platnou URL adresou.",
+                                  },
+                                  deliveryType: {
+                                    type: "string",
+                                    enum: [
+                                      "PERSONAL_BRANCH",
+                                      "PERSONAL_PARTNER",
+                                      "ONLINE",
+                                      "DELIVERY_CARRIER",
+                                    ],
+                                    description:
+                                      "Typ služby použité pro dodání zboží",
+                                  },
+                                  reservationDate: {
+                                    type: "string",
+                                    description:
+                                      "Datum a čas, do kdy je objednávka rezervována. Do data `reservationDate` se HCO pokusí informovat partnera prostřednictvím oznámení v aplikaci o schválení nebo zamítnutí. Po tomto datu a čase e-shop nezaručuje dostupnost zboží (pokud je zpracování žádosti delší, může to ohrozit splnění objednávky).",
+                                  },
+                                  items: {
+                                    type: "array",
+                                    items: {
+                                      type: "object",
+                                      properties: {
+                                        code: {
+                                          type: "string",
+                                          description:
+                                            "Interní kód položky (interní pro e-shop). Slouží k lepší identifikaci položky pro budoucí změny. Maximálně 100 znaků.",
+                                        },
+                                        ean: {
+                                          type: "string",
+                                          description:
+                                            "Kód EAN. Maximálně 32 znaků.",
+                                        },
+                                        name: {
+                                          type: "string",
+                                          description:
+                                            "Název položky. Řetězcové hodnoty delší než 60 znaků budou zkráceny na 60 znaků.",
+                                        },
+                                        quantity: {
+                                          type: "number",
+                                          description:
+                                            "Počet položek. Pokud je pole prázdné, považuje se za 1.",
+                                        },
+                                        type: {
+                                          type: "string",
+                                          enum: [
+                                            "PHYSICAL",
+                                            "DISCOUNT",
+                                            "SHIPPING_FEE",
+                                            "SALES_TAX",
+                                            "DIGITAL",
+                                            "GIFT_CARD",
+                                            "STORE_CREDIT",
+                                            "FEE",
+                                            "INSURANCE",
+                                          ],
+                                          description: "Typ položky",
+                                        },
+                                        totalPrice: {
+                                          type: "object",
+                                          properties: {
+                                            value: {
+                                              type: "number",
+                                              description:
+                                                "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                            },
+                                            currency: {
+                                              type: "string",
+                                              description:
+                                                "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                            },
+                                          },
+                                          required: ["value", "currency"],
+                                          description:
+                                            "Celková cena za všechny kusy (včetně DPH)",
+                                        },
+                                        unitPrice: {
+                                          type: "object",
+                                          properties: {
+                                            value: {
+                                              type: "number",
+                                              description:
+                                                "Částka v menších jednotkách (13300 představuje 133) [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)",
+                                            },
+                                            currency: {
+                                              type: "string",
+                                              description:
+                                                "Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je povolena pouze místní měna (CZK v České republice a EUR na Slovensku).",
+                                            },
+                                          },
+                                          required: ["value", "currency"],
+                                          description:
+                                            "Cena za jeden kus. Pokud je pole prázdné, automaticky se předpokládá, že `unitPrice` je `totalPrice` / `quantity`.",
+                                        },
+                                        producer: {
+                                          type: "string",
+                                          description:
+                                            "Nesmí být delší než 50 znaků.",
+                                        },
+                                        image: {
+                                          type: "object",
+                                          properties: {
+                                            filename: {
+                                              type: "string",
+                                              description: "Název souboru.",
+                                            },
+                                          },
+                                          required: ["filename"],
+                                          oneOf: [
+                                            {
+                                              properties: {
+                                                url: {
+                                                  type: "string",
+                                                  description:
+                                                    "URL souboru (úplná).",
+                                                },
+                                              },
+                                              required: ["url"],
+                                            },
+                                            {
+                                              properties: {
+                                                content: {
+                                                  type: "string",
+                                                  description:
+                                                    "Obsah souboru (kódování Base64, maximální velikost kódovaného řetězce je 500 kB)",
+                                                },
+                                              },
+                                              required: ["content"],
+                                            },
+                                          ],
+                                          description: "Obrázek položky",
+                                        },
+                                      },
+                                      required: ["name", "totalPrice"],
+                                    },
+                                    description: "Objednat položky",
+                                  },
+                                },
+                                required: ["name"],
+                              },
+                              description:
+                                "Pole obchodních objednávek (obvykle se skládá z jedné objednávky)",
+                            },
+                          },
+                          required: ["merchantOrders"],
+                          description:
+                            "MUSÍ být poskytnuto pro `order.type` = `BROKERED`",
+                        },
+                      },
+                      required: ["type", "totalPrice", "financings"],
+                      description:
+                        "Informace o nákupu zboží zákazníkem. VYŽADOVÁNO pro typ OBJEDNÁVKY financovaného předmětu",
+                    },
+                  },
+                  required: ["type", "order"],
+                  description:
+                    "Předmět financování (například nákup iPhone, půjčka ve výši 20 000 Kč ...)",
+                },
+              },
+              required: [
+                "customer",
+                "originationContext",
+                "financedSubject",
+              ],
+              example: {
+                customer: {
+                  type: "PERSON",
+                  person: {
+                    firstName: "John",
+                    lastName: "Newborn",
+                    fullName: "Ing. John Newborn, Csc.",
+                    contacts: [
+                      {
+                        type: "EMAIL",
+                        email: { value: "john.newborn@country.com" },
+                        mobile: {
+                          countryCode: "+420",
+                          value: "777123456",
+                        },
+                        phone: {
+                          countryCode: "+420",
+                          value: "777123456",
+                        },
+                      },
+                    ],
+                    addresses: [
+                      {
+                        city: "Prague",
+                        streetAddress: "Letenská",
+                        streetNumber: "22",
+                        zip: "140 00",
+                        flags: ["PERMANENT"],
+                      },
+                    ],
+                    identificationNumber: "890619/5723",
+                    ipAddress: "172.10.10.1",
+                    fingerprintComponents: {
+                      key: "property",
+                      value: "value",
+                    },
+                  },
+                  entrepreneur: {
+                    businessName: "Planeta s.r.o.",
+                    addresses: [
+                      {
+                        city: "Prague",
+                        streetAddress: "Letenská",
+                        streetNumber: "22",
+                        zip: "140 00",
+                        flags: ["PERMANENT"],
+                      },
+                    ],
+                    businessIdentificationNumber: "123456854",
+                    ipAddress: "172.10.10.1",
+                    fingerprintComponents: {
+                      key: "property",
+                      value: "value",
+                    },
+                  },
+                  legalEntity: {
+                    businessName: "Planeta s.r.o.",
+                    addresses: [
+                      {
+                        city: "Prague",
+                        streetAddress: "Letenská",
+                        streetNumber: "22",
+                        zip: "140 00",
+                        flags: ["PERMANENT"],
+                      },
+                    ],
+                    businessIdentificationNumber: "123456854",
+                    ipAddress: "172.10.10.1",
+                    fingerprintComponents: {
+                      key: "property",
+                      value: "value",
+                    },
+                  },
+                },
+                originationContext: {
+                  channel: {
+                    type: "ONLINE",
+                    online: {
+                      approvedRedirect: "https://www.partnereshop.cz",
+                      rejectedRedirect: "https://www.partnereshop.cz/kosik",
+                      notificationEndpoint:
+                        "https://www.partnereshop.cz/order/AA234",
+                    },
+                  },
+                  precheckIds: [],
+                  sourceId: "Cash_10_2020",
+                  extendedData: [{ key: "property", value: "value" }],
+                },
+                financedSubject: {
+                  type: "INVALID_TYPE",
+                  order: {
+                    type: "STANDARD",
+                    number: "11111111",
+                    specificSymbol: "1122334455",
+                    variableSymbol: "1234567",
+                    totalPrice: { value: 13300, currency: "CZK" },
+                    preferredDownPayment: {
+                      value: 13300,
+                      currency: "CZK",
+                    },
+                    financings: [
+                      {
+                        type: "INSTALLMENT",
+                        amount: { value: 13300, currency: "CZK" },
+                        installment: {
+                          preferredMonths: 6,
+                          preferredInstallment: {
+                            value: 13300,
+                            currency: "CZK",
+                          },
+                          productCode: "'COCONL06'",
+                          flags: ["BUYBACK"],
+                        },
+                      },
+                    ],
+                    standard: {
+                      deliveryType: "PERSONAL_BRANCH",
+                      reservationDate: "2017-07-15T00:00:00+02:00",
+                      items: [
+                        {
+                          code: "EXC4677-1a",
+                          ean: "888462064002",
+                          name: "iPhone 6s 32GB SpaceGray",
+                          quantity: 1,
+                          type: "PHYSICAL",
+                          totalPrice: { value: 13300, currency: "CZK" },
+                          unitPrice: { value: 13300, currency: "CZK" },
+                          producer: "'Apple'",
+                          image: {
+                            filename: "iphone6s.jpg",
+                            url: "https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg",
+                          },
+                        },
+                      ],
+                    },
+                    brokered: {
+                      merchantOrders: [
+                        {
+                          number: "22222222",
+                          name: "MALL",
+                          logo: {
+                            filename: "iphone6s.jpg",
+                            url: "https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg",
+                          },
+                          businessIdentificationNumber: 26204967,
+                          url: "www.mall.cz",
+                          deliveryType: "PERSONAL_BRANCH",
+                          reservationDate: "2017-07-15T00:00:00+02:00",
+                          items: [
+                            {
+                              code: "EXC4677-1a",
+                              ean: "888462064002",
+                              name: "iPhone 6s 32GB SpaceGray",
+                              quantity: 1,
+                              type: "PHYSICAL",
+                              totalPrice: {
+                                value: 13300,
+                                currency: "CZK",
+                              },
+                              unitPrice: {
+                                value: 13300,
+                                currency: "CZK",
+                              },
+                              producer: "'Apple'",
+                              image: {
+                                filename: "iphone6s.jpg",
+                                url: "https://i.cdn.nrholding.net/32523771/2000/2000/iphone6s.jpg",
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  }}
+></RequestSchema>
 
 <StatusCodes
   id={undefined}
