@@ -179,6 +179,24 @@ const sidebar: SidebarsConfig = {
         },
       ],
     },
+    {
+      type: "category",
+      label: "Testing & Integration",
+      link: {
+        type: "doc",
+        id: "api/Reference/testing-integration",
+      },
+      collapsible: false,
+      collapsed: false,
+      items: [
+        {
+          type: "doc",
+          id: "api/Reference/change-state-using-post",
+          label: "Change application state - integration usage",
+          className: "api-method post",
+        },
+      ],
+    },
   ],
 };
 

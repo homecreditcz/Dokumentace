@@ -186,5 +186,17 @@
   "sidebar.eshopApiReference.category.Merchantsite resources": {
     "message": "Zdroje pro partnery",
     "description": "The label for category Merchantsite resources in sidebar eshopApiReference"
+  },
+  "sidebar.apiReference.category.Testing & Integration": {
+    "message": "Testování a integrace",
+    "description": "The label for category Testing & Integration in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/testing-integration": {
+    "message": "Testování a integrace",
+    "description": "The label for doc api/Reference/testing-integration in sidebar apiReference"
+  },
+  "sidebar.apiReference.doc.api/Reference/change-state-using-post": {
+    "message": "Změna stavu žádosti - použití pro integraci",
+    "description": "The label for doc api/Reference/change-state-using-post in sidebar apiReference"
   }
 }

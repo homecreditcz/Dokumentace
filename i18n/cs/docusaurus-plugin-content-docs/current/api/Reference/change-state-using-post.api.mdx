@@ -1,0 +1,80 @@
+---
+id: change-state-using-post
+title: "Změna stavu žádosti - použití pro integraci"
+description: "Tento resource slouží ke změně stavu žádosti (stateReason) na požadovaný."
+sidebar_label: "Změna stavu žádosti - použití pro integraci"
+hide_title: true
+hide_table_of_contents: true
+sidebar_class_name: "post api-method"
+info_path: docs/api/Reference/home-credit-partner-api-order
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Změna stavu žádosti - použití pro integraci"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/app-flow/v1/applications/{applicationId}/change-state"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Tento resource slouží ke změně stavu žádosti (`stateReason`) na požadovaný. Následující tabulka obsahuje povolené přechody pro tento resource.
+
+| Aktuální stateReason žádosti (z) | Dostupné přechody (na) |
+| --- | --- |
+| `PROCESSING_REDIRECT_NEEDED` | `PROCESSING_APPROVED`, `PROCESSING_SIGNED`, `READY_TO_SHIP`, `REJECTED`, `CANCELLED_NOT_PAID` |
+| `PROCESSING_APPROVED` | `PROCESSING_SIGNED`, `READY_TO_SHIP`, `CANCELLED_NOT_PAID` |
+| `PROCESSING_SIGNED` | `READY_TO_SHIP`, `CANCELLED_NOT_PAID` |
+| `READY_SHIPPED` | `CANCELLED_NOT_PAID` |
+| `READY_DELIVERED` | `CANCELLED_RETURNED` |
+
+> **POZN:** Tato akce simuluje reálný proces žádosti, což znamená, že žádost může projít jedním nebo více kroky (`stateReason`). Proto můžete obdržet více notifikací o změnách stavu žádosti. Příklad: pokud požádáte o změnu z `PROCESSING_REDIRECT_NEEDED` na `READY_TO_SHIP`, obdržíte notifikace jak pro `PROCESSING_APPROVED`, tak pro `READY_TO_SHIP`.
+
+> **POZN:** Přechod z `READY_TO_SHIP` není přes tento resource povolen. Místo toho použijte resource "Označit objednávku jako odeslanou/doručenou" podle vašeho životního cyklu objednávky.
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"applicationId","in":"path","description":"ID žádosti","required":true,"example":"01-11200a0ee1","schema":{"type":"string"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"content":{"application/json;charset=UTF-8":{"schema":{"type":"object","required":["stateReason"],"properties":{"stateReason":{"type":"string","enum":["REJECTED","PROCESSING_APPROVED","PROCESSING_SIGNED","READY_TO_SHIP","READY_DELIVERED","READY_PAID","CANCELLED_NOT_PAID","CANCELLED_RETURNED"],"description":"Popisuje interní stav žádosti, např. když je stav PROCESSING - důvod, proč žádost zůstává ve zpracování"}},"example":{"stateReason":"REJECTED"}}}},"required":true}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"OK","content":{"application/json;charset=UTF-8":{"schema":{"type":"object","properties":{"id":{"type":"string","description":"Unikátní identifikátor v HCO"},"state":{"type":"string","description":"Stav žádosti"},"stateReason":{"type":"string","description":"Důvod stavu žádosti"}}},"example":{"id":"01-11200a0ee1","state":"PROCESSING","stateReason":"PROCESSING_REDIRECT_NEEDED"}}}},"404":{"description":"Žádost neexistuje","content":{"application/json;charset=UTF-8":{"schema":{"type":"object","properties":{"errors":{"type":"array","items":{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"severity":{"type":"string"}}}}}},"example":{"errors":[{"code":"APPLICATION_NOT_FOUND","message":"Application 'NONEXISTING_APPLICATION' not found","severity":"ERROR"}]}}}},"422":{"description":"Přechod není povolen","content":{"application/json;charset=UTF-8":{"schema":{"type":"object","properties":{"errors":{"type":"array","items":{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"severity":{"type":"string"}}}}}},"example":{"errors":[{"code":"NOT_SUPPORTED","message":"Current application status not allows requested operation","severity":"ERROR"}]}}}}}}
+>
+  
+</StatusCodes>
