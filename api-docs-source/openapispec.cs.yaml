@@ -5617,6 +5617,133 @@ paths:
                   sequenceNumber: 1
                 sentDate: 2020-07-15T00:00:00+02:00
                 checksum: f61c69a259b702d564b2032e554984dec3b713ff7bdde17fcb727d403ea0d730816f46ad2bbc06a1914225d5dfba0396927dbf1b0698081814877b5486950a15
+  "/app-flow/v1/applications/{applicationId}/change-state":
+    post:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unikátní identifikátor v HCO
+                  state:
+                    type: string
+                    description: Stav žádosti
+                  stateReason:
+                    type: string
+                    description: Důvod stavu žádosti
+              examples:
+                response:
+                  value:
+                    id: 01-11200a0ee1
+                    state: PROCESSING
+                    stateReason: PROCESSING_REDIRECT_NEEDED
+        "404":
+          description: Žádost neexistuje
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        message:
+                          type: string
+                        severity:
+                          type: string
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: APPLICATION_NOT_FOUND
+                        message: Application 'NONEXISTING_APPLICATION' not found
+                        severity: ERROR
+        "422":
+          description: Přechod není povolen
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        message:
+                          type: string
+                        severity:
+                          type: string
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: NOT_SUPPORTED
+                        message: Current application status not allows requested operation
+                        severity: ERROR
+      summary: Změna stavu žádosti - použití pro integraci
+      operationId: Change application state - integration usage
+      description: |
+        Tento resource slouží ke změně stavu žádosti (`stateReason`) na požadovaný. Následující tabulka obsahuje povolené přechody pro tento resource.
+
+        | Aktuální stateReason žádosti (z) | Dostupné přechody (na) |
+        | --- | --- |
+        | `PROCESSING_REDIRECT_NEEDED` | `PROCESSING_APPROVED`, `PROCESSING_SIGNED`, `READY_TO_SHIP`, `REJECTED`, `CANCELLED_NOT_PAID` |
+        | `PROCESSING_APPROVED` | `PROCESSING_SIGNED`, `READY_TO_SHIP`, `CANCELLED_NOT_PAID` |
+        | `PROCESSING_SIGNED` | `READY_TO_SHIP`, `CANCELLED_NOT_PAID` |
+        | `READY_SHIPPED` | `CANCELLED_NOT_PAID` |
+        | `READY_DELIVERED` | `CANCELLED_RETURNED` |
+
+        > POZN: Tato akce simuluje reálný proces žádosti, což znamená, že žádost může projít jedním nebo více kroky (`stateReason`). Proto můžete obdržet více notifikací o změnách stavu žádosti. Příklad: pokud požádáte o změnu z `PROCESSING_REDIRECT_NEEDED` na `READY_TO_SHIP`, obdržíte notifikace jak pro `PROCESSING_APPROVED`, tak pro `READY_TO_SHIP`.
+
+        > POZN: Přechod z `READY_TO_SHIP` není přes tento resource povolen. Místo toho použijte resource "Označit objednávku jako odeslanou/doručenou" podle vašeho životního cyklu objednávky.
+      tags:
+        - Testing & Integration
+      parameters:
+        - name: applicationId
+          in: path
+          description: ID žádosti
+          required: true
+          example: 01-11200a0ee1
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              type: object
+              required:
+                - stateReason
+              properties:
+                stateReason:
+                  type: string
+                  enum:
+                    - REJECTED
+                    - PROCESSING_APPROVED
+                    - PROCESSING_SIGNED
+                    - READY_TO_SHIP
+                    - READY_DELIVERED
+                    - READY_PAID
+                    - CANCELLED_NOT_PAID
+                    - CANCELLED_RETURNED
+                  description: Popisuje interní stav žádosti, např. když je stav PROCESSING -
+                    důvod, proč žádost zůstává ve zpracování
+              example:
+                stateReason: REJECTED
 tags:
   - name: Security
     x-displayName: Zabezpečení
@@ -5769,6 +5896,21 @@ tags:
 
       &gt; **POZOR:** Tato sada API není zpřístupněna z HC. Místo toho by měla
       být vyvinuta partnerem a přijímat níže uvedené volání.
+  - name: Testing & Integration
+    x-displayName: Testování a integrace
+    description: >-
+      Tato sekce by měla novým vývojářům e-shopů partnerů pomoci lépe
+      porozumět API a souvisejícím procesům, zejména v raných fázích
+      integrace API.
+
+
+      Tato sekce také obsahuje zdroje pro snazší integraci s API.
+
+
+      > POZN: Pro použití těchto zdrojů je vyžadován platný access token (stejný, jaký se používá pro celé API).
+
+
+      > POZN: Tyto zdroje fungují pouze na testovacích a integračních prostředích.
 servers:
   - url: https://api.homecredit.cz
 components:
