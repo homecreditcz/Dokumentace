@@ -191,7 +191,7 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/Reference/change-state-using-post",
+          id: "api/Reference/change-application-state-integration-usage",
           label: "Change application state - integration usage",
           className: "api-method post",
         },
