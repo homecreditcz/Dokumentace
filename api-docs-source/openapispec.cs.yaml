@@ -5619,6 +5619,8 @@ paths:
                 checksum: f61c69a259b702d564b2032e554984dec3b713ff7bdde17fcb727d403ea0d730816f46ad2bbc06a1914225d5dfba0396927dbf1b0698081814877b5486950a15
   "/app-flow/v1/applications/{applicationId}/change-state":
     post:
+      servers:
+        - url: https://apicz-test.homecredit.cz/verdun-train
       responses:
         "200":
           description: OK
