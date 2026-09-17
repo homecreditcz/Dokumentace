@@ -6053,7 +6053,7 @@ paths:
         | `READY_SHIPPED` | `CANCELLED_NOT_PAID` |
         | `READY_DELIVERED` | `CANCELLED_RETURNED` |
 
-        <a href="/img/state_diagram.png" target="_blank" rel="noopener noreferrer">View the Application state diagram ↗</a>
+        [View the Application state diagram ↗](/img/state_diagram.png)
 
         > NOTE: This action simulates the real application process, which means that Application may be moved through one or multiple steps (`stateReason`). That is why you may receive multiple notifications about changes of Application's state. Example: if you request a change from `PROCESSING_REDIRECT_NEEDED` to `READY_TO_SHIP`, you will receive `PROCESSING_APPROVED` and `READY_TO_SHIP` notifications.
 

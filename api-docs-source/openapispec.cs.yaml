@@ -5750,7 +5750,7 @@ paths:
         | `READY_SHIPPED` | `CANCELLED_NOT_PAID` |
         | `READY_DELIVERED` | `CANCELLED_RETURNED` |
 
-        <a href="/img/state_diagram.png" target="_blank" rel="noopener noreferrer">Zobrazit diagram stavů žádosti ↗</a>
+        [Zobrazit diagram stavů žádosti ↗](/img/state_diagram.png)
 
         > POZN: Tato akce simuluje reálný proces žádosti, což znamená, že žádost může projít jedním nebo více kroky (`stateReason`). Proto můžete obdržet více notifikací o změnách stavu žádosti. Příklad: pokud požádáte o změnu z `PROCESSING_REDIRECT_NEEDED` na `READY_TO_SHIP`, obdržíte notifikace jak pro `PROCESSING_APPROVED`, tak pro `READY_TO_SHIP`.
 
