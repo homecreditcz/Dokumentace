@@ -5991,6 +5991,13 @@ paths:
                             - ERROR
                             - WARN
                             - INFO
+                        attribute:
+                          type: string
+                          description: JSON path of request attribute that caused the error (if
+                            applicable)
+                        ticketId:
+                          type: string
+                          description: Internal ticket ID, used for error backtracking
                       required:
                         - code
                         - message
@@ -6003,6 +6010,8 @@ paths:
                       - code: APPLICATION_NOT_FOUND
                         message: Application 'NONEXISTING_APPLICATION' not found
                         severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
         "422":
           description: Transition is not allowed
           headers: {}
@@ -6028,6 +6037,13 @@ paths:
                             - ERROR
                             - WARN
                             - INFO
+                        attribute:
+                          type: string
+                          description: JSON path of request attribute that caused the error (if
+                            applicable)
+                        ticketId:
+                          type: string
+                          description: Internal ticket ID, used for error backtracking
                       required:
                         - code
                         - message
@@ -6040,6 +6056,8 @@ paths:
                       - code: NOT_SUPPORTED
                         message: Current application status not allows requested operation
                         severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Change application state - integration usage
       operationId: Change application state - integration usage
       description: |
