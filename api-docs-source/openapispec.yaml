@@ -5937,9 +5937,29 @@ paths:
                   state:
                     type: string
                     description: Application state
+                    enum:
+                      - PROCESSING
+                      - READY
+                      - REJECTED
+                      - CANCELLED
                   stateReason:
                     type: string
                     description: Application state reason
+                    enum:
+                      - PROCESSING_REDIRECT_NEEDED
+                      - PROCESSING_PREAPPROVED
+                      - PROCESSING_APPROVED
+                      - PROCESSING_REVIEW
+                      - PROCESSING_ALT_OFFER
+                      - PROCESSING_SIGNED
+                      - READY_TO_SHIP
+                      - READY_SHIPPED
+                      - READY_DELIVERING
+                      - READY_DELIVERED
+                      - READY_PAID
+                      - REJECTED
+                      - CANCELLED_NOT_PAID
+                      - CANCELLED_RETURNED
               examples:
                 response:
                   value:
@@ -5961,10 +5981,21 @@ paths:
                       properties:
                         code:
                           type: string
+                          description: Unique internal error code
                         message:
                           type: string
+                          description: Human readable error description (non-localized)
                         severity:
                           type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Array with errors
               examples:
                 response:
                   value:
@@ -5987,10 +6018,21 @@ paths:
                       properties:
                         code:
                           type: string
+                          description: Unique internal error code
                         message:
                           type: string
+                          description: Human readable error description (non-localized)
                         severity:
                           type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Array with errors
               examples:
                 response:
                   value:

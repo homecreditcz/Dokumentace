@@ -5634,9 +5634,29 @@ paths:
                   state:
                     type: string
                     description: Stav žádosti
+                    enum:
+                      - PROCESSING
+                      - READY
+                      - REJECTED
+                      - CANCELLED
                   stateReason:
                     type: string
                     description: Důvod stavu žádosti
+                    enum:
+                      - PROCESSING_REDIRECT_NEEDED
+                      - PROCESSING_PREAPPROVED
+                      - PROCESSING_APPROVED
+                      - PROCESSING_REVIEW
+                      - PROCESSING_ALT_OFFER
+                      - PROCESSING_SIGNED
+                      - READY_TO_SHIP
+                      - READY_SHIPPED
+                      - READY_DELIVERING
+                      - READY_DELIVERED
+                      - READY_PAID
+                      - REJECTED
+                      - CANCELLED_NOT_PAID
+                      - CANCELLED_RETURNED
               examples:
                 response:
                   value:
@@ -5658,10 +5678,21 @@ paths:
                       properties:
                         code:
                           type: string
+                          description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Pole s chybami
               examples:
                 response:
                   value:
@@ -5684,10 +5715,21 @@ paths:
                       properties:
                         code:
                           type: string
+                          description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Pole s chybami
               examples:
                 response:
                   value:
