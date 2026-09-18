@@ -1797,7 +1797,37 @@ paths:
           content:
             application/json;charset=UTF-8:
               schema:
-                $ref: "#/components/schemas/Errors"
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          description: Jedinečný interní kód chyby
+                        message:
+                          type: string
+                          description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
+                        severity:
+                          type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                        attribute:
+                          type: string
+                          description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
+                            relevantní)
+                        ticketId:
+                          type: string
+                          description: Interní ID tiketu, používané pro zpětné sledování chyb
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Pole s chybami
               examples:
                 response:
                   value:
@@ -1813,7 +1843,37 @@ paths:
           content:
             application/json;charset=UTF-8:
               schema:
-                $ref: "#/components/schemas/Errors"
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          description: Jedinečný interní kód chyby
+                        message:
+                          type: string
+                          description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
+                        severity:
+                          type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                        attribute:
+                          type: string
+                          description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
+                            relevantní)
+                        ticketId:
+                          type: string
+                          description: Interní ID tiketu, používané pro zpětné sledování chyb
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Pole s chybami
               examples:
                 response:
                   value:

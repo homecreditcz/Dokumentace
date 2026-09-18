@@ -1593,7 +1593,37 @@ paths:
           content:
             application/json;charset=UTF-8:
               schema:
-                $ref: "#/components/schemas/Errors"
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          description: Unique internal error code
+                        message:
+                          type: string
+                          description: Human readable error description (non-localized)
+                        severity:
+                          type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                        attribute:
+                          type: string
+                          description: JSON path of request attribute that caused the error (if
+                            applicable)
+                        ticketId:
+                          type: string
+                          description: Internal ticket ID, used for error backtracking
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Array with errors
               examples:
                 response:
                   value:
@@ -1609,7 +1639,37 @@ paths:
           content:
             application/json;charset=UTF-8:
               schema:
-                $ref: "#/components/schemas/Errors"
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          description: Unique internal error code
+                        message:
+                          type: string
+                          description: Human readable error description (non-localized)
+                        severity:
+                          type: string
+                          enum:
+                            - ERROR
+                            - WARN
+                            - INFO
+                        attribute:
+                          type: string
+                          description: JSON path of request attribute that caused the error (if
+                            applicable)
+                        ticketId:
+                          type: string
+                          description: Internal ticket ID, used for error backtracking
+                      required:
+                        - code
+                        - message
+                        - severity
+                    description: Array with errors
               examples:
                 response:
                   value:
