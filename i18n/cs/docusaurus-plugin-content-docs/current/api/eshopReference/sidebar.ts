@@ -231,6 +231,27 @@ const sidebar: SidebarsConfig = {
         },
       ],
     },
+    {
+      type: "category",
+      label: "Testování a integrace",
+      link: {
+        type: "doc",
+        id: "current/api/eshopReference/testing-integration",
+      },
+      collapsible: false,
+      collapsed: false,
+      items: [
+        {
+          type: "doc",
+          id: "current/api/eshopReference/change-application-state-integration-usage",
+          label: "Změna stavu žádosti - použití pro integraci",
+          customProps: {
+            tagDisplayName: "x-displayName",
+          },
+          className: "api-method post",
+        },
+      ],
+    },
   ],
 };
 

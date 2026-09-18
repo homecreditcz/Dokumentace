@@ -1539,6 +1539,109 @@ paths:
             example:
               id: ""
               status: SUCCESS
+  "/app-flow/v1/applications/{applicationId}/change-state":
+    post:
+      servers:
+        - url: https://apicz-test.homecredit.cz/verdun-train
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/FinancingV1ApplicationBase"
+              examples:
+                response:
+                  value:
+                    id: 01-11200a0ee1
+                    state: PROCESSING
+                    stateReason: PROCESSING_REDIRECT_NEEDED
+        "404":
+          description: Application does not exist
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Errors"
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: APPLICATION_NOT_FOUND
+                        message: Application 'NONEXISTING_APPLICATION' not found
+                        severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
+        "422":
+          description: Transition is not allowed
+          headers: {}
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Errors"
+              examples:
+                response:
+                  value:
+                    errors:
+                      - code: NOT_SUPPORTED
+                        message: Current application status not allows requested operation
+                        severity: ERROR
+                        attribute: customer.addresses[1].streetNumber
+                        ticketId: UAT1:AMS:20160516-091658.450:45e4
+      summary: Change application state - integration usage
+      operationId: Change application state - integration usage
+      description: |
+        Use this resource for changing Application state (`stateReason`) to desired one. Following table contains allowed transitions for this resource.
+
+        | Current stateReason of Application (from) | Available transitions (to) |
+        | --- | --- |
+        | `PROCESSING_REDIRECT_NEEDED` | `PROCESSING_APPROVED`, `PROCESSING_SIGNED`, `READY_TO_SHIP`, `REJECTED`, `CANCELLED_NOT_PAID` |
+        | `PROCESSING_APPROVED` | `PROCESSING_SIGNED`, `READY_TO_SHIP`, `CANCELLED_NOT_PAID` |
+        | `PROCESSING_SIGNED` | `READY_TO_SHIP`, `CANCELLED_NOT_PAID` |
+        | `READY_SHIPPED` | `CANCELLED_NOT_PAID` |
+        | `READY_DELIVERED` | `CANCELLED_RETURNED` |
+
+        [View the Application state diagram ↗](/img/state_diagram.png)
+
+        > NOTE: This action simulates the real application process, which means that Application may be moved through one or multiple steps (`stateReason`). That is why you may receive multiple notifications about changes of Application's state. Example: if you request a change from `PROCESSING_REDIRECT_NEEDED` to `READY_TO_SHIP`, you will receive `PROCESSING_APPROVED` and `READY_TO_SHIP` notifications.
+
+        > NOTE: As you may see, no transition from `READY_TO_SHIP` is allowed for this resource. You should use the 'Mark order as shipped/delivered' resources according to your Order life cycle.
+      tags:
+        - Testing & Integration
+      parameters:
+        - name: applicationId
+          in: path
+          description: Application ID
+          required: true
+          example: 01-11200a0ee1
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              type: object
+              required:
+                - stateReason
+              properties:
+                stateReason:
+                  type: string
+                  enum:
+                    - REJECTED
+                    - PROCESSING_APPROVED
+                    - PROCESSING_SIGNED
+                    - READY_TO_SHIP
+                    - READY_DELIVERED
+                    - READY_PAID
+                    - CANCELLED_NOT_PAID
+                    - CANCELLED_RETURNED
+                  description: Describes internal state of application, e.g. when state is
+                    PROCESSING - reason why application remains in processing
+                    state
+              example:
+                stateReason: REJECTED
+      deprecated: false
 servers:
   - url: https://api.homecredit.cz
 tags:
@@ -1648,6 +1751,20 @@ tags:
       regarding particular *applications* and *orders*
 
       > **ATTENTION:** This set of APIs is NOT exposed from HC. Instead, it should be developed by partner and accept calls specified below.
+  - name: Testing & Integration
+    description: >-
+      This section should help new partner's e-shop developers with a better
+      understanding of the API and connected processes, especially during the
+      early stages of API integration.
+
+
+      This section also contains resources for easier integration with the API.
+
+
+      > NOTE: A valid access token is required for the usage of these resources (the same access token used for the whole API).
+
+
+      > NOTE: These resources only work on testing and integration environments.
 components:
   schemas:
     AcademicIdentificationDocumentFull:
