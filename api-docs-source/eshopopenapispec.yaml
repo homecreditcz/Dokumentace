@@ -1550,7 +1550,37 @@ paths:
           content:
             application/json;charset=UTF-8:
               schema:
-                $ref: "#/components/schemas/FinancingV1ApplicationBase"
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier in HCO
+                  state:
+                    type: string
+                    description: Application state
+                    enum:
+                      - PROCESSING
+                      - READY
+                      - REJECTED
+                      - CANCELLED
+                  stateReason:
+                    type: string
+                    description: Application state reason
+                    enum:
+                      - PROCESSING_REDIRECT_NEEDED
+                      - PROCESSING_PREAPPROVED
+                      - PROCESSING_APPROVED
+                      - PROCESSING_REVIEW
+                      - PROCESSING_ALT_OFFER
+                      - PROCESSING_SIGNED
+                      - READY_TO_SHIP
+                      - READY_SHIPPED
+                      - READY_DELIVERING
+                      - READY_DELIVERED
+                      - READY_PAID
+                      - REJECTED
+                      - CANCELLED_NOT_PAID
+                      - CANCELLED_RETURNED
               examples:
                 response:
                   value:

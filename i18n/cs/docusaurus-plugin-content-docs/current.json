@@ -187,6 +187,10 @@
     "message": "Zdroje pro partnery",
     "description": "The label for category Merchantsite resources in sidebar eshopApiReference"
   },
+  "sidebar.eshopApiReference.category.Testing & Integration": {
+    "message": "Testování a integrace",
+    "description": "The label for category Testing & Integration in sidebar eshopApiReference"
+  },
   "sidebar.apiReference.category.Testing & Integration": {
     "message": "Testování a integrace",
     "description": "The label for category Testing & Integration in sidebar apiReference"
