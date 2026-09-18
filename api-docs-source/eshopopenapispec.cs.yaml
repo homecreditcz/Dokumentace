@@ -1805,7 +1805,7 @@ paths:
                       - code: APPLICATION_NOT_FOUND
                         message: Application 'NONEXISTING_APPLICATION' not found
                         severity: ERROR
-                        attribute: customer.addresses[1].streetNumber
+                        attribute: Client.addresses[1].streetNumber
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
         "422":
           description: Přechod není povolen
@@ -1821,7 +1821,7 @@ paths:
                       - code: NOT_SUPPORTED
                         message: Current application status not allows requested operation
                         severity: ERROR
-                        attribute: customer.addresses[1].streetNumber
+                        attribute: Client.addresses[1].streetNumber
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Změna stavu žádosti - použití pro integraci
       operationId: Change application state - integration usage
