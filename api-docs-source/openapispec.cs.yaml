@@ -4293,16 +4293,19 @@ paths:
                 properties:
                   value:
                     type: number
+                    example: 14950
                     description: Částka v menších jednotkách (14950 představuje 149,50) [ISO
                       4217](https://en.wikipedia.org/wiki/ISO_4217). MUSÍ být 0
                       nebo větší.
                   currency:
                     type: string
+                    example: CZK
                     description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je
                       povolena pouze místní měna (CZK v České republice a EUR na
                       Slovensku).
                   vatRate:
                     type: number
+                    example: 15
                     description: Sazba DPH jako přirozené číslo (15 představuje sazbu 15 %)
                 required:
                   - value
@@ -4329,9 +4332,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          example: Bad request
                           description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
@@ -4341,10 +4346,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: customer.addresses[1].streetNumber
                           description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
                             relevantní)
                         ticketId:
                           type: string
+                          example: UAT1:AMS:20160516-091658.450:45e4
                           description: Interní ID tiketu, používané pro zpětné sledování chyb
                       required:
                         - code
@@ -4364,7 +4371,26 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Kontrola stavu API
       operationId: API status check
-      description: Získejte aktuální stav API
+      description: >-
+        Pokud je API v provozu, obdržíte stavový kód HTTP 204 a objekt
+        s informacemi o něm.
+
+
+        V ostatních případech obdržíte jednu z následujících chyb:
+
+        | Stavový kód | Kód                  |
+
+        | ---         | ---                   |
+
+        | 406         | NOT_ACCEPTABLE        |
+
+        | 500         | INTERNAL_SERVER_ERROR |
+
+
+        > Poznámka: zdroj NEVYŽADUJE platný *přístupový token* v hlavičce HTTP požadavku
+
+
+        Získejte aktuální stav API
       tags:
         - Health check
   /financing/v3/scorings/precheck/extended:

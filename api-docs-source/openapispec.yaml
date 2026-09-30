@@ -4596,16 +4596,19 @@ paths:
                 properties:
                   value:
                     type: number
+                    example: 14950
                     description: Amount in minor units (14950 represents 149,50) [ISO
                       4217](https://en.wikipedia.org/wiki/ISO_4217). MUST be 0
                       or greater.
                   currency:
                     type: string
+                    example: CZK
                     description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
                       Only local currency is allowed (CZK in Czech Republic and
                       EUR in Slovakia).
                   vatRate:
                     type: number
+                    example: 15
                     description: VAT rate as natural number (15 represents 15% rate)
                 required:
                   - value
@@ -4632,9 +4635,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Unique internal error code
                         message:
                           type: string
+                          example: Bad request
                           description: Human readable error description (non-localized)
                         severity:
                           type: string
@@ -4644,10 +4649,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: customer.addresses[1].streetNumber
                           description: JSON path of request attribute that caused the error (if
                             applicable)
                         ticketId:
                           type: string
+                          example: UAT1:AMS:20160516-091658.450:45e4
                           description: Internal ticket ID, used for error backtracking
                       required:
                         - code
@@ -4667,7 +4674,26 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: API status check
       operationId: API status check
-      description: Get current state of the API
+      description: >-
+        If the API is up and running, you receive HTTP status code 204 and
+        object of information about it.
+
+
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code                  |
+
+        | ---         | ---                   |
+
+        | 406         | NOT_ACCEPTABLE        |
+
+        | 500         | INTERNAL_SERVER_ERROR |
+
+
+        > Note: resource DOES NOT require valid *access_token* in the HTTP header of the request
+
+
+        Get current state of the API
       tags:
         - Health check
   /financing/v3/scorings/precheck/extended:
