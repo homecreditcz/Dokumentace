@@ -5766,9 +5766,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Unique internal error code
                         message:
                           type: string
+                          example: Bad request
                           description: Human readable error description (non-localized)
                         severity:
                           type: string
@@ -5778,10 +5780,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: customer.addresses[1].streetNumber
                           description: JSON path of request attribute that caused the error (if
                             applicable)
                         ticketId:
                           type: string
+                          example: UAT1:AMS:20160516-091658.450:45e4
                           description: Internal ticket ID, used for error backtracking
                       required:
                         - code
@@ -5801,7 +5805,29 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: API health check
       operationId: API health check
-      description: Get current state of the API
+      description: >-
+        If the API back-end services is up and running, you receive HTTP status
+        code 204.
+
+
+        In other cases, you receive one of the following errors:
+
+        | Status code | Code                  |
+
+        | ---         | ---                   |
+
+        | 500         | SERVICE_FAILED        |
+
+        | 504         | SERVICE_TIMEOUT       |
+
+
+        > Note: resource DOES require valid *access_token* in the HTTP header of the request
+
+
+        + Parameters
+            + timeout: `2000` (string, optional) - Optional timeout (in miliseconds) for completition of the request (504 is returned when not fulfilled). If empty, considered 2000.
+
+        Get current state of the API
       tags:
         - JavaScript widget integration
       parameters:

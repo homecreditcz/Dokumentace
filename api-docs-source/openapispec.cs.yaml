@@ -5462,9 +5462,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          example: Bad request
                           description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
@@ -5474,10 +5476,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: customer.addresses[1].streetNumber
                           description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
                             relevantní)
                         ticketId:
                           type: string
+                          example: UAT1:AMS:20160516-091658.450:45e4
                           description: Interní ID tiketu, používané pro zpětné sledování chyb
                       required:
                         - code
@@ -5497,7 +5501,29 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Kontrola stavu API
       operationId: API health check
-      description: Získejte aktuální stav API
+      description: >-
+        Pokud jsou back-endové služby API v provozu, obdržíte stavový kód HTTP
+        204.
+
+
+        V ostatních případech obdržíte jednu z následujících chyb:
+
+        | Stavový kód | Kód                  |
+
+        | ---         | ---                   |
+
+        | 500         | SERVICE_FAILED        |
+
+        | 504         | SERVICE_TIMEOUT       |
+
+
+        > Poznámka: zdroj VYŽADUJE platný *přístupový token* v hlavičce HTTP požadavku
+
+
+        + Parametry
+            + timeout: `2000` (string, nepovinný) - Volitelný časový limit (v milisekundách) pro dokončení požadavku (pokud není splněn, vrátí se hodnota 504). Pokud je pole prázdné, považuje se za 2000.
+
+        Získejte aktuální stav API
       tags:
         - JavaScript widget integration
       parameters:
