@@ -980,13 +980,16 @@ paths:
                 properties:
                   accessToken:
                     type: string
+                    example: TokenForPartnerTokenForPartnerTokenForPartnerTokenForPartner
                     description: Přístupový token
                   expiresIn:
                     type: number
+                    example: 7200
                     description: Zbývající doba platnosti tokenu (v sekundách)
                   tokentype:
                     type: string
-                    description: typ tokenu. Vždy "držitel“.
+                    example: bearer
+                    description: typ tokenu. Vždy "bearer".
                 required:
                   - accessToken
                   - tokentype
@@ -1011,9 +1014,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          example: Bad request
                           description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
@@ -1023,10 +1028,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
                             relevantní)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Interní ID tiketu, používané pro zpětné sledování chyb
                       required:
                         - code

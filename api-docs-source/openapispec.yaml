@@ -1285,12 +1285,15 @@ paths:
                 properties:
                   accessToken:
                     type: string
+                    example: TokenForPartnerTokenForPartnerTokenForPartnerTokenForPartner
                     description: Access token
                   expiresIn:
                     type: number
+                    example: 7200
                     description: Token validity remaining time (in seconds)
                   tokentype:
                     type: string
+                    example: bearer
                     description: token type. Always "bearer".
                 required:
                   - accessToken
@@ -1316,9 +1319,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Unique internal error code
                         message:
                           type: string
+                          example: Bad request
                           description: Human readable error description (non-localized)
                         severity:
                           type: string
@@ -1328,10 +1333,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON path of request attribute that caused the error (if
                             applicable)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Internal ticket ID, used for error backtracking
                       required:
                         - code
