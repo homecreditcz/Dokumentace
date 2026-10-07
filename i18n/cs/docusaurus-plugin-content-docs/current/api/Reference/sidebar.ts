@@ -175,7 +175,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "current/api/Reference/calculate-installment-programs-offer",
-          label: "Vypočítat nabídku splátkového programu",
+          label: "Výpočet nabídek splátkových programů",
           customProps: {
             tagDisplayName: "x-displayName",
           },

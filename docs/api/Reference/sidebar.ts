@@ -139,7 +139,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/Reference/calculate-installment-programs-offer",
-          label: "Calculate installment programs offer",
+          label: "Calculate installment program offers",
           className: "api-method post",
         },
         {

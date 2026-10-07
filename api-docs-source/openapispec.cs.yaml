@@ -4944,186 +4944,53 @@ paths:
     post:
       responses:
         "200":
-          description: Inkaso splátkových programů
+          description: OK
           headers: {}
           content:
             application/json;charset=UTF-8:
               schema:
-                type: object
-                properties:
-                  installmentPrograms:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        productCode:
-                          type: string
-                          description: Kód produktu splátkového programu
-                        type:
-                          type: string
-                          enum:
-                            - MINIMAL
-                            - FAVOURITE
-                            - OTHER
-                          description: ZASTARALÉ. Nepoužívejte tento atribut, místo toho použijte atribut
-                            `flags`. Atribut `type` zůstává v API z důvodu
-                            zpětné kompatibility.
-                        flags:
-                          type: array
-                          description: Příznak splátkového programu. Pro jeden program je povoleno více
-                            příznaků.
-                          items: {}
-                        installment:
-                          type: object
-                          properties:
-                            amount:
-                              type: number
-                              description: Částka v menších jednotkách (250000 představuje 2500 CZK/EUR) [ISO
-                                4217](https://en.wikipedia.org/wiki/ISO_4217)
-                            currency:
-                              type: string
-                              description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je
-                                povolena pouze místní měna (CZK v České
-                                republice a EUR na Slovensku).
-                          required:
-                            - amount
-                            - currency
-                          description: měsíční splátka
-                        numberOfInstallments:
-                          type: number
-                          description: počet splátek
-                      required:
-                        - productCode
-                    description: Nabídka splátkových programů
-                required:
-                  - installmentPrograms
-              examples:
-                response:
-                  value:
-                    installmentPrograms:
-                      - productCode: COCONL06
-                        type: MINIMAL
-                        flags:
-                          - type: MINIMAL
-                            delayFirstInstallment: 2
-                            benefit: TURBO
-                        installment:
-                          amount: 221900
-                          currency: CZK
-                        numberOfInstallments: 6
+                $ref: "#/components/schemas/InstallmentProgramsOffersResponseV3"
+        "204":
+          description: Bez obsahu
         "400":
-          description: "    Chyba při zpracování požadavku"
-          headers: {}
-          content:
-            application/json;charset=UTF-8:
-              schema:
-                type: object
-                properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        code:
-                          type: string
-                          description: Jedinečný interní kód chyby
-                        message:
-                          type: string
-                          description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
-                        severity:
-                          type: string
-                          enum:
-                            - ERROR
-                            - WARN
-                            - INFO
-                        attribute:
-                          type: string
-                          description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
-                            relevantní)
-                        ticketId:
-                          type: string
-                          description: Interní ID tiketu, používané pro zpětné sledování chyb
-                      required:
-                        - code
-                        - message
-                        - severity
-                    description: Pole s chybami
-                required:
-                  - errors
-              examples:
-                response:
-                  value:
-                    errors:
-                      - code: BAD_REQUEST
-                        message: Bad request
-                        severity: ERROR
-                        attribute: customer.addresses[1].streetNumber
-                        ticketId: UAT1:AMS:20160516-091658.450:45e4
-      summary: Vypočítat nabídku splátkového programu
+          description: Chybný požadavek
+      summary: Výpočet nabídek splátkových programů
       operationId: Calculate installment programs offer
-      description: |-
-        Vypočítat nabídku splátkových programů podle zadaných údajů
+      description: >-
+        Vrací seznam dostupných splátkových programů pro zadanou cenu, zálohu,
+        sady produktů a typy zákazníků.
 
-        funkce | podporováno zdrojem
-        --- | ---
-        [stránkování](#header-paging) | ne
-        [třídění](#header-sorting) | ne
-        [filtrování](#header-filtering) | ne
+
+        Pokud chce zákazník zaplatit nákup úvěrem a vy mu chcete zobrazit
+        nabídku dostupných splátkových programů, použijte zdroj
+        `/financing/v3/installment-programs/offers` se správně vyplněným
+        požadavkem, který obsahuje alespoň následující údaje:
+
+        - Kódy sad produktů (správné kódy sad produktů byste měli znát od obchodního zástupce Home Creditu nebo z jiného podobného zdroje)
+
+        - Cena nákupu zákazníka
+
+        - Typy klientů (v závislosti na vašem podnikání)
+
+        - Záloha (nepovinná, výchozí hodnota je 0)
+
+
+        Pokud byl požadavek úspěšně zpracován, obdržíte stavový kód HTTP 200 a pole objektů dostupných splátkových programů s alespoň následujícími informacemi v odpovědi:
+
+        - Splátkový program (pole)
+          - Kód produktu splátkového programu
+          - Typy zákazníků, kteří mohou vypočtenou nabídku využít
+          - Typ splátkového programu (pokud je v odpovědi pouze jedna nabídka splátkového programu, je typu `FAVOURITE`)
+          - Výše splátky
+          - Počet splátek
       tags:
         - Installments calculator resources
       requestBody:
+        required: true
         content:
           application/json;charset=UTF-8:
             schema:
-              type: object
-              properties:
-                productSetCode:
-                  type: string
-                  description: Kód sady produktů, který omezí další výpočty. Pokud není zadán,
-                    bude použita výchozí sada produktů.
-                price:
-                  type: object
-                  properties:
-                    amount:
-                      type: number
-                      description: Částka v menších jednotkách (133000 představuje 1330) [ISO
-                        4217](https://en.wikipedia.org/wiki/ISO_4217)
-                    currency:
-                      type: string
-                      description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je
-                        povolena pouze místní měna (CZK v České republice a EUR
-                        na Slovensku).
-                  required:
-                    - amount
-                    - currency
-                  description: Cena objednávky
-                downPayment:
-                  type: object
-                  properties:
-                    amount:
-                      type: number
-                      description: Částka v menších jednotkách [ISO
-                        4217](https://en.wikipedia.org/wiki/ISO_4217)
-                    currency:
-                      type: string
-                      description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je
-                        povolena pouze místní měna (CZK v České republice a EUR
-                        na Slovensku).
-                  required:
-                    - amount
-                    - currency
-                  description: Výše zálohy (výchozí hodnota je 0, částka by měla být zaokrouhlena
-                    na stovky)
-              required:
-                - price
-              example:
-                productSetCode: COCHCONL
-                price:
-                  amount: 133000
-                  currency: CZK
-                downPayment:
-                  amount: 0
-                  currency: CZK
+              $ref: "#/components/schemas/InstallmentProgramsOffersRequestV3"
   /financing/v3/installmentPrograms:
     post:
       responses:
@@ -6875,34 +6742,25 @@ components:
           description: Nabídka splátkových programů
     InstallmentProgram:
       type: object
-      required:
-        - productCode
       properties:
         productCode:
           type: string
           example: COCONL06
           description: Kód produktu splátkového programu
-        type:
-          type: string
-          enum:
-            - MINIMAL
-            - FAVOURITE
-            - OTHER
-          description: ZASTARALÉ. Nepoužívejte tento atribut, místo toho použijte atribut
-            `flags`. Atribut `type` zůstává v API z důvodu zpětné kompatibility.
         flags:
           type: array
-          items: {}
+          items:
+            $ref: "#/components/schemas/InstallmentProgramFlag"
           description: Příznak splátkového programu. Pro jeden program je povoleno více
             příznaků.
         installment:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   example: 221900
                   description: Částka v menších jednotkách (250000 představuje 2500 CZK/EUR) [ISO
@@ -6912,6 +6770,15 @@ components:
           type: number
           example: 6
           description: počet splátek
+        customerTypes:
+          type: array
+          items:
+            type: string
+            enum:
+              - PERSON
+              - ENTREPRENEUR
+              - LEGAL_ENTITY
+          description: Seznam typů klientů, pro které je tento splátkový program vypočten.
     InstallmentProgramDetail:
       allOf:
         - $ref: "#/components/schemas/InstallmentProgram"
@@ -6967,12 +6834,12 @@ components:
           description: Předpokládané datum poskytnutí
         paidBack:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   example: 1331400
                   description: Částka v menších jednotkách (250000 představuje 2500 CZK/EUR) [ISO
@@ -7073,6 +6940,75 @@ components:
           example: COCHCONL
           description: Kód sady produktů
       title: CalculatedDownPayments
+    CalculatedInstallmentPrograms:
+      type: object
+      properties:
+        customerTypes:
+          type: array
+          example:
+            - PERSON
+          description: Typy zákazníků, pro které byly tyto programy vypočteny
+          items:
+            type: string
+            enum:
+              - ENTREPRENEUR
+              - LEGAL_ENTITY
+              - PERSON
+        installmentPrograms:
+          type: array
+          description: Seznam dostupných splátkových programů
+          items:
+            $ref: "#/components/schemas/InstallmentProgramDetail"
+        productSetCode:
+          type: string
+          example: COCHCONL
+          description: Kód sady produktů
+      title: CalculatedInstallmentPrograms
+    InstallmentProgramsOffersRequestV3:
+      type: object
+      required:
+        - customerTypes
+        - price
+        - productSetCodes
+      properties:
+        customerTypes:
+          type: array
+          example:
+            - PERSON
+          description: Typy zákazníků, které se mají zahrnout do výpočtu
+          items:
+            type: string
+            enum:
+              - ENTREPRENEUR
+              - LEGAL_ENTITY
+              - PERSON
+        downPayment:
+          allOf:
+            - $ref: "#/components/schemas/Amount"
+            - type: object
+              description: Výše zálohy (výchozí hodnota je 0)
+        price:
+          allOf:
+            - $ref: "#/components/schemas/Amount"
+            - type: object
+              description: Celková cena zboží
+        productSetCodes:
+          type: array
+          example:
+            - COCHCONL
+          description: Sada kódů sad produktů
+          items:
+            type: string
+      title: InstallmentProgramsOffersRequestV3
+    InstallmentProgramsOffersResponseV3:
+      type: object
+      properties:
+        calculatedInstalmentPrograms:
+          type: array
+          description: Seznam vypočtených splátkových programů
+          items:
+            $ref: "#/components/schemas/CalculatedInstallmentPrograms"
+      title: InstallmentProgramsOffersResponseV3
     InstallmentProgramsRequest:
       type: object
       required:

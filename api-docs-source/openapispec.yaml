@@ -5246,186 +5246,53 @@ paths:
     post:
       responses:
         "200":
-          description: Installment programs collection
+          description: OK
           headers: {}
           content:
             application/json;charset=UTF-8:
               schema:
-                type: object
-                properties:
-                  installmentPrograms:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        productCode:
-                          type: string
-                          description: Installment program product code
-                        type:
-                          type: string
-                          enum:
-                            - MINIMAL
-                            - FAVOURITE
-                            - OTHER
-                          description: DEPRECATED. Do not use this attribute, use attribute `flags`
-                            instead. Attribute `type` remains in the API for
-                            backward compatibility
-                        flags:
-                          type: array
-                          description: Installment program flag. Multiple flags for one program are
-                            allowed.
-                          items: {}
-                        installment:
-                          type: object
-                          properties:
-                            amount:
-                              type: number
-                              description: Amount in minor units (250000 represents 2500 CZK/EUR) [ISO
-                                4217](https://en.wikipedia.org/wiki/ISO_4217)
-                            currency:
-                              type: string
-                              description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
-                                Only local currency is allowed (CZK in Czech
-                                Republic and EUR in Slovakia).
-                          required:
-                            - amount
-                            - currency
-                          description: monthly installment amount
-                        numberOfInstallments:
-                          type: number
-                          description: installment count
-                      required:
-                        - productCode
-                    description: Array with installment programs offer
-                required:
-                  - installmentPrograms
-              examples:
-                response:
-                  value:
-                    installmentPrograms:
-                      - productCode: COCONL06
-                        type: MINIMAL
-                        flags:
-                          - type: MINIMAL
-                            delayFirstInstallment: 2
-                            benefit: TURBO
-                        installment:
-                          amount: 221900
-                          currency: CZK
-                        numberOfInstallments: 6
+                $ref: "#/components/schemas/InstallmentProgramsOffersResponseV3"
+        "204":
+          description: No Content
         "400":
-          description: "    Error in processing request"
-          headers: {}
-          content:
-            application/json;charset=UTF-8:
-              schema:
-                type: object
-                properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        code:
-                          type: string
-                          description: Unique internal error code
-                        message:
-                          type: string
-                          description: Human readable error description (non-localized)
-                        severity:
-                          type: string
-                          enum:
-                            - ERROR
-                            - WARN
-                            - INFO
-                        attribute:
-                          type: string
-                          description: JSON path of request attribute that caused the error (if
-                            applicable)
-                        ticketId:
-                          type: string
-                          description: Internal ticket ID, used for error backtracking
-                      required:
-                        - code
-                        - message
-                        - severity
-                    description: Array with errors
-                required:
-                  - errors
-              examples:
-                response:
-                  value:
-                    errors:
-                      - code: BAD_REQUEST
-                        message: Bad request
-                        severity: ERROR
-                        attribute: customer.addresses[1].streetNumber
-                        ticketId: UAT1:AMS:20160516-091658.450:45e4
-      summary: Calculate installment programs offer
+          description: Bad Request
+      summary: Calculate installment program offers
       operationId: Calculate installment programs offer
-      description: |-
-        Calculate installment programs offer according to specified input
+      description: >-
+        Returns a list of available installment programs for the given
+        price, down payment, product sets, and customer types.
 
-        feature | supported by resource
-        --- | ---
-        [paging](#header-paging) | no
-        [sorting](#header-sorting) | no
-        [filtering](#header-filtering) | no
+
+        When a customer wants to pay for a purchase by a loan and you want to
+        show them an offer of available installment programs, use
+        `/financing/v3/installment-programs/offers` resource with properly
+        filled request that contains at least following data:
+
+        - Product set codes (you should know the proper product set codes from Home Credit's sales representative or other similar source)
+
+        - Price of customer's purchase
+
+        - Client types (in dependency on your business)
+
+        - Down payment (optional, default is 0)
+
+
+        If the request was successfully processed, you receive HTTP status code 200 and array of objects of available installment programs with at least following information in the response:
+
+        - Installment program (array)
+          - Installment program product code
+          - Customer types that can use the calculated offer
+          - Installment program type (in case of only one installment program offer in response it is of type `FAVOURITE`)
+          - Installment amount
+          - Number of installments
       tags:
         - Installments calculator resources
       requestBody:
+        required: true
         content:
           application/json;charset=UTF-8:
             schema:
-              type: object
-              properties:
-                productSetCode:
-                  type: string
-                  description: Product set code, this will limit further calculations. If not
-                    provided, default productSet will be used.
-                price:
-                  type: object
-                  properties:
-                    amount:
-                      type: number
-                      description: Amount in minor units (133000 represents 1330) [ISO
-                        4217](https://en.wikipedia.org/wiki/ISO_4217)
-                    currency:
-                      type: string
-                      description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
-                        Only local currency is allowed (CZK in Czech Republic
-                        and EUR in Slovakia).
-                  required:
-                    - amount
-                    - currency
-                  description: Order price
-                downPayment:
-                  type: object
-                  properties:
-                    amount:
-                      type: number
-                      description: Amount in minor units [ISO
-                        4217](https://en.wikipedia.org/wiki/ISO_4217)
-                    currency:
-                      type: string
-                      description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
-                        Only local currency is allowed (CZK in Czech Republic
-                        and EUR in Slovakia).
-                  required:
-                    - amount
-                    - currency
-                  description: Down payment amount (default is 0, amount should be rounded to
-                    hundreds)
-              required:
-                - price
-              example:
-                productSetCode: COCHCONL
-                price:
-                  amount: 133000
-                  currency: CZK
-                downPayment:
-                  amount: 0
-                  currency: CZK
+              $ref: "#/components/schemas/InstallmentProgramsOffersRequestV3"
   /financing/v3/installmentPrograms:
     post:
       responses:
@@ -7144,34 +7011,24 @@ components:
           description: Array with installment programs offer
     InstallmentProgram:
       type: object
-      required:
-        - productCode
       properties:
         productCode:
           type: string
           example: COCONL06
           description: Installment program product code
-        type:
-          type: string
-          enum:
-            - MINIMAL
-            - FAVOURITE
-            - OTHER
-          description: DEPRECATED. Do not use this attribute, use attribute `flags`
-            instead. Attribute `type` remains in the API for backward
-            compatibility
         flags:
           type: array
-          items: {}
+          items:
+            $ref: "#/components/schemas/InstallmentProgramFlag"
           description: Installment program flag. Multiple flags for one program are allowed.
         installment:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   example: 221900
                   description: Amount in minor units (250000 represents 2500 CZK/EUR) [ISO
@@ -7181,6 +7038,15 @@ components:
           type: number
           example: 6
           description: installment count
+        customerTypes:
+          type: array
+          items:
+            type: string
+            enum:
+              - PERSON
+              - ENTREPRENEUR
+              - LEGAL_ENTITY
+          description: List of client types for which this installment program is calculated.
     InstallmentProgramDetail:
       allOf:
         - $ref: "#/components/schemas/InstallmentProgram"
@@ -7236,12 +7102,12 @@ components:
           description: Predicted provision date
         paidBack:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   example: 1331400
                   description: Amount in minor units (250000 represents 2500 CZK/EUR) [ISO
@@ -7342,6 +7208,75 @@ components:
           example: COCHCONL
           description: Product set code
       title: CalculatedDownPayments
+    CalculatedInstallmentPrograms:
+      type: object
+      properties:
+        customerTypes:
+          type: array
+          example:
+            - PERSON
+          description: Customer types for which these programs were calculated
+          items:
+            type: string
+            enum:
+              - ENTREPRENEUR
+              - LEGAL_ENTITY
+              - PERSON
+        installmentPrograms:
+          type: array
+          description: List of available installment programs
+          items:
+            $ref: "#/components/schemas/InstallmentProgramDetail"
+        productSetCode:
+          type: string
+          example: COCHCONL
+          description: Product set code
+      title: CalculatedInstallmentPrograms
+    InstallmentProgramsOffersRequestV3:
+      type: object
+      required:
+        - customerTypes
+        - price
+        - productSetCodes
+      properties:
+        customerTypes:
+          type: array
+          example:
+            - PERSON
+          description: Customer types to include in the calculation
+          items:
+            type: string
+            enum:
+              - ENTREPRENEUR
+              - LEGAL_ENTITY
+              - PERSON
+        downPayment:
+          allOf:
+            - $ref: "#/components/schemas/Amount"
+            - type: object
+              description: Down payment amount (default is 0)
+        price:
+          allOf:
+            - $ref: "#/components/schemas/Amount"
+            - type: object
+              description: Total price of the goods
+        productSetCodes:
+          type: array
+          example:
+            - COCHCONL
+          description: Set of product set codes
+          items:
+            type: string
+      title: InstallmentProgramsOffersRequestV3
+    InstallmentProgramsOffersResponseV3:
+      type: object
+      properties:
+        calculatedInstalmentPrograms:
+          type: array
+          description: List of calculated installment programs
+          items:
+            $ref: "#/components/schemas/CalculatedInstallmentPrograms"
+      title: InstallmentProgramsOffersResponseV3
     InstallmentProgramsRequest:
       type: object
       required:
