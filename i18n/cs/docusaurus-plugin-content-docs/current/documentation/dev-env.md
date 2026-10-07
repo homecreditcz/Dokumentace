@@ -46,6 +46,22 @@ Prostředí, na kterém jsou k dispozici data podobná produkčním a na kterém
   > - CZ: `..dw2{&q!.30`
   > - SK: `wq%?ch.q%55r_`
 
+ C) Konzument pro API v3 (B2B) (ID prodejny **034342**)
+
+  > ***username: 034342tech, password: 034342tech***
+
+  > ***apiKey*** pro kalkulačku splátek
+  > - CZ: `test_calculator_034342techNew`
+
+  > odkaz pro kalkulačku: [KALKULAČKA](https://hc-calc-standalone.cz00t3.hccs.cz/index.html?productSetCode=HNONL1072&price=1000000&downPayment=0&apiKey=test_calculator_034342techNew&fixDownPayment=false)
+
+  > tajný klíč pro hashování [zpětné komunikace na e-shop](./communication-security):
+  > - CZ: `(u$5a$r3#8t+ug`
+
+  > dostupné produktové sady:
+  > - `HCONL1072` – defaultní
+  > - `MIXONLZDA`
+
 ## Kalkulačka splátek
 
 Pro testovací účely jsou k dispozici následující varianty kalkulačky splátek:

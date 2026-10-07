@@ -46,6 +46,22 @@ B) Sale **with down payment** (store ID **024243**)
 > - CZ: `..dw2{&q!.30`
   > - SK: `wq%?ch.q%55r_`
 
+ C) Consumer for API v3 (B2B) (store ID **034342**)
+
+  > ***username: 034342tech, password: 034342tech***
+
+  > ***apiKey*** for the installment calculator
+  > - CZ: `test_calculator_034342techNew`
+
+  > calculator link: [CALCULATOR](https://hc-calc-standalone.cz00t3.hccs.cz/index.html?productSetCode=HNONL1072&price=1000000&downPayment=0&apiKey=test_calculator_034342techNew&fixDownPayment=false)
+
+  > secret key for hashing [back communication to the e-shop](./communication-security):
+  > - CZ: `(u$5a$r3#8t+ug`
+
+  > available product sets:
+  > - `HCONL1072` – default
+  > - `MIXONLZDA`
+
 ## Payment calculator
 
 The following payment calculator options are available for testing purposes:
