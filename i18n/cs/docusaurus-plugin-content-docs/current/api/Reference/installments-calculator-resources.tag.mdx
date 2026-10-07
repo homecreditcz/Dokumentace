@@ -29,6 +29,24 @@ K implementaci vlastní kalkulačky splátek (s vaším designem GUI) budete pot
 
 - `/financing/v3/installment-programs/down-payments` - pro zjištění možností zálohy v rámci dostupných nabídek splátkových programů
 
+## Migrace z v1 na v3
+
+Kalkulačka splátek v3 nahrazuje staré endpointy v1 zapsané ve stylu camelCase. Hlavní změny:
+
+| Endpoint v1 | Endpoint v3 | Co se změnilo |
+| --- | --- | --- |
+| `/rest/financing/v1/installmentPrograms` | odstraněn | Přímá náhrada ve v3 neexistuje. Použijte místo něj `/financing/v3/installment-programs/offers`. |
+| `/rest/financing/v1/installmentProgramsOffers` | `/financing/v3/installment-programs/offers` | Požadavek nově vyžaduje `productSetCodes` a `customerTypes`; odpověď je seskupena podle `productSetCode` v `calculatedInstalmentPrograms`. |
+| `/rest/financing/v1/installmentProgramsDownPayments` | `/financing/v3/installment-programs/down-payments` | Požadavek nově používá `productSetCodes` místo jednoho `productSetCode`; odpověď je seskupena podle `productSetCode` v `calculatedDownPayments`. |
+
+Co je potřeba změnit:
+
+- nahraďte cesty ve stylu camelCase novými cestami v3 se spojovníky;
+- posílejte neprázdnou sadu `productSetCodes` místo jednoho kódu sady produktů;
+- u nabídek (offers) vždy uveďte `customerTypes`;
+- upravte zpracování odpovědi na nové obalové objekty (`calculatedInstalmentPrograms` / `calculatedDownPayments`);
+- ošetřete HTTP `204 No Content`, pokud pro požadované sady produktů není k dispozici žádný výsledek výpočtu.
+
 
 
 ```mdx-code-block

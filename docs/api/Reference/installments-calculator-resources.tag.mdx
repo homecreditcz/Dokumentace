@@ -29,6 +29,24 @@ In order to implement your own installment calculator (with your GUI design) you
 
 - `/financing/v3/installment-programs/down-payments` - to find out down payment options within available installment programs offers
 
+## Migration from v1 to v3
+
+The v3 Installments calculator replaces the old v1 camelCase endpoints. Main changes:
+
+| v1 endpoint | v3 endpoint | What changed |
+| --- | --- | --- |
+| `/rest/financing/v1/installmentPrograms` | removed | There is no direct v3 equivalent. Use `/financing/v3/installment-programs/offers` instead. |
+| `/rest/financing/v1/installmentProgramsOffers` | `/financing/v3/installment-programs/offers` | Request now requires `productSetCodes` and `customerTypes`; response is grouped by `productSetCode` in `calculatedInstalmentPrograms`. |
+| `/rest/financing/v1/installmentProgramsDownPayments` | `/financing/v3/installment-programs/down-payments` | Request now uses `productSetCodes` instead of a single `productSetCode`; response is grouped by `productSetCode` in `calculatedDownPayments`. |
+
+What you need to change:
+
+- replace camelCase paths with the new hyphenated v3 paths;
+- send a non-empty set of `productSetCodes` instead of one product set code;
+- for offers, always provide `customerTypes`;
+- update response parsing to the new wrapper objects (`calculatedInstalmentPrograms` / `calculatedDownPayments`);
+- handle HTTP `204 No Content` when no calculation result is available for the requested product sets.
+
 
 
 ```mdx-code-block

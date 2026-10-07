@@ -1392,6 +1392,7 @@ paths:
                 properties:
                   id:
                     type: string
+                    example: 123e4567-e89b-12d3-a456-426655440000
                     description: Primary identifier of the application
                   status:
                     type: string
@@ -1419,10 +1420,12 @@ paths:
                           description: Workflow code
                         priority:
                           type: number
+                          example: 1
                           description: Identifier of workflow step's priority expressed as number (lowest
                             number means highest priority)
                         mandatory:
                           type: boolean
+                          example: true
                           description: Available workflow step for current application in application
                             process.
                         redirect:
@@ -1430,12 +1433,12 @@ paths:
                           properties:
                             gatewayRedirectUrl:
                               type: string
+                              example: https://nasplatky.homecredit.cz
                               description: Gateway redirect URL. Partner SHOULD redirect customer to this
                                 address for continuation of application approval
                                 process.
                           required:
                             - gatewayRedirectUrl
-                          description: Data for workflow step `REDIRECT`
                       required:
                         - code
                         - priority
@@ -1465,6 +1468,7 @@ paths:
                 properties:
                   id:
                     type: string
+                    example: 123e4567-e89b-12d3-a456-426655440000
                     description: Primary identifier of the application
                   status:
                     type: string
@@ -1492,10 +1496,12 @@ paths:
                           description: Workflow code
                         priority:
                           type: number
+                          example: 1
                           description: Identifier of workflow step's priority expressed as number (lowest
                             number means highest priority)
                         mandatory:
                           type: boolean
+                          example: true
                           description: Available workflow step for current application in application
                             process.
                         redirect:
@@ -1503,12 +1509,12 @@ paths:
                           properties:
                             gatewayRedirectUrl:
                               type: string
+                              example: https://nasplatky.homecredit.cz
                               description: Gateway redirect URL. Partner SHOULD redirect customer to this
                                 address for continuation of application approval
                                 process.
                           required:
                             - gatewayRedirectUrl
-                          description: Data for workflow step `REDIRECT`
                       required:
                         - code
                         - priority
@@ -1543,9 +1549,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Unique internal error code
                         message:
                           type: string
+                          example: Bad request
                           description: Human readable error description (non-localized)
                         severity:
                           type: string
@@ -1555,10 +1563,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON path of request attribute that caused the error (if
                             applicable)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Internal ticket ID, used for error backtracking
                       required:
                         - code
@@ -4340,9 +4350,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Unique internal error code
                         message:
                           type: string
+                          example: Bad request
                           description: Human readable error description (non-localized)
                         severity:
                           type: string
@@ -4352,10 +4364,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON path of request attribute that caused the error (if
                             applicable)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Internal ticket ID, used for error backtracking
                       required:
                         - code
@@ -4375,10 +4389,32 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Mark order as shipped
       operationId: Mark order as shipped
-      description: When the whole *order* was shipped to the customer, partner use
-        `/financing/v3/applications/{applicationId}/orders/ship` resource where
-        `{applicationId}` is the *application* ID received in the response of
-        `/financing/v3/applications` after its creation.
+      description: |-
+        After the customer's contract is approved and signed, the partner is notified that all preparations are complete, enabling the transfer of goods to the customer. The initial step involves utilizing the *Mark Order as Shipped* method, signifying that the order has been dispatched to the customer.
+
+        Upon confirmation with the customer, the order's price is remitted to the partner.
+
+        Available for:
+        | Application status | Order status |
+        | ---                | ---          |
+        | `CONFIRMED`        | `TO_SHIP`    |
+        | `CONFIRMED`        | `SHIPPED` (in case partner tries to ship already shipped *order*, nothing changes)    |
+
+        If the request was successfully processed, HTTP status code 204 is returned.
+
+          In other cases, you receive one of the following errors:
+          | Status code | Code                  | Explanation                                                                      |
+          | ---         | ---                   | ---                                                                              |
+          | 400         | INVALID_REQUEST       | Request was not well-formatted (malformed request syntax, size too large, etc.)  |
+          | 404         | OBJECT_NOT_FOUND      | The requested resource could not be found                                        |
+          | 422         | NOT_SUPPORTED         | Resource has not supported status                                                |
+          | 422         | UNPROCESSABLE         | The request was well-formed but was unable to be followed due to semantic errors |
+          | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable    |
+
+        + Parameters
+            + applicationId (string, required, `123e4567-e89b-12d3-a456-426655440000`)
+
+        When the whole *order* was shipped to the customer, partner use `/financing/v3/applications/{applicationId}/orders/ship` resource where `{applicationId}` is the *application* ID received in the response of `/financing/v3/applications` after its creation.
       tags:
         - Application resources
       parameters:
@@ -4410,9 +4446,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Unique internal error code
                         message:
                           type: string
+                          example: Bad request
                           description: Human readable error description (non-localized)
                         severity:
                           type: string
@@ -4422,10 +4460,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON path of request attribute that caused the error (if
                             applicable)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Internal ticket ID, used for error backtracking
                       required:
                         - code
@@ -4445,10 +4485,32 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Mark order as delivered
       operationId: Mark order as delivered
-      description: When the whole *order* was delivered to the customer, partner use
-        `/financing/v3/applications/{applicationId}/orders/deliver` resource
-        where `{applicationId}` is the *application* ID received in the response
-        of `/financing/v3/applications` after its creation.
+      description: |-
+        The alternative approach for processing order delivery involves employing the *Mark Order as Delivered* method. This method confirms that the order has been not only shipped but also successfully delivered to the customer.
+
+        The partner receives the order's payment within a few days after the order is delivered.
+
+        Available for:
+        | Application status | Order status |
+        | ---                | ---          |
+        | `CONFIRMED`        | `TO_SHIP`    |
+        | `CONFIRMED`        | `DELIVERED` (in case partner tries to deliver already delivered *order*, nothing changes)   |
+
+        If the request was successfully processed, HTTP status code 204 is returned.
+
+          In other cases, you receive one of the following errors:
+          | Status code | Code                  | Explanation                                                                      |
+          | ---         | ---                   | ---                                                                              |
+          | 400         | INVALID_REQUEST       | Request was not-well formatted (malformed request syntax, size too large, etc.)  |
+          | 404         | OBJECT_NOT_FOUND      | The requested resource could not be found                                        |
+          | 422         | NOT_SUPPORTED         | Resource has not supported status                                                |
+          | 422         | UNPROCESSABLE         | The request was well-formed but was unable to be followed due to semantic errors |
+          | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable    |
+
+        + Parameters
+            + applicationId (string, required, `123e4567-e89b-12d3-a456-426655440000`)
+
+        When the whole *order* was delivered to the customer, partner use `/financing/v3/applications/{applicationId}/orders/deliver` resource where `{applicationId}` is the *application* ID received in the response of `/financing/v3/applications` after its creation.
       tags:
         - Application resources
       parameters:
@@ -4480,9 +4542,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Unique internal error code
                         message:
                           type: string
+                          example: Bad request
                           description: Human readable error description (non-localized)
                         severity:
                           type: string
@@ -4492,10 +4556,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON path of request attribute that caused the error (if
                             applicable)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Internal ticket ID, used for error backtracking
                       required:
                         - code
@@ -4515,9 +4581,34 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Cancel application
       operationId: Cancel application
-      description: Partner use `/financing/v3/applications/{applicationId}/cancel`
-        resource where `{applicationId}` is the *application* ID received in the
-        response of `/financing/v3/applications` after its creation.
+      description: |-
+        If the client decides against the full completion of the *order*, the partner has the option to employ this tool for initiating the cancellation of the application. This resource serves as a mechanism to efficiently handle and process cancellations in such instances.
+
+        Available for:
+        | Application status | Order status |
+        | ---                | ---          |
+        | `CREATED`          | `IN_PROCESS` |
+        | `PRESCORED`        | `IN_PROCESS` |
+        | `ALTERNATIVE`      | `IN_PROCESS` |
+        | `APPROVED`         | `IN_PROCESS` |
+        | `CONFIRMED`        | any except `PAID`  |
+        | `CANCELLED`        | `CANCELLED`  (in this case nothing changes)  |
+
+        If the request was successfully processed, HTTP status code 200 is returned.
+
+          In other cases, you receive one of the following errors:
+          | Status code | Code                  | Explanation                                                                      |
+          | ---         | ---                   | ---                                                                              |
+          | 400         | INVALID_REQUEST       | Request was not-well formatted (malformed request syntax, size too large, etc.)  |
+          | 404         | OBJECT_NOT_FOUND      | The requested resource could not be found                                        |
+          | 422         | NOT_SUPPORTED         | Resource has not supported status                                                |
+          | 422         | UNPROCESSABLE         | The request was well-formed but was unable to be followed due to semantic errors |
+          | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable    |
+
+        + Parameters
+            + applicationId (string, required, `123e4567-e89b-12d3-a456-426655440000`)
+
+        Partner use `/financing/v3/applications/{applicationId}/cancel` resource where `{applicationId}` is the *application* ID received in the response of `/financing/v3/applications` after its creation.
       tags:
         - Application resources
       parameters:
@@ -4577,9 +4668,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Unique internal error code
                         message:
                           type: string
+                          example: Bad request
                           description: Human readable error description (non-localized)
                         severity:
                           type: string
@@ -4589,10 +4682,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON path of request attribute that caused the error (if
                             applicable)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Internal ticket ID, used for error backtracking
                       required:
                         - code
@@ -4612,10 +4707,26 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Get Application
       operationId: Get Application
-      description: Partner use
-        `/financing/v3/applications/{applicationId}/orders/deliver` resource
-        where `{applicationId}` is the *application* ID received in the response
-        of `/financing/v3/applications` after its creation.
+      description: |-
+        A resource designed to retrieve information regarding the current status of a client's credit *application*.
+
+        Available for:
+        | Application status | Order status |
+        | ---                | ---          |
+        | any        | any    |
+
+        If the request was successfully processed, HTTP status code 200 is returned.
+
+          In other cases, you receive one of the following errors:
+          | Status code | Code                  | Explanation                                                                      |
+          | ---         | ---                   | ---                                                                              |
+          | 404         | OBJECT_NOT_FOUND      | The requested resource could not be found                                        |
+          | 500         | INTERNAL_SERVER_ERROR | Unexpected condition was encountered and no more specific message is suitable    |
+
+        + Parameters
+            + applicationId (string, required, `123e4567-e89b-12d3-a456-426655440000`)
+
+        Partner use `/financing/v3/applications/{applicationId}/orders/deliver` resource where `{applicationId}` is the *application* ID received in the response of `/financing/v3/applications` after its creation.
       tags:
         - Application resources
       parameters:
@@ -5674,7 +5785,26 @@ paths:
           headers: {}
       summary: Application notification
       operationId: Application notification
-      description: Notify partner about changes in application.
+      description: |-
+        We use this resource when there is a need to let you know about important changes within particular *application*. Namely in following situations:
+
+        | Trigger                                                             | Corresponding `Application.status` | Corresponding `Application.financedSubject.order.status` | Expected reaction                                                      |
+        | ---                                                                 | ---                                | ---                                                      | ---                                                                    |
+        | Application was approved (approval process is proceeding correctly) | APPROVED                           | IN_PROCESS                                               | Do not cancel customer's order prematurely                             |
+        | Application was rejected                                            | REJECTED                           | CANCELLED                                                | You should probably cancel respective order and release reserved goods |
+        | Application was cancelled (before delivery)                         | CANCELLED                          | CANCELLED                                                | You should probably cancel respective order and release reserved goods |
+        | Order to dispatch (we commit to finance customer's order)           | CONFIRMED                          | TO_SHIP                                                  | Dispatch the order to the customer                                     |
+        | Application is going to be paid out                                 | CONFIRMED                          | PAID                                                     | Wait for us processing financial compensation with you                 |
+
+        We fill the request with at least following information:
+        - Application unique ID
+        - Application status
+        - Time of a triggering `Application.status` change
+        - Notification sequence number
+        - Notification dispatch time
+        - Hashed message (check sum)
+
+        Notify partner about changes in application.
       tags:
         - Merchantsite resources
       requestBody:
@@ -6069,6 +6199,37 @@ tags:
 
 
       - `/financing/v3/installment-programs/down-payments` - to find out down payment options within available installment programs offers
+
+
+      ## Migration from v1 to v3
+
+
+      The v3 Installments calculator replaces the old v1 camelCase endpoints. Main changes:
+
+
+      | v1 endpoint | v3 endpoint | What changed |
+
+      | --- | --- | --- |
+
+      | `/rest/financing/v1/installmentPrograms` | removed | There is no direct v3 equivalent. Use `/financing/v3/installment-programs/offers` instead. |
+
+      | `/rest/financing/v1/installmentProgramsOffers` | `/financing/v3/installment-programs/offers` | Request now requires `productSetCodes` and `customerTypes`; response is grouped by `productSetCode` in `calculatedInstalmentPrograms`. |
+
+      | `/rest/financing/v1/installmentProgramsDownPayments` | `/financing/v3/installment-programs/down-payments` | Request now uses `productSetCodes` instead of a single `productSetCode`; response is grouped by `productSetCode` in `calculatedDownPayments`. |
+
+
+      What you need to change:
+
+
+      - replace camelCase paths with the new hyphenated v3 paths;
+
+      - send a non-empty set of `productSetCodes` instead of one product set code;
+
+      - for offers, always provide `customerTypes`;
+
+      - update response parsing to the new wrapper objects (`calculatedInstalmentPrograms` / `calculatedDownPayments`);
+
+      - handle HTTP `204 No Content` when no calculation result is available for the requested product sets.
   - name: JavaScript widget integration
     description: In order to use Home Credit's javascript widget as an installment
       calculator, your e-shop back-end has to be configured properly. How to do
@@ -6167,7 +6328,8 @@ components:
             characters SHOULD be in the `ISO 8859-2` character set
         contacts:
           type: array
-          items: {}
+          items:
+            $ref: "#/components/schemas/ApplicationContact"
           description: Contacts of person.
         addresses:
           type: array
@@ -6503,16 +6665,18 @@ components:
           $ref: "#/components/schemas/Amount"
         productCode:
           type: string
-          example: "'COCONL06'"
+          example: "COCONL06"
           description: Product code (obtained from calculation result).
+        productSetCode:
+          type: string
+          example: "HCONL1072"
+          description: Code of product set (obtained from calculation result).
         flags:
           type: array
           items:
-            anyOf:
-              - null
-              - type: string
-                enum:
-                  - BUYBACK
+            type: string
+            enum:
+              - BUYBACK
           description: Type of installment program. Used typically with multiple financings.
     FinancingOriginationContext:
       type: object
@@ -6858,14 +7022,18 @@ components:
         value:
           type: number
           example: 13300
-          description: Amount in minor units (13300 represents 133) [ISO
-            4217](https://en.wikipedia.org/wiki/ISO_4217)
+          description: Amount in minor units (13300 represents 133)
         currency:
           type: string
           example: CZK
           description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
             Only local currency is allowed (CZK in Czech Republic and EUR in
             Slovakia).
+    CustomerType:
+      type: array
+      items: {}
+    ProductSetCode:
+      type: string
     VatAmount:
       type: object
       properties: {}
@@ -7307,11 +7475,12 @@ components:
       required:
         - price
       properties:
-        productSetCode:
-          type: string
-          example: COCHCONL
-          description: Product set code, this will limit further calculations. If not
-            provided, default productSet will be used.
+        productSetCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductSetCode"
+          description: List of product set codes, this will limit further calculations. If
+            not provided, default productSet will be used.
         price:
           $ref: "#/components/schemas/AmountOld"
         downPayment:
@@ -7327,6 +7496,11 @@ components:
                     4217](https://en.wikipedia.org/wiki/ISO_4217)
           description: Down payment amount (default is 0, amount should be rounded to
             hundreds)
+        customerTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerType"
+          description: List of customer types from enum
     InstallmentProgramsDownPaymentsRequest:
       type: object
       required:

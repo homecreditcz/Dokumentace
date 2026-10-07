@@ -1087,6 +1087,7 @@ paths:
                 properties:
                   id:
                     type: string
+                    example: 123e4567-e89b-12d3-a456-426655440000
                     description: Primární identifikátor aplikace
                   status:
                     type: string
@@ -1114,10 +1115,12 @@ paths:
                           description: Kód pracovního postupu
                         priority:
                           type: number
+                          example: 1
                           description: Identifikátor priority kroku pracovního postupu vyjádřený číslem
                             (nejnižší číslo znamená nejvyšší prioritu)
                         mandatory:
                           type: boolean
+                          example: true
                           description: K dispozici je krok pracovního postupu pro aktuální žádost v
                             procesu podávání žádostí.
                         redirect:
@@ -1125,12 +1128,12 @@ paths:
                           properties:
                             gatewayRedirectUrl:
                               type: string
+                              example: https://nasplatky.homecredit.cz
                               description: URL přesměrování brány. Partner BY MĚL přesměrovat zákazníka na
                                 tuto adresu, aby mohl pokračovat v procesu
                                 schvalování žádosti.
                           required:
                             - gatewayRedirectUrl
-                          description: Data pro krok pracovního postupu `REDIRECT`
                       required:
                         - code
                         - priority
@@ -1160,6 +1163,7 @@ paths:
                 properties:
                   id:
                     type: string
+                    example: 123e4567-e89b-12d3-a456-426655440000
                     description: Primární identifikátor aplikace
                   status:
                     type: string
@@ -1187,10 +1191,12 @@ paths:
                           description: Kód pracovního postupu
                         priority:
                           type: number
+                          example: 1
                           description: Identifikátor priority kroku pracovního postupu vyjádřený číslem
                             (nejnižší číslo znamená nejvyšší prioritu)
                         mandatory:
                           type: boolean
+                          example: true
                           description: K dispozici je krok pracovního postupu pro aktuální žádost v
                             procesu podávání žádostí.
                         redirect:
@@ -1198,12 +1204,12 @@ paths:
                           properties:
                             gatewayRedirectUrl:
                               type: string
+                              example: https://nasplatky.homecredit.cz
                               description: URL přesměrování brány. Partner BY MĚL přesměrovat zákazníka na
                                 tuto adresu, aby mohl pokračovat v procesu
                                 schvalování žádosti.
                           required:
                             - gatewayRedirectUrl
-                          description: Data pro krok pracovního postupu `REDIRECT`
                       required:
                         - code
                         - priority
@@ -1239,9 +1245,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          example: Bad request
                           description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
@@ -1251,10 +1259,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
                             relevantní)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Interní ID tiketu, používané pro zpětné sledování chyb
                       required:
                         - code
@@ -4036,9 +4046,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          example: Bad request
                           description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
@@ -4048,10 +4060,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
                             relevantní)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Interní ID tiketu, používané pro zpětné sledování chyb
                       required:
                         - code
@@ -4071,10 +4085,32 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Označit objednávku jako odeslanou
       operationId: Mark order as shipped
-      description: Když byla celá *objednávka* odeslána zákazníkovi, partner použije
-        zdroj `/financing/v3/applications/{applicationId}/orders/ship`, kde
-        `{applicationId}` je ID *aplikace* přijaté v odpovědi
-        `/financing/v3/applications` po jejím vytvoření.
+      description: |-
+        Po schválení a podpisu smlouvy zákazníkem je partner informován, že jsou všechny přípravy dokončeny a zboží lze předat zákazníkovi. Prvním krokem je použití metody *Mark Order as Shipped*, která značí, že objednávka byla zákazníkovi odeslána.
+
+        Po potvrzení se zákazníkem je cena objednávky převedena partnerovi.
+
+        Dostupné pro:
+        | Stav žádosti | Stav objednávky |
+        | ---          | ---             |
+        | `CONFIRMED`  | `TO_SHIP`       |
+        | `CONFIRMED`  | `SHIPPED` (pokud se partner pokusí odeslat již odeslanou *objednávku*, nic se nezmění) |
+
+        Pokud byl požadavek úspěšně zpracován, vrátí se stavový kód HTTP 204.
+
+          V ostatních případech obdržíte jednu z následujících chyb:
+          | Stavový kód | Kód                   | Vysvětlení                                                                        |
+          | ---         | ---                   | ---                                                                               |
+          | 400         | INVALID_REQUEST       | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+          | 404         | OBJECT_NOT_FOUND      | Požadovaný zdroj nebyl nalezen                                                    |
+          | 422         | NOT_SUPPORTED         | Zdroj nemá podporovaný stav                                                       |
+          | 422         | UNPROCESSABLE         | Požadavek byl dobře zformulován, ale nebylo možné jej zpracovat kvůli sémantickým chybám |
+          | 500         | INTERNAL_SERVER_ERROR | Nastala neočekávaná podmínka a není vhodná žádná konkrétnější zpráva              |
+
+        + Parameters
+            + applicationId (string, required, `123e4567-e89b-12d3-a456-426655440000`)
+
+        Když byla celá *objednávka* odeslána zákazníkovi, partner použije zdroj `/financing/v3/applications/{applicationId}/orders/ship`, kde `{applicationId}` je ID *aplikace* přijaté v odpovědi `/financing/v3/applications` po jejím vytvoření.
       tags:
         - Application resources
       parameters:
@@ -4106,9 +4142,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          example: Bad request
                           description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
@@ -4118,10 +4156,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
                             relevantní)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Interní ID tiketu, používané pro zpětné sledování chyb
                       required:
                         - code
@@ -4141,10 +4181,32 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Označit objednávku jako doručenou
       operationId: Mark order as delivered
-      description: Když byla celá *objednávka* doručena zákazníkovi, partner použije
-        zdroj `/financing/v3/applications/{applicationId}/orders/deliver`, kde
-        `{applicationId}` je ID *aplikace* přijaté v odpovědi
-        `/financing/v3/applications` po jejím vytvoření.
+      description: |-
+        Alternativním způsobem zpracování doručení objednávky je použití metody *Mark Order as Delivered*. Tato metoda potvrzuje, že objednávka byla nejen odeslána, ale také úspěšně doručena zákazníkovi.
+
+        Partner obdrží platbu za objednávku během několika dnů po jejím doručení.
+
+        Dostupné pro:
+        | Stav žádosti | Stav objednávky |
+        | ---          | ---             |
+        | `CONFIRMED`  | `TO_SHIP`       |
+        | `CONFIRMED`  | `DELIVERED` (pokud se partner pokusí doručit již doručenou *objednávku*, nic se nezmění) |
+
+        Pokud byl požadavek úspěšně zpracován, vrátí se stavový kód HTTP 204.
+
+          V ostatních případech obdržíte jednu z následujících chyb:
+          | Stavový kód | Kód                   | Vysvětlení                                                                        |
+          | ---         | ---                   | ---                                                                               |
+          | 400         | INVALID_REQUEST       | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+          | 404         | OBJECT_NOT_FOUND      | Požadovaný zdroj nebyl nalezen                                                    |
+          | 422         | NOT_SUPPORTED         | Zdroj nemá podporovaný stav                                                       |
+          | 422         | UNPROCESSABLE         | Požadavek byl dobře zformulován, ale nebylo možné jej zpracovat kvůli sémantickým chybám |
+          | 500         | INTERNAL_SERVER_ERROR | Nastala neočekávaná podmínka a není vhodná žádná konkrétnější zpráva              |
+
+        + Parameters
+            + applicationId (string, required, `123e4567-e89b-12d3-a456-426655440000`)
+
+        Když byla celá *objednávka* doručena zákazníkovi, partner použije zdroj `/financing/v3/applications/{applicationId}/orders/deliver`, kde `{applicationId}` je ID *aplikace* přijaté v odpovědi `/financing/v3/applications` po jejím vytvoření.
       tags:
         - Application resources
       parameters:
@@ -4176,9 +4238,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          example: Bad request
                           description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
@@ -4188,10 +4252,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
                             relevantní)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Interní ID tiketu, používané pro zpětné sledování chyb
                       required:
                         - code
@@ -4211,10 +4277,34 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Zrušit žádost
       operationId: Cancel application
-      description: Partneři používají zdroj
-        `/financing/v3/applications/{applicationId}/cancel`, kde
-        `{applicationId}` je ID *aplikace* obdržené v odpovědi
-        `/financing/v3/applications` po jejím vytvoření.
+      description: |-
+        Pokud se klient rozhodne objednávku nedokončit, může partner pomocí tohoto zdroje zahájit zrušení žádosti. Zdroj slouží k efektivnímu zpracování zrušení v takových případech.
+
+        Dostupné pro:
+        | Stav žádosti   | Stav objednávky |
+        | ---            | ---             |
+        | `CREATED`      | `IN_PROCESS`    |
+        | `PRESCORED`    | `IN_PROCESS`    |
+        | `ALTERNATIVE`  | `IN_PROCESS`    |
+        | `APPROVED`     | `IN_PROCESS`    |
+        | `CONFIRMED`    | jakýkoli kromě `PAID` |
+        | `CANCELLED`    | `CANCELLED` (v tomto případě se nic nezmění) |
+
+        Pokud byl požadavek úspěšně zpracován, vrátí se stavový kód HTTP 200.
+
+          V ostatních případech obdržíte jednu z následujících chyb:
+          | Stavový kód | Kód                   | Vysvětlení                                                                        |
+          | ---         | ---                   | ---                                                                               |
+          | 400         | INVALID_REQUEST       | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+          | 404         | OBJECT_NOT_FOUND      | Požadovaný zdroj nebyl nalezen                                                    |
+          | 422         | NOT_SUPPORTED         | Zdroj nemá podporovaný stav                                                       |
+          | 422         | UNPROCESSABLE         | Požadavek byl dobře zformulován, ale nebylo možné jej zpracovat kvůli sémantickým chybám |
+          | 500         | INTERNAL_SERVER_ERROR | Nastala neočekávaná podmínka a není vhodná žádná konkrétnější zpráva              |
+
+        + Parameters
+            + applicationId (string, required, `123e4567-e89b-12d3-a456-426655440000`)
+
+        Partneři používají zdroj `/financing/v3/applications/{applicationId}/cancel`, kde `{applicationId}` je ID *aplikace* obdržené v odpovědi `/financing/v3/applications` po jejím vytvoření.
       tags:
         - Application resources
       parameters:
@@ -4274,9 +4364,11 @@ paths:
                       properties:
                         code:
                           type: string
+                          example: BAD_REQUEST
                           description: Jedinečný interní kód chyby
                         message:
                           type: string
+                          example: Bad request
                           description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
                         severity:
                           type: string
@@ -4286,10 +4378,12 @@ paths:
                             - INFO
                         attribute:
                           type: string
+                          example: "customer.addresses[1].streetNumber"
                           description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
                             relevantní)
                         ticketId:
                           type: string
+                          example: "UAT1:AMS:20160516-091658.450:45e4"
                           description: Interní ID tiketu, používané pro zpětné sledování chyb
                       required:
                         - code
@@ -4307,12 +4401,28 @@ paths:
                         severity: ERROR
                         attribute: customer.addresses[1].streetNumber
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
-      summary: Získat aplikaci
+      summary: Podrobnosti o žádosti
       operationId: Get Application
-      description: Partneři používají zdroj
-        `/financing/v3/applications/{applicationId}/orders/deliver`, kde
-        `{applicationId}` je ID *aplikace* obdržené v odpovědi
-        `/financing/v3/applications` po jejím vytvoření.
+      description: |-
+        Zdroj určený k získání informací o aktuálním stavu klientovy úvěrové *žádosti*.
+
+        Dostupné pro:
+        | Stav žádosti | Stav objednávky |
+        | ---          | ---             |
+        | jakýkoli     | jakýkoli        |
+
+        Pokud byl požadavek úspěšně zpracován, vrátí se stavový kód HTTP 200.
+
+          V ostatních případech obdržíte jednu z následujících chyb:
+          | Stavový kód | Kód                   | Vysvětlení                                                                        |
+          | ---         | ---                   | ---                                                                               |
+          | 404         | OBJECT_NOT_FOUND      | Požadovaný zdroj nebyl nalezen                                                    |
+          | 500         | INTERNAL_SERVER_ERROR | Nastala neočekávaná podmínka a není vhodná žádná konkrétnější zpráva              |
+
+        + Parameters
+            + applicationId (string, required, `123e4567-e89b-12d3-a456-426655440000`)
+
+        Partneři používají zdroj `/financing/v3/applications/{applicationId}/orders/deliver`, kde `{applicationId}` je ID *aplikace* obdržené v odpovědi `/financing/v3/applications` po jejím vytvoření.
       tags:
         - Application resources
       parameters:
@@ -5372,7 +5482,26 @@ paths:
           headers: {}
       summary: Oznámení o podání žádosti
       operationId: Application notification
-      description: Informujte partnera o změnách v aplikaci.
+      description: |-
+        Tento zdroj používáme, když vás potřebujeme informovat o důležitých změnách v konkrétní *žádosti*, a to v těchto situacích:
+
+        | Spouštěč | Odpovídající `Application.status` | Odpovídající `Application.financedSubject.order.status` | Očekávaná reakce |
+        | --- | --- | --- | --- |
+        | Žádost byla schválena (schvalovací proces probíhá správně) | APPROVED | IN_PROCESS | Nerušte objednávku zákazníka předčasně |
+        | Žádost byla zamítnuta | REJECTED | CANCELLED | Pravděpodobně byste měli zrušit příslušnou objednávku a uvolnit rezervované zboží |
+        | Žádost byla zrušena (před doručením) | CANCELLED | CANCELLED | Pravděpodobně byste měli zrušit příslušnou objednávku a uvolnit rezervované zboží |
+        | Objednávka k odeslání (zavazujeme se financovat objednávku zákazníka) | CONFIRMED | TO_SHIP | Odešlete objednávku zákazníkovi |
+        | Žádost bude vyplacena | CONFIRMED | PAID | Počkejte, až s vámi zpracujeme finanční vyrovnání |
+
+        Žádost vyplníme alespoň těmito informacemi:
+        - Jedinečné ID žádosti
+        - Stav žádosti
+        - Čas změny `Application.status`, která notifikaci spustila
+        - Pořadové číslo notifikace
+        - Čas odeslání notifikace
+        - Hashovaná zpráva (kontrolní součet)
+
+        Informujte partnera o změnách v aplikaci.
       tags:
         - Merchantsite resources
       requestBody:
@@ -5794,6 +5923,37 @@ tags:
 
       - `/financing/v3/installment-programs/down-payments` - pro zjištění možností
       zálohy v rámci dostupných nabídek splátkových programů
+
+
+      ## Migrace z v1 na v3
+
+
+      Kalkulačka splátek v3 nahrazuje staré endpointy v1 zapsané ve stylu camelCase. Hlavní změny:
+
+
+      | Endpoint v1 | Endpoint v3 | Co se změnilo |
+
+      | --- | --- | --- |
+
+      | `/rest/financing/v1/installmentPrograms` | odstraněn | Přímá náhrada ve v3 neexistuje. Použijte místo něj `/financing/v3/installment-programs/offers`. |
+
+      | `/rest/financing/v1/installmentProgramsOffers` | `/financing/v3/installment-programs/offers` | Požadavek nově vyžaduje `productSetCodes` a `customerTypes`; odpověď je seskupena podle `productSetCode` v `calculatedInstalmentPrograms`. |
+
+      | `/rest/financing/v1/installmentProgramsDownPayments` | `/financing/v3/installment-programs/down-payments` | Požadavek nově používá `productSetCodes` místo jednoho `productSetCode`; odpověď je seskupena podle `productSetCode` v `calculatedDownPayments`. |
+
+
+      Co je potřeba změnit:
+
+
+      - nahraďte cesty ve stylu camelCase novými cestami v3 se spojovníky;
+
+      - posílejte neprázdnou sadu `productSetCodes` místo jednoho kódu sady produktů;
+
+      - u nabídek (offers) vždy uveďte `customerTypes`;
+
+      - upravte zpracování odpovědi na nové obalové objekty (`calculatedInstalmentPrograms` / `calculatedDownPayments`);
+
+      - ošetřete HTTP `204 No Content`, pokud pro požadované sady produktů není k dispozici žádný výsledek výpočtu.
   - name: JavaScript widget integration
     x-displayName: Integrace JavaScriptového widgetu
     description: Aby bylo možné používat javascriptový widget Home Credit jako
@@ -5895,7 +6055,8 @@ components:
             "ISO 8859-2“.
         contacts:
           type: array
-          items: {}
+          items:
+            $ref: "#/components/schemas/ApplicationContact"
           description: Kontakty osoby.
         addresses:
           type: array
@@ -6231,16 +6392,18 @@ components:
           $ref: "#/components/schemas/Amount"
         productCode:
           type: string
-          example: "'COCONL06'"
+          example: "COCONL06"
           description: Kód produktu (získaný z výsledku výpočtu).
+        productSetCode:
+          type: string
+          example: "HCONL1072"
+          description: Kód sady produktů (získaný z výsledku výpočtu).
         flags:
           type: array
           items:
-            anyOf:
-              - null
-              - type: string
-                enum:
-                  - BUYBACK
+            type: string
+            enum:
+              - BUYBACK
           description: Typ splátkového programu. Obvykle se používá u více financování.
     FinancingOriginationContext:
       type: object
@@ -6586,14 +6749,18 @@ components:
         value:
           type: number
           example: 13300
-          description: Částka v menších jednotkách (13300 představuje 133) [ISO
-            4217](https://en.wikipedia.org/wiki/ISO_4217)
+          description: Částka v menších jednotkách (13300 představuje 133)
         currency:
           type: string
           example: CZK
           description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je
             povolena pouze místní měna (CZK v České republice a EUR na
             Slovensku).
+    CustomerType:
+      type: array
+      items: {}
+    ProductSetCode:
+      type: string
     VatAmount:
       type: object
       properties: {}
@@ -7039,10 +7206,11 @@ components:
       required:
         - price
       properties:
-        productSetCode:
-          type: string
-          example: COCHCONL
-          description: Kód sady produktů, který omezí další výpočty. Pokud není zadán,
+        productSetCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductSetCode"
+          description: Seznam kódů sad produktů, který omezí další výpočty. Pokud není zadán,
             bude použita výchozí sada produktů.
         price:
           $ref: "#/components/schemas/AmountOld"
@@ -7059,6 +7227,11 @@ components:
                     4217](https://en.wikipedia.org/wiki/ISO_4217)
           description: Výše zálohy (výchozí hodnota je 0, částka by měla být zaokrouhlena
             na stovky)
+        customerTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerType"
+          description: Seznam typů zákazníků z výčtu
     InstallmentProgramsDownPaymentsRequest:
       type: object
       required:
