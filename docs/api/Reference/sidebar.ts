@@ -151,7 +151,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/Reference/calculate-installment-programs-down-payments",
-          label: "Calculate installment programs down payments",
+          label: "Calculate available down payments for installment programs",
           className: "api-method post",
         },
       ],

@@ -193,7 +193,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "current/api/Reference/calculate-installment-programs-down-payments",
-          label: "Vypočítat splátkové programy a zálohy",
+          label: "Výpočet dostupných záloh pro splátkové programy",
           customProps: {
             tagDisplayName: "x-displayName",
           },

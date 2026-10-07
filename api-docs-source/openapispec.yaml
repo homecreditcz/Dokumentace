@@ -5658,162 +5658,50 @@ paths:
     post:
       responses:
         "200":
-          description: Down payments information - minimal, maximal and available step
+          description: OK
           headers: {}
           content:
             application/json;charset=UTF-8:
               schema:
-                type: object
-                properties:
-                  minimum:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                        description: Amount in minor units [ISO
-                          4217](https://en.wikipedia.org/wiki/ISO_4217)
-                      currency:
-                        type: string
-                        description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
-                          Only local currency is allowed (CZK in Czech Republic
-                          and EUR in Slovakia).
-                    required:
-                      - amount
-                      - currency
-                    description: The lowest down payment amount, e.g. 0 (0 CZK/EUR)
-                  maximum:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                        description: Amount in minor units (250000 represents 2500 CZK/EUR) [ISO
-                          4217](https://en.wikipedia.org/wiki/ISO_4217)
-                      currency:
-                        type: string
-                        description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
-                          Only local currency is allowed (CZK in Czech Republic
-                          and EUR in Slovakia).
-                    required:
-                      - amount
-                      - currency
-                    description: Maximum down payment amount, e.g. 2500 (2 500 CZK/EUR)
-                  step:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                        description: Amount in minor units (50000 represents 500 CZK/EUR) [ISO
-                          4217](https://en.wikipedia.org/wiki/ISO_4217)
-                      currency:
-                        type: string
-                        description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
-                          Only local currency is allowed (CZK in Czech Republic
-                          and EUR in Slovakia).
-                    required:
-                      - amount
-                      - currency
-                    description: "Size of one step between the lowest and maximum down payment
-                      amounts, e.g. 500 (500 CZK/EUR). Available down payments
-                      could be (min 0, max 2500): 0, 500, 1000, 1500, 2000,
-                      2500"
-              examples:
-                response:
-                  value:
-                    minimum:
-                      amount: 0
-                      currency: CZK
-                    maximum:
-                      amount: 250000
-                      currency: CZK
-                    step:
-                      amount: 50000
-                      currency: CZK
+                $ref: "#/components/schemas/InstallmentProgramsDownPaymentsResponseV3"
+        "204":
+          description: No Content
         "400":
-          description: Error in processing request
-          headers: {}
-          content:
-            application/json;charset=UTF-8:
-              schema:
-                type: object
-                properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        code:
-                          type: string
-                          description: Unique internal error code
-                        message:
-                          type: string
-                          description: Human readable error description (non-localized)
-                        severity:
-                          type: string
-                          enum:
-                            - ERROR
-                            - WARN
-                            - INFO
-                        attribute:
-                          type: string
-                          description: JSON path of request attribute that caused the error (if
-                            applicable)
-                        ticketId:
-                          type: string
-                          description: Internal ticket ID, used for error backtracking
-                      required:
-                        - code
-                        - message
-                        - severity
-                    description: Array with errors
-                required:
-                  - errors
-              examples:
-                response:
-                  value:
-                    errors:
-                      - code: BAD_REQUEST
-                        message: Bad request
-                        severity: ERROR
-                        attribute: customer.addresses[1].streetNumber
-                        ticketId: UAT1:AMS:20160516-091658.450:45e4
-      summary: Calculate installment programs down payments
+          description: Bad Request
+      summary: Calculate available down payments for installment programs
       operationId: Calculate installment programs down payments
-      description: Calculate installment programs down payments according to specified input
+      description: >-
+        Returns minimum, maximum, and step values for down payments per
+        product set.
+
+
+        When a customer wants to pay for a purchase by a loan and also wants to
+        choose their own down payments settings within offered installment programs,
+        use `/financing/v3/installment-programs/down-payments` resource with
+        properly filled request that contains at least following data:
+
+        - Product set codes (you should know the proper product set codes from Home Credit's sales representative or other similar source)
+
+        - Price of customer's purchase
+
+
+        If the request was successfully processed, you receive HTTP status code 200 and object of information about available down payments settings for each valid product set code with at least following information in the response:
+
+        - Minimum down payment amount
+
+        - Maximum down payment amount
+
+        - Step between given minimum and maximum down payment amounts
+
+        - product set code
       tags:
         - Installments calculator resources
       requestBody:
+        required: true
         content:
           application/json;charset=UTF-8:
             schema:
-              type: object
-              properties:
-                productSetCode:
-                  type: string
-                  description: Product set code, this will limit further calculations
-                price:
-                  type: object
-                  properties:
-                    amount:
-                      type: number
-                      description: Amount in minor units (133000 represents 1330) [ISO
-                        4217](https://en.wikipedia.org/wiki/ISO_4217)
-                    currency:
-                      type: string
-                      description: Amount currency [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
-                        Only local currency is allowed (CZK in Czech Republic
-                        and EUR in Slovakia).
-                  required:
-                    - amount
-                    - currency
-                  description: Goods price
-              required:
-                - productSetCode
-                - price
-              example:
-                productSetCode: COCHCONL
-                price:
-                  amount: 133000
-                  currency: CZK
+              $ref: "#/components/schemas/InstallmentProgramsDownPaymentsRequestV3"
   /financing/v3/health:
     get:
       responses:
@@ -7375,24 +7263,24 @@ components:
       properties:
         minimum:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   description: Amount in minor units [ISO
                     4217](https://en.wikipedia.org/wiki/ISO_4217)
           description: The lowest down payment amount, e.g. 0 (0 CZK/EUR)
         maximum:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   example: 250000
                   description: Amount in minor units (250000 represents 2500 CZK/EUR) [ISO
@@ -7400,12 +7288,12 @@ components:
           description: Maximum down payment amount, e.g. 2500 (2 500 CZK/EUR)
         step:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   example: 50000
                   description: Amount in minor units (50000 represents 500 CZK/EUR) [ISO
@@ -7413,6 +7301,47 @@ components:
           description: "Size of one step between the lowest and maximum down payment
             amounts, e.g. 500 (500 CZK/EUR). Available down payments could be
             (min 0, max 2500): 0, 500, 1000, 1500, 2000, 2500"
+    InstallmentProgramsDownPaymentsRequestV3:
+      type: object
+      required:
+        - price
+        - productSetCodes
+      properties:
+        price:
+          allOf:
+            - $ref: "#/components/schemas/Amount"
+            - type: object
+              description: Total price of the goods
+        productSetCodes:
+          type: array
+          example:
+            - COCHCONL
+          description: Set of product set codes, this will limit further calculations
+          items:
+            type: string
+      title: InstallmentProgramsDownPaymentsRequestV3
+    InstallmentProgramsDownPaymentsResponseV3:
+      type: object
+      properties:
+        calculatedDownPayments:
+          type: array
+          description: List of calculated down payment settings
+          items:
+            $ref: "#/components/schemas/CalculatedDownPayments"
+      title: InstallmentProgramsDownPaymentsResponseV3
+    CalculatedDownPayments:
+      type: object
+      properties:
+        downPaymentsSettings:
+          type: array
+          description: Available down payment settings for this product set
+          items:
+            $ref: "#/components/schemas/InstallmentProgramsDownPayments"
+        productSetCode:
+          type: string
+          example: COCHCONL
+          description: Product set code
+      title: CalculatedDownPayments
     InstallmentProgramsRequest:
       type: object
       required:

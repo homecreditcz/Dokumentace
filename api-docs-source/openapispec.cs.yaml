@@ -5355,161 +5355,50 @@ paths:
     post:
       responses:
         "200":
-          description: Informace o zálohách - minimální, maximální a dostupný krok
+          description: OK
           headers: {}
           content:
             application/json;charset=UTF-8:
               schema:
-                type: object
-                properties:
-                  minimum:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                        description: Částka v menších jednotkách [ISO
-                          4217](https://en.wikipedia.org/wiki/ISO_4217)
-                      currency:
-                        type: string
-                        description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je
-                          povolena pouze místní měna (CZK v České republice a
-                          EUR na Slovensku).
-                    required:
-                      - amount
-                      - currency
-                    description: Nejnižší výše zálohy, např. 0 (0 CZK/EUR)
-                  maximum:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                        description: Částka v menších jednotkách (250000 představuje 2500 CZK/EUR) [ISO
-                          4217](https://en.wikipedia.org/wiki/ISO_4217)
-                      currency:
-                        type: string
-                        description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je
-                          povolena pouze místní měna (CZK v České republice a
-                          EUR na Slovensku).
-                    required:
-                      - amount
-                      - currency
-                    description: Maximální výše zálohy, např. 2500 (2 500 CZK/EUR)
-                  step:
-                    type: object
-                    properties:
-                      amount:
-                        type: number
-                        description: Částka v menších jednotkách (50000 představuje 500 CZK/EUR) [ISO
-                          4217](https://en.wikipedia.org/wiki/ISO_4217)
-                      currency:
-                        type: string
-                        description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je
-                          povolena pouze místní měna (CZK v České republice a
-                          EUR na Slovensku).
-                    required:
-                      - amount
-                      - currency
-                    description: "Velikost jednoho kroku mezi nejnižší a nejvyšší částkou zálohy,
-                      např. 500 (500 CZK/EUR). Dostupné zálohy mohou být (min.
-                      0, max. 2500): 0, 500, 1000, 1500, 2000, 2500"
-              examples:
-                response:
-                  value:
-                    minimum:
-                      amount: 0
-                      currency: CZK
-                    maximum:
-                      amount: 250000
-                      currency: CZK
-                    step:
-                      amount: 50000
-                      currency: CZK
+                $ref: "#/components/schemas/InstallmentProgramsDownPaymentsResponseV3"
+        "204":
+          description: Bez obsahu
         "400":
-          description: Chyba při zpracování požadavku
-          headers: {}
-          content:
-            application/json;charset=UTF-8:
-              schema:
-                type: object
-                properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        code:
-                          type: string
-                          description: Jedinečný interní kód chyby
-                        message:
-                          type: string
-                          description: Popis chyby srozumitelný pro člověka (nelokalizovaný)
-                        severity:
-                          type: string
-                          enum:
-                            - ERROR
-                            - WARN
-                            - INFO
-                        attribute:
-                          type: string
-                          description: JSON cesta atributu požadavku, který způsobil chybu (pokud je to
-                            relevantní)
-                        ticketId:
-                          type: string
-                          description: Interní ID tiketu, používané pro zpětné sledování chyb
-                      required:
-                        - code
-                        - message
-                        - severity
-                    description: Pole s chybami
-                required:
-                  - errors
-              examples:
-                response:
-                  value:
-                    errors:
-                      - code: BAD_REQUEST
-                        message: Bad request
-                        severity: ERROR
-                        attribute: customer.addresses[1].streetNumber
-                        ticketId: UAT1:AMS:20160516-091658.450:45e4
-      summary: Vypočítat splátkové programy a zálohy
+          description: Chybný požadavek
+      summary: Výpočet dostupných záloh pro splátkové programy
       operationId: Calculate installment programs down payments
-      description: Vypočítat splátky programu podle zadaných údajů
+      description: >-
+        Vrací minimální, maximální a krokovou hodnotu zálohy pro každou sadu
+        produktů.
+
+
+        Pokud chce zákazník zaplatit nákup úvěrem a zároveň si zvolit vlastní
+        nastavení zálohy v rámci nabízených splátkových programů, použijte zdroj
+        `/financing/v3/installment-programs/down-payments` se správně vyplněným
+        požadavkem, který obsahuje alespoň následující údaje:
+
+        - Kódy sad produktů (správné kódy sad produktů byste měli znát od obchodního zástupce Home Creditu nebo z jiného podobného zdroje)
+
+        - Cena nákupu zákazníka
+
+
+        Pokud byl požadavek úspěšně zpracován, obdržíte stavový kód HTTP 200 a objekt s informacemi o dostupných nastaveních zálohy pro každý platný kód sady produktů s alespoň následujícími informacemi v odpovědi:
+
+        - Minimální výše zálohy
+
+        - Maximální výše zálohy
+
+        - Krok mezi zadanou minimální a maximální výší zálohy
+
+        - kód sady produktů
       tags:
         - Installments calculator resources
       requestBody:
+        required: true
         content:
           application/json;charset=UTF-8:
             schema:
-              type: object
-              properties:
-                productSetCode:
-                  type: string
-                  description: Kód sady produktů, který omezí další výpočty
-                price:
-                  type: object
-                  properties:
-                    amount:
-                      type: number
-                      description: Částka v menších jednotkách (133000 představuje 1330) [ISO
-                        4217](https://en.wikipedia.org/wiki/ISO_4217)
-                    currency:
-                      type: string
-                      description: Měna částky [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217). Je
-                        povolena pouze místní měna (CZK v České republice a EUR
-                        na Slovensku).
-                  required:
-                    - amount
-                    - currency
-                  description: Cena zboží
-              required:
-                - productSetCode
-                - price
-              example:
-                productSetCode: COCHCONL
-                price:
-                  amount: 133000
-                  currency: CZK
+              $ref: "#/components/schemas/InstallmentProgramsDownPaymentsRequestV3"
   /financing/v3/health:
     get:
       responses:
@@ -7105,24 +6994,24 @@ components:
       properties:
         minimum:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   description: Částka v menších jednotkách [ISO
                     4217](https://en.wikipedia.org/wiki/ISO_4217)
           description: Nejnižší výše zálohy, např. 0 (0 CZK/EUR)
         maximum:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   example: 250000
                   description: Částka v menších jednotkách (250000 představuje 2500 CZK/EUR) [ISO
@@ -7130,12 +7019,12 @@ components:
           description: Maximální výše zálohy, např. 2500 (2 500 CZK/EUR)
         step:
           allOf:
-            - $ref: "#/components/schemas/AmountOld"
+            - $ref: "#/components/schemas/Amount"
             - type: object
               required:
-                - amount
+                - value
               properties:
-                amount:
+                value:
                   type: number
                   example: 50000
                   description: Částka v menších jednotkách (50000 představuje 500 CZK/EUR) [ISO
@@ -7143,6 +7032,47 @@ components:
           description: "Velikost jednoho kroku mezi nejnižší a nejvyšší částkou zálohy,
             např. 500 (500 CZK/EUR). Dostupné zálohy mohou být (min. 0, max.
             2500): 0, 500, 1000, 1500, 2000, 2500"
+    InstallmentProgramsDownPaymentsRequestV3:
+      type: object
+      required:
+        - price
+        - productSetCodes
+      properties:
+        price:
+          allOf:
+            - $ref: "#/components/schemas/Amount"
+            - type: object
+              description: Celková cena zboží
+        productSetCodes:
+          type: array
+          example:
+            - COCHCONL
+          description: Sada kódů sad produktů, která omezí další výpočty
+          items:
+            type: string
+      title: InstallmentProgramsDownPaymentsRequestV3
+    InstallmentProgramsDownPaymentsResponseV3:
+      type: object
+      properties:
+        calculatedDownPayments:
+          type: array
+          description: Seznam vypočtených nastavení zálohy
+          items:
+            $ref: "#/components/schemas/CalculatedDownPayments"
+      title: InstallmentProgramsDownPaymentsResponseV3
+    CalculatedDownPayments:
+      type: object
+      properties:
+        downPaymentsSettings:
+          type: array
+          description: Dostupná nastavení zálohy pro tuto sadu produktů
+          items:
+            $ref: "#/components/schemas/InstallmentProgramsDownPayments"
+        productSetCode:
+          type: string
+          example: COCHCONL
+          description: Kód sady produktů
+      title: CalculatedDownPayments
     InstallmentProgramsRequest:
       type: object
       required:
