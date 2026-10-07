@@ -1578,7 +1578,43 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Create application
       operationId: Create application
-      description: Create a new *application*
+      description: |-
+        The elementary flow starts when the customer is interested in some of Home Credit's product.
+
+
+        Use `/financing/v3/applications` resource with properly filled request that contains at least following data
+        - Type of customer (MUST be defined)
+        - Customer's personal data (MAY be ommited for `ONLINE` process)
+        - Order (or other product) details
+          - Type of order (`STANDARD` or `BROKERED`)
+          - Total Price (including VAT)
+          - Order items (array, at least one item is required for `STANDARD` order type)
+            - Order item name
+            - Total price (all pieces, including VAT)
+          - Name of the original e-shop the purchase was made in (for `BROKERED` order type)
+        - Context information necessary for the continuation and completion of the process
+          - Channel type (`ONLINE`)
+          - Channel data
+
+        If the request was successfully processed, partner receives HTTP status code 201 and `Application` object with at least following information in the response:
+        - Application unique ID
+        - Application status
+
+
+        If the request contained `ApplicationRequest.financedSubject.order.number` and was **recognized as duplication**
+        - and previously created `Application` is canceled (`Application.status = CANCELLED` and `Application.financedSubject.order.status = CANCELLED`), new `Application` is created, HTTP status code 201 is returned with `Application` object with information specified above in the response
+        - and previously created `Application` is still not in process by customer (without any recorded action by a customer), no new `Application` is created, HTTP status code 200 is returned with `Application` object with information about application created during the first related successful resource call.
+        - and previously created `Application` is neither canceled nor new anymore, HTTP status code 422 is returned with error code `DUPLICATE_ORDER_NUMBER`.
+
+        In case of an error, you receive one of the following results:
+        | Status code | Code                   | Explanation                                                                     |
+        | ---         | ---                    | ---                                                                             |
+        | 400         | INVALID_REQUEST        | Request was not well-formatted (malformed request syntax, size too large, etc.) |
+        | 422         | UNPROCESSABLE          | Request was well-formed but was unable to be followed due to semantic errors    |
+        | 422         | DUPLICATE_ORDER_NUMBER | Creating of Application with duplicated Order number is not allowed             |
+        | 500         | INTERNAL_SERVER_ERROR  | Unexpected condition was encountered and no more specific message is suitable   |
+
+        Create a new *application*
       tags:
         - Application resources
       requestBody:
@@ -5206,7 +5242,7 @@ paths:
               example:
                 id: ""
                 status: SUCCESS
-  /financing/v3/installmentProgramsOffers:
+  /financing/v3/installment-programs/offers:
     post:
       responses:
         "200":
@@ -5618,7 +5654,7 @@ paths:
                 downPayment:
                   amount: 0
                   currency: CZK
-  /financing/v3/installmentProgramsDownPayments:
+  /financing/v3/installment-programs/down-payments:
     post:
       responses:
         "200":
@@ -6271,13 +6307,13 @@ tags:
       In order to implement your own installment calculator (with your GUI design) you will need following resources:
 
 
-      - `/financing/v3/installmentProgramsOffers` - to find out available installment programs offers and their details
+      - `/financing/v3/installment-programs/offers` - to find out available installment programs offers and their details
 
 
       - `/financing/v3/installmentPrograms` - to find out details of a chosen installment program
 
 
-      - `/financing/v3/installmentProgramsDownPayments` - to find out down payment options within available installment programs offers
+      - `/financing/v3/installment-programs/down-payments` - to find out down payment options within available installment programs offers
   - name: JavaScript widget integration
     description: In order to use Home Credit's javascript widget as an installment
       calculator, your e-shop back-end has to be configured properly. How to do

@@ -1274,7 +1274,43 @@ paths:
                         ticketId: UAT1:AMS:20160516-091658.450:45e4
       summary: Vytvořit aplikaci
       operationId: Create application
-      description: Vytvořte novou *aplikaci*
+      description: |-
+        Elementární tok začíná v okamžiku, kdy má zákazník zájem o některý z produktů Home Creditu.
+
+
+        Použijte zdroj `/financing/v3/applications` se správně vyplněným požadavkem, který obsahuje alespoň následující údaje:
+        - Typ zákazníka (MUSÍ být uveden)
+        - Osobní údaje zákazníka (MOHOU být vynechány pro proces `ONLINE`)
+        - Údaje o objednávce (nebo jiném produktu)
+          - Typ objednávky (`STANDARD` nebo `BROKERED`)
+          - Celková cena (včetně DPH)
+          - Položky objednávky (pole, pro typ objednávky `STANDARD` je vyžadována alespoň jedna položka)
+            - Název položky objednávky
+            - Celková cena (všechny kusy, včetně DPH)
+          - Název původního e-shopu, ve kterém byl nákup proveden (pro typ objednávky `BROKERED`)
+        - Další informace nezbytné pro pokračování a dokončení procesu
+          - Typ kanálu (`ONLINE`)
+          - Údaje o kanálu
+
+        Pokud byl požadavek úspěšně zpracován, partner obdrží stavový kód HTTP 201 a objekt `Application` s minimálně následujícími informacemi:
+        - Unikátní ID žádosti
+        - Stav žádosti
+
+
+        Pokud požadavek obsahoval `ApplicationRequest.financedSubject.order.number` a byl **rozpoznán jako duplicita**
+        - a dříve vytvořená `Application` je zrušena (`Application.status = CANCELLED` a `Application.financedSubject.order.status = CANCELLED`), je vytvořena nová `Application` a vrátí se stavový kód HTTP 201 s objektem `Application` s výše uvedenými informacemi
+        - a dříve vytvořená `Application` dosud není zákazníkem zpracovávána (bez zaznamenané akce zákazníka), žádná nová `Application` se nevytvoří a vrátí se stavový kód HTTP 200 s objektem `Application` s informacemi o žádosti vytvořené při prvním souvisejícím úspěšném volání zdroje.
+        - a dříve vytvořená `Application` již není zrušena ani nová, vrátí se stavový kód HTTP 422 s kódem chyby `DUPLICATE_ORDER_NUMBER`.
+
+        V případě chyby obdržíte jeden z následujících výsledků:
+        | Stavový kód | Kód                    | Vysvětlení                                                                      |
+        | ---         | ---                    | ---                                                                             |
+        | 400         | INVALID_REQUEST        | Požadavek nebyl správně naformátován (chybná syntaxe požadavku, příliš velká velikost atd.) |
+        | 422         | UNPROCESSABLE          | Požadavek byl dobře zformulován, ale nebylo možné jej zpracovat kvůli sémantickým chybám |
+        | 422         | DUPLICATE_ORDER_NUMBER | Vytvoření žádosti s duplicitním číslem objednávky není povoleno                 |
+        | 500         | INTERNAL_SERVER_ERROR  | Nastala neočekávaná podmínka a není vhodná žádná konkrétnější zpráva            |
+
+        Vytvořte novou *aplikaci*
       tags:
         - Application resources
       requestBody:
@@ -4904,7 +4940,7 @@ paths:
               example:
                 id: ""
                 status: SUCCESS
-  /financing/v3/installmentProgramsOffers:
+  /financing/v3/installment-programs/offers:
     post:
       responses:
         "200":
@@ -5315,7 +5351,7 @@ paths:
                 downPayment:
                   amount: 0
                   currency: CZK
-  /financing/v3/installmentProgramsDownPayments:
+  /financing/v3/installment-programs/down-payments:
     post:
       responses:
         "200":
@@ -5992,7 +6028,7 @@ tags:
       potřebovat následující zdroje:
 
 
-      - `/financing/v3/installmentProgramsOffers` - k vyhledání dostupných
+      - `/financing/v3/installment-programs/offers` - k vyhledání dostupných
       nabídek splátkových programů a jejich podrobností
 
 
@@ -6000,7 +6036,7 @@ tags:
       vybraném splátkovém programu
 
 
-      - `/financing/v3/installmentProgramsDownPayments` - pro zjištění možností
+      - `/financing/v3/installment-programs/down-payments` - pro zjištění možností
       zálohy v rámci dostupných nabídek splátkových programů
   - name: JavaScript widget integration
     x-displayName: Integrace JavaScriptového widgetu
