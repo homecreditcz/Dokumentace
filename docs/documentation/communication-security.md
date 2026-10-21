@@ -24,9 +24,18 @@ These two attributes are encrypted: order number (`orderNumber`) and request sta
 In API v3 the checksum is calculated from these attributes of `notificationContent`: application ID (`applicationId`), application status (`applicationStatus`), order number (`orderNumber`), order status (`orderStatus`) and down payment (`downPayment.value`). They are assembled into the string `#applicationId:#applicationStatus:#orderNumber:#orderStatus:#downPayment` (the parameters are separated by a colon). The down payment is given in minor units (halers/cents); if there is no down payment, `0` is used. The string is hashed with the same HMAC function with the SHA512 algorithm and the `secret key` and is sent in the message as the `checksum` attribute (in v1/v2 it was `checkSum`).
 
 ### Example (API v3)
-- test store (salesroom): **034342**
-- secret key: `(u$5a$r3#8t+ug` (see [Test environment](/docs/documentation/dev-env "Test environment"))
-- notification sent to the e-shop:
+- Salesroom: **034342**
+- Hash key: `(u$5a$r3#8t+ug`
+- String for hashing: `77328b0c-e50f-408e-b9a8-301af0c2748b:CONFIRMED:OBJ-2026-73104:TO_SHIP:0`
+- Format: Hex (uppercase)
+
+**Calculating checksum for v3:**
+- format: `#applicationId:#applicationStatus:#orderNumber:#orderStatus:#downPayment`
+- example (with down payment): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:100000`
+- example (without down payment): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:0`
+- `downPayment` in checksum input is in minor units (e.g. cents).
+
+**Example of a notification message:**
 
 ```json
 {
@@ -46,17 +55,6 @@ In API v3 the checksum is calculated from these attributes of `notificationConte
   "checksum": "E560793AE29860E87524E338628572DD4FEEB73CEE803502483DFE6C7AB63DA9A4823F997AC31A0BF7618168AF8A362B8917CEAB8AD6A82AC30C484A1A6E16F2"
 }
 ```
-
-- the string for hashing will be as follows: `77328b0c-e50f-408e-b9a8-301af0c2748b:CONFIRMED:OBJ-2026-73104:TO_SHIP:0`
-- the resulting checksum (hexadecimal, upper case) will then be: `E560793AE29860E87524E338628572DD4FEEB73CEE803502483DFE6C7AB63DA9A4823F997AC31A0BF7618168AF8A362B8917CEAB8AD6A82AC30C484A1A6E16F2`
-
-Further examples with the same secret key:
-- notification with application `b452a713-3052-4b86-9b53-918e3abc5988`, status `CONFIRMED`, order number `449890`, order status `IN_PROCESS` and down payment `100000` (1 000 CZK)
-- the string for hashing will be as follows: `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:100000`
-- the resulting checksum will then be: `65FDE9A7FE6246F950EEADFB01F3A3452641F367EE6C6BFFE03BE24A1B9FB6DF4C48CB02E55901634E10FAC0269BEF3C0F059BF1119E9DA50F66BBD918AAE880`
-- the same notification without a down payment – string for hashing: `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:0`, resulting checksum: `06FA0950BCAFFCEA73A3A3ADD6A0F9C20A70424AECE745A1724D5AB5A8AD4D70DDCCB859B023221E31C491810E848E13AA355E238C0F100B80F2F0F80F0986B6`
-
-> The checksum is sent as a hexadecimal string in upper case. We recommend comparing it case-insensitively.
 
 ## Securing information transmitted when redirecting the client back to the partner website
 
