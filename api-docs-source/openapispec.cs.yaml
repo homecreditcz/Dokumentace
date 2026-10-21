@@ -792,12 +792,72 @@ info:
 
     #### 2.5 Oznámení - změny struktury
 
-    | Změna | v1 | v3 | Dopad |
+    Struktura obsahu notifikace se ve v3 změnila. Partneři MUSÍ upravit zpracování notifikace i výpočet kontrolního součtu (checksum).
+
+    | Změna | v1 / v2 (starší) | v3 | Co má partner udělat |
     |-------|----|----|-------|
-    | **Struktura** | Ploché atributy | Objekt `notificationContent` | **STŘEDNÍ** |
-    | **Stav aplikace** | `stateReason` | `applicationStatus` | **VYSOKÝ** - různé hodnoty |
-    | **Stav objednávky** | `orderState` | `orderStatus` | **NÍZKÝ** - přejmenování |
-    | **Záloha** | `AmountOld` (částka + měna) | `Amount` (hodnota + měna) | **NÍZKÝ** - přejmenování atributu |
+    | **Struktura obsahu** | Plochý JSON | Zabaleno v `notificationContent` | Načítejte obchodní údaje z `notificationContent` |
+    | **Název pole kontrolního součtu** | `checkSum` | `checksum` | Upravte klíč při deserializaci |
+    | **ID žádosti** | `id` | `applicationId` | Přemapujte pole |
+    | **Stav žádosti** | `state` / `stateReason` | `applicationStatus` | Upravte logiku mapování |
+    | **Stav objednávky** | `orderState` | `orderStatus` | Přejmenujte a přemapujte hodnoty výčtu (např. `PROCESSING` → `IN_PROCESS`) |
+    | **Výše zálohy** | `downPayment.amount` | `downPayment.value` | Přejmenujte vnořený atribut částky |
+    | **Zrušené pole** | `stateReason` | Odstraněno z obsahu | Ve v3 notifikacích na něj nespoléhejte |
+
+    ##### Příklad v2 (starší)
+
+    ```json
+    {
+      "id": "c55070dc-d1cd-44c6-bf72-2abccb0cd274",
+      "state": "PROCESSING",
+      "orderState": "PROCESSING",
+      "stateReason": "PROCESSING_SIGNED",
+      "sentDate": "2026-08-10T10:30:08+02:00",
+      "checkSum": "8FFBA7A9D2A820F463DEA16C94699FEFD4B2AB38EB13C3F03103E4099ED00A291DFD7D6EB28853691AD9DAB1F02ABEAE5D9AEF84A3074A53DD62A90EE3EBAA6A",
+      "notificationDate": "2026-08-10T10:29:11+02:00",
+      "orderNumber": "407433",
+      "sequenceNumber": 1,
+      "downPayment": {
+        "amount": 100000,
+        "currency": "CZK"
+      }
+    }
+    ```
+
+    ##### Příklad v3
+
+    ```json
+    {
+      "notificationContent": {
+        "applicationId": "b452a713-3052-4b86-9b53-918e3abc5988",
+        "applicationStatus": "CONFIRMED",
+        "orderNumber": "449890",
+        "orderStatus": "IN_PROCESS",
+        "downPayment": {
+          "value": 100000,
+          "currency": "CZK"
+        },
+        "notificationDate": "2026-08-10T10:33:13+02:00",
+        "sequenceNumber": 1
+      },
+      "sentDate": "2026-08-10T10:34:05+02:00",
+      "checksum": "045191166BE7BE832206C50208A04BBAB46C4EA424A974695DEB446ABE0B4836DD5F4241B4D280F0B90D91DF3324083A78107C88A0D77BDF411A9DCD58DDF84C"
+    }
+    ```
+
+    ##### Změna výpočtu kontrolního součtu (kritické)
+
+    Vstupní řetězec pro kontrolní součet závisí na verzi API:
+
+    - Pro v1/v2:
+      - formát: `#orderNumber:#stateReason`
+      - příklad: `018884:PROCESSING_SIGNED`
+    - Pro v3:
+      - formát: `#applicationId:#applicationStatus:#orderNumber:#orderStatus:#downPayment`
+      - příklad (se zálohou): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:100000`
+      - příklad (bez zálohy): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:0`
+
+    `downPayment` je ve vstupu kontrolního součtu v minor units (např. v haléřích/centech).
 
     ### 3. Změny v životním cyklu
 

@@ -809,12 +809,85 @@ This change requires adjustments to the data structure in the `customer` object,
 
 #### 2.5 Notification - structure changes
 
-| Change | v1 | v3 | Impact |
+Notification payload was structurally changed in v3. Partners MUST update parsing and checksum logic.
+
+| Change | v1 / v2 (legacy) | v3 | Partner action |
 |-------|----|----|-------|
-| **Structure** | Flat attributes | `notificationContent` object | **MEDIUM** |
-| **Application state** | `stateReason` | `applicationStatus` | **HIGH** - different values |
-| **Order state** | `orderState` | `orderStatus` | **LOW** - renaming |
-| **Down payment** | `AmountOld` (amount + currency) | `Amount` (value + currency) | **LOW** - attribute renaming |
+| **Payload structure** | Flat JSON | Wrapped in `notificationContent` | Read business fields from `notificationContent` |
+| **Checksum field name** | `checkSum` | `checksum` | Update deserialization key |
+| **Application ID** | `id` | `applicationId` | Remap field |
+| **Application state** | `state` / `stateReason` | `applicationStatus` | Update mapping logic |
+| **Order state** | `orderState` | `orderStatus` | Rename and remap enum values (e.g. `PROCESSING` → `IN_PROCESS`) |
+| **Down payment amount** | `downPayment.amount` | `downPayment.value` | Rename nested amount attribute |
+| **Deprecated field** | `stateReason` | Removed from payload | Do not rely on it in v3 notifications |
+
+##### v2 example (legacy)
+
+```json
+{
+  "id": "c55070dc-d1cd-44c6-bf72-2abccb0cd274",
+  "state": "PROCESSING",
+  "orderState": "PROCESSING",
+  "stateReason": "PROCESSING_SIGNED",
+  "sentDate": "2026-08-10T10:30:08+02:00",
+  "checkSum": "8FFBA7A9D2A820F463DEA16C94699FEFD4B2AB38EB13C3F03103E4099ED00A291DFD7D6EB28853691AD9DAB1F02ABEAE5D9AEF84A3074A53DD62A90EE3EBAA6A",
+  "notificationDate": "2026-08-10T10:29:11+02:00",
+  "orderNumber": "407433",
+  "sequenceNumber": 1,
+  "downPayment": {
+    "amount": 100000,
+    "currency": "CZK"
+  }
+}
+```
+
+##### v3 example
+
+```json
+{
+  "notificationContent": {
+    "applicationId": "b452a713-3052-4b86-9b53-918e3abc5988",
+    "applicationStatus": "CONFIRMED",
+    "orderNumber": "449890",
+    "orderStatus": "IN_PROCESS",
+    "downPayment": {
+      "value": 100000,
+      "currency": "CZK"
+    },
+    "notificationDate": "2026-08-10T10:33:13+02:00",
+    "sequenceNumber": 1
+  },
+  "sentDate": "2026-08-10T10:34:05+02:00",
+  "checksum": "045191166BE7BE832206C50208A04BBAB46C4EA424A974695DEB446ABE0B4836DD5F4241B4D280F0B90D91DF3324083A78107C88A0D77BDF411A9DCD58DDF84C"
+}
+```
+
+##### Checksum migration (critical)
+
+Checksum input string depends on API version:
+
+- For v1/v2:
+
+
+  - format: `#orderNumber:#stateReason`
+
+
+  - example: `018884:PROCESSING_SIGNED`
+
+
+- For v3:
+
+
+  - format: `#applicationId:#applicationStatus:#orderNumber:#orderStatus:#downPayment`
+
+
+  - example (with down payment): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:100000`
+
+
+  - example (without down payment): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:0`
+
+
+`downPayment` in checksum input is in minor units (e.g. cents).
 
 ### 3. Lifecycle operation changes
 
