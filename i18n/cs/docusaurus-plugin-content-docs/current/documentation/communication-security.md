@@ -24,16 +24,16 @@ Obsah notifikací zasílaných partnerskému e-shopu je chráněn proti změně 
 V API v3 se kontrolní součet počítá z těchto atributů `notificationContent`: ID žádosti (`applicationId`), stav žádosti (`applicationStatus`), číslo objednávky (`orderNumber`), stav objednávky (`orderStatus`) a záloha (`downPayment.value`). Sestaví se do řetězce `#applicationId:#applicationStatus:#orderNumber:#orderStatus:#downPayment` (parametry jsou odděleny dvojtečkou). Záloha se uvádí v haléřích/centech; pokud záloha není, použije se `0`. Řetězec se zahashuje stejnou funkcí HMAC s algoritmem SHA512 a `tajným klíčem` a ve zprávě se posílá jako atribut `checksum` (ve v1/v2 to byl `checkSum`).
 
 ### Příklad (API v3)
-- Salesroom: **034342**
-- Hash key: `(u$5a$r3#8t+ug`
+- Prodejna (salesroom): **034342**
+- Tajný klíč pro hashování: `(u$5a$r3#8t+ug`
 - Řetězec pro hashování: `77328b0c-e50f-408e-b9a8-301af0c2748b:CONFIRMED:OBJ-2026-73104:TO_SHIP:0`
-- Format: Hex (uppercase)
+- Formát výsledku: hexadecimální řetězec, velká písmena
 
-**Calculating checksum for v3:**
-- format: `#applicationId:#applicationStatus:#orderNumber:#orderStatus:#downPayment`
-- example (with down payment): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:100000`
-- example (without down payment): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:0`
-- `downPayment` in checksum input is in minor units (e.g. cents).
+**Výpočet kontrolního součtu pro v3:**
+- formát: `#applicationId:#applicationStatus:#orderNumber:#orderStatus:#downPayment`
+- příklad (se zálohou): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:100000`
+- příklad (bez zálohy): `b452a713-3052-4b86-9b53-918e3abc5988:CONFIRMED:449890:IN_PROCESS:0`
+- `downPayment` se ve vstupu kontrolního součtu uvádí v nejmenších jednotkách měny (např. v haléřích/centech).
 
 **Příklad notifikační zprávy:**
 
